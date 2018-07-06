@@ -1,0 +1,33 @@
+<div class="gf-form-group">
+	<div class="gf-form-inline">
+		<div class="gf-form">
+			<label class="gf-form-label query-keyword width-7">KEY</label>
+			<metric-segment segment="ctrl.measurementSegment" get-options="ctrl.metadataClient.getMeasurements($query)" on-change="ctrl.measurementChanged()"></metric-segment>
+		</div>
+
+		<div class="gf-form">
+			<label class="gf-form-label query-keyword">WHERE</label>
+		</div>
+
+		<div class="gf-form" ng-repeat="segment in ctrl.tagSegments">
+			<metric-segment segment="segment" get-options="ctrl.metadataClient.getTagsOrValues(segment, $index, $query)" on-change="ctrl.tagSegmentUpdated(segment, $index)"></metric-segment>
+		</div>
+
+		<div class="gf-form gf-form--grow">
+			<div class="gf-form-label gf-form-label--grow"></div>
+		</div>
+	</div>
+</div>
+
+<div class="gf-form-group">
+	<div class="gf-form-inline">
+		<div class="gf-form">
+			<span class="gf-form-label width-4">Text</span>
+			<input type="text" class="gf-form-input max-width-10" ng-model='ctrl.annotation.textColumn' placeholder=""></input>
+		</div>
+		<div class="gf-form">
+			<span class="gf-form-label width-4">Tags</span>
+			<input type="text" class="gf-form-input max-width-10" ng-model='ctrl.annotation.tagsColumn' placeholder=""></input>
+		</div>
+	</div>
+</div>
