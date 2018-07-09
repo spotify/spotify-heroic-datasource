@@ -95,9 +95,6 @@ System.register(["app/core/utils/kbn", "lodash", "./query_part"], function(expor
                                 if (partModel.def.category === categories["For Each"]) {
                                     return false;
                                 }
-                                if (partModel.def.category === categories.Selectors) {
-                                    return false;
-                                }
                                 return true;
                             });
                         });

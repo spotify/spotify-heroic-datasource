@@ -39,24 +39,25 @@ System.register(["./query_part_base/query_part"], function(exports_1) {
     }
     function replaceAggregationAddStrategy(selectParts, partModel) {
         // look for existing aggregation
-        // for (var i = 0; i < selectParts.length; i++) {
-        //   var part = selectParts[i];
-        //   if (part.def.category === categories["For Each"]) {
-        //     selectParts[i] = partModel;
-        //     return;
-        //   }
-        //   if (part.def.category === categories.Selectors) {
-        //     selectParts[i] = partModel;
-        //     return;
-        //   }
-        // }
-        selectParts.splice(1, 0, partModel);
+        if (partModel.def.categoryName !== "Group By") {
+            for (var i = 0; i < selectParts.length; i++) {
+                var part = selectParts[i];
+                if (part.def === partModel.def) {
+                    return;
+                }
+            }
+        }
+        selectParts.push(partModel);
     }
     function buildAggregateRenderer(ctype, of) {
         function aggregateRenderer(part, innerExpr) {
+            var tagGroup = of;
+            if (part.params) {
+                tagGroup = part.params;
+            }
             var aggregation = {
                 type: "group",
-                of: of,
+                of: tagGroup,
                 each: [
                     {
                         type: ctype,
@@ -121,22 +122,9 @@ System.register(["./query_part_base/query_part"], function(exports_1) {
             categories = {
                 "For Each": [],
                 "Collapse": [],
-                "Group By": [],
-                "Selectors": [],
-                "Transformations": [],
-                "Predictors": [],
-                "Math": [],
-                "Aliasing": [],
-                "Fields": [],
+                "Group By": []
             };
             groupByTimeFunctions = [];
-            // registerForEach({
-            //   type: 'average',
-            //   addStrategy: replaceAggregationAddStrategy,
-            //   category: categories["For Each"],
-            //   params: [],
-            //   defaultParams: [],
-            // });
             rootAggregations.forEach(function (aggregation) {
                 registerForEach({
                     type: aggregation,
@@ -152,83 +140,21 @@ System.register(["./query_part_base/query_part"], function(exports_1) {
                     params: [],
                     defaultParams: [],
                 });
-                // TODO: figure out tag arguments
                 registerGroupBy({
                     type: aggregation,
                     addStrategy: replaceAggregationAddStrategy,
                     categoryName: "Group By",
-                    params: [[]],
+                    dynamicParameters: true,
+                    params: [
+                        {
+                            name: "tag",
+                            type: "string",
+                            dynamicLookup: true
+                        }
+                    ],
                     defaultParams: [],
                 });
             });
-            // register({
-            //   type: 'derivative',
-            //   addStrategy: addTransformationStrategy,
-            //   category: categories.Transformations,
-            //   params: [
-            //     {
-            //       name: 'duration',
-            //       type: 'interval',
-            //       options: ['1s', '10s', '1m', '5m', '10m', '15m', '1h'],
-            //     },
-            //   ],
-            //   defaultParams: ['10s'],
-            //   renderer: functionRenderer,
-            // });
-            //
-            //
-            // register({
-            //   type: 'non_negative_derivative',
-            //   addStrategy: addTransformationStrategy,
-            //   category: categories.Transformations,
-            //   params: [
-            //     {
-            //       name: 'duration',
-            //       type: 'interval',
-            //       options: ['1s', '10s', '1m', '5m', '10m', '15m', '1h'],
-            //     },
-            //   ],
-            //   defaultParams: ['10s'],
-            //   renderer: functionRenderer,
-            // });
-            //
-            // register({
-            //   type: 'difference',
-            //   addStrategy: addTransformationStrategy,
-            //   category: categories.Transformations,
-            //   params: [],
-            //   defaultParams: [],
-            //   renderer: functionRenderer,
-            // });
-            //
-            // register({
-            //   type: 'non_negative_difference',
-            //   addStrategy: addTransformationStrategy,
-            //   category: categories.Transformations,
-            //   params: [],
-            //   defaultParams: [],
-            //   renderer: functionRenderer,
-            // });
-            //
-            // register({
-            //   type: 'moving_average',
-            //   addStrategy: addTransformationStrategy,
-            //   category: categories.Transformations,
-            //   params: [{ name: 'window', type: 'int', options: [5, 10, 20, 30, 40] }],
-            //   defaultParams: [10],
-            //   renderer: functionRenderer,
-            // });
-            //
-            // register({
-            //   type: 'cumulative_sum',
-            //   addStrategy: addTransformationStrategy,
-            //   category: categories.Transformations,
-            //   params: [],
-            //   defaultParams: [],
-            //   renderer: functionRenderer,
-            // });
-            //
-            //
             register({
                 type: "time",
                 category: groupByTimeFunctions,
@@ -242,20 +168,6 @@ System.register(["./query_part_base/query_part"], function(exports_1) {
                     },
                 ],
                 defaultParams: ["$__interval"],
-                renderer: query_part_1.functionRenderer,
-            });
-            //
-            register({
-                type: "fill",
-                category: groupByTimeFunctions,
-                params: [
-                    {
-                        name: "fill",
-                        type: "string",
-                        options: ["none", "null", "0", "previous", "linear"],
-                    },
-                ],
-                defaultParams: ["null"],
                 renderer: query_part_1.functionRenderer,
             });
             exports_1("default",{

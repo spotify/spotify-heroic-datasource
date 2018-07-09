@@ -38,6 +38,7 @@ System.register(["angular", "lodash", "./heroic_query", "./lru_cache"], function
             MetadataClient = (function () {
                 /** @ngInject **/
                 function MetadataClient(datasource, uiSegmentSrv, templateSrv, $q, scopedVars, target, removeTagFilterSegment, tagSegments, includeVariables, includeScopes) {
+                    var _this = this;
                     this.datasource = datasource;
                     this.uiSegmentSrv = uiSegmentSrv;
                     this.templateSrv = templateSrv;
@@ -48,6 +49,63 @@ System.register(["angular", "lodash", "./heroic_query", "./lru_cache"], function
                     this.tagSegments = tagSegments;
                     this.includeVariables = includeVariables;
                     this.includeScopes = includeScopes;
+                    this.getMeasurements = lodash_1.default.debounce((function (measurementFilter) {
+                        var filter = {
+                            key: measurementFilter,
+                            filter: _this.queryModel.buildCurrentFilter(_this.includeVariables, _this.includeScopes),
+                            limit: 10,
+                        };
+                        var cacheKey = JSON.stringify(filter);
+                        if (_this.keyLru.has(cacheKey)) {
+                            return Promise.resolve(_this.keyLru.get(cacheKey));
+                        }
+                        return _this.datasource
+                            .doRequest("/metadata/key-suggest", { method: "POST", data: filter })
+                            .then(function (result) {
+                            return _this.transformToSegments(true, "key")(result.data.suggestions);
+                        })
+                            .then(function (result) {
+                            _this.keyLru.put(cacheKey, result);
+                            return result;
+                        });
+                    }), MetadataClient.DEBOUNCE_MS, { leading: true });
+                    this.getTagsOrValues = lodash_1.default.debounce((function (segment, index, query, includeRemove) {
+                        if (segment.type === "condition") {
+                            return _this.$q.when([_this.uiSegmentSrv.newSegment("AND"), _this.uiSegmentSrv.newSegment("OR")]);
+                        }
+                        if (segment.type === "operator") {
+                            var nextValue = _this.tagSegments[index + 1].value;
+                            if (/^\/.*\/$/.test(nextValue)) {
+                                return _this.$q.when(_this.uiSegmentSrv.newOperators(["=~", "!~"]));
+                            }
+                            else {
+                                return _this.$q.when(_this.uiSegmentSrv.newOperators(["=", "!=", "<>", "<", ">"]));
+                            }
+                        }
+                        var filter = _this.queryModel.buildCurrentFilter(_this.includeVariables, _this.includeScopes); // do not include scoped variables
+                        var data = {
+                            filter: filter,
+                            limit: 25,
+                            key: null
+                        };
+                        if (segment.type === "key" || segment.type === "plus-button") {
+                            data.key = query;
+                            return _this.queryTagsAndValues(data, "key", _this.lruTag)
+                                .then(_this.transformToSegments(true, "key"))
+                                .then(function (results) {
+                                if (segment.type === "key" && includeRemove) {
+                                    results.splice(0, 0, angular_1.default.copy(_this.removeTagFilterSegment));
+                                }
+                                return results;
+                            });
+                        }
+                        else if (segment.type === "value") {
+                            data.key = _this.tagSegments[index - 2].value;
+                            data["value"] = query;
+                            return _this.queryTagsAndValues(data, "value", _this.lruTagValue)
+                                .then(_this.transformToSegments(true, "value"));
+                        }
+                    }), MetadataClient.DEBOUNCE_MS, { leading: true });
                     this.lruTag = new lru_cache_1.LruCache();
                     this.lruTagValue = new lru_cache_1.LruCache();
                     this.keyLru = new lru_cache_1.LruCache();
@@ -56,27 +114,6 @@ System.register(["angular", "lodash", "./heroic_query", "./lru_cache"], function
                     this.includeVariables = includeVariables;
                     this.includeScopes = includeScopes;
                 }
-                MetadataClient.prototype.getMeasurements = function (measurementFilter) {
-                    var _this = this;
-                    var filter = {
-                        key: measurementFilter,
-                        filter: this.queryModel.buildCurrentFilter(this.includeVariables, this.includeScopes),
-                        limit: 10,
-                    };
-                    var cacheKey = JSON.stringify(filter);
-                    if (this.keyLru.has(cacheKey)) {
-                        return Promise.resolve(this.keyLru.get(cacheKey));
-                    }
-                    return this.datasource
-                        .doRequest("/metadata/key-suggest", { method: "POST", data: filter })
-                        .then(function (result) {
-                        return _this.transformToSegments(true, "key")(result.data.suggestions);
-                    })
-                        .then(function (result) {
-                        _this.keyLru.put(cacheKey, result);
-                        return result;
-                    });
-                };
                 MetadataClient.prototype.handleQueryError = function (err) {
                     this.error = err.message || "Failed to issue metric query";
                     return [];
@@ -126,44 +163,6 @@ System.register(["angular", "lodash", "./heroic_query", "./lru_cache"], function
                         return result;
                     });
                 };
-                MetadataClient.prototype.getTagsOrValues = function (segment, index, query) {
-                    var _this = this;
-                    if (segment.type === "condition") {
-                        return this.$q.when([this.uiSegmentSrv.newSegment("AND"), this.uiSegmentSrv.newSegment("OR")]);
-                    }
-                    if (segment.type === "operator") {
-                        var nextValue = this.tagSegments[index + 1].value;
-                        if (/^\/.*\/$/.test(nextValue)) {
-                            return this.$q.when(this.uiSegmentSrv.newOperators(["=~", "!~"]));
-                        }
-                        else {
-                            return this.$q.when(this.uiSegmentSrv.newOperators(["=", "!=", "<>", "<", ">"]));
-                        }
-                    }
-                    var filter = this.queryModel.buildCurrentFilter(this.includeVariables, this.includeScopes); // do not include scoped variables
-                    var data = {
-                        filter: filter,
-                        limit: 25,
-                        key: null
-                    };
-                    if (segment.type === "key" || segment.type === "plus-button") {
-                        data.key = query;
-                        return this.queryTagsAndValues(data, "key", this.lruTag)
-                            .then(this.transformToSegments(true, "key"))
-                            .then(function (results) {
-                            if (segment.type === "key") {
-                                results.splice(0, 0, angular_1.default.copy(_this.removeTagFilterSegment));
-                            }
-                            return results;
-                        });
-                    }
-                    else if (segment.type === "value") {
-                        data.key = this.tagSegments[index - 2].value;
-                        data["value"] = query;
-                        return this.queryTagsAndValues(data, "value", this.lruTagValue)
-                            .then(this.transformToSegments(true, "value"));
-                    }
-                };
                 MetadataClient.prototype.getTagValueOperator = function (tagValue, tagOperator) {
                     if (tagOperator !== "=~" && tagOperator !== "!~" && /^\/.*\/$/.test(tagValue)) {
                         return "=~";
@@ -174,6 +173,7 @@ System.register(["angular", "lodash", "./heroic_query", "./lru_cache"], function
                     return null;
                 };
                 MetadataClient.templateUrl = "partials/query.editor.html";
+                MetadataClient.DEBOUNCE_MS = 500; // milliseconds to wait between keystrokes before sending queries for metadata
                 return MetadataClient;
             })();
             exports_1("MetadataClient", MetadataClient);

@@ -96,9 +96,6 @@ export default class HeroicQuery {
           if (partModel.def.category === categories["For Each"]) {
             return false;
           }
-          if (partModel.def.category === categories.Selectors) {
-            return false;
-          }
           return true;
         });
       });

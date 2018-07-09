@@ -6,6 +6,7 @@ export declare class QueryPartDef {
     category: any;
     addStrategy: any;
     categoryName: any;
+    dynamicParameters: boolean;
     constructor(options: any);
 }
 export declare class QueryPart {

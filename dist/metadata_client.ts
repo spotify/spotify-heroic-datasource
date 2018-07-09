@@ -25,6 +25,7 @@ import { LruCache } from "./lru_cache";
 
 export class MetadataClient {
   public static templateUrl = "partials/query.editor.html";
+  public static DEBOUNCE_MS = 500; // milliseconds to wait between keystrokes before sending queries for metadata
 
   public queryModel: HeroicQuery;
   public lruTag: any;
@@ -43,7 +44,7 @@ export class MetadataClient {
     this.includeScopes = includeScopes;
   }
 
-  public getMeasurements(measurementFilter) {
+  public getMeasurements = _.debounce(((measurementFilter) => {
     const filter = {
       key: measurementFilter,
       filter: this.queryModel.buildCurrentFilter(this.includeVariables, this.includeScopes),
@@ -62,7 +63,7 @@ export class MetadataClient {
         this.keyLru.put(cacheKey, result);
         return result;
       });
-  }
+  }), MetadataClient.DEBOUNCE_MS, { leading: true });
 
   public handleQueryError(err) {
     this.error = err.message || "Failed to issue metric query";
@@ -118,7 +119,7 @@ export class MetadataClient {
 
   }
 
-  public getTagsOrValues(segment, index, query) {
+  public getTagsOrValues = _.debounce(((segment, index, query, includeRemove) => {
     if (segment.type === "condition") {
       return this.$q.when([this.uiSegmentSrv.newSegment("AND"), this.uiSegmentSrv.newSegment("OR")]);
     }
@@ -143,7 +144,7 @@ export class MetadataClient {
       return this.queryTagsAndValues(data, "key", this.lruTag)
         .then(this.transformToSegments(true, "key"))
         .then((results) => {
-          if (segment.type === "key") {
+          if (segment.type === "key" && includeRemove) {
             results.splice(0, 0, angular.copy(this.removeTagFilterSegment));
           }
           return results;
@@ -155,7 +156,7 @@ export class MetadataClient {
         .then(this.transformToSegments(true, "value"));
     }
 
-  }
+  }), MetadataClient.DEBOUNCE_MS, { leading: true });
 
   public getTagValueOperator(tagValue, tagOperator): string {
     if (tagOperator !== "=~" && tagOperator !== "!~" && /^\/.*\/$/.test(tagValue)) {

@@ -124,7 +124,7 @@ export class HeroicQueryCtrl extends QueryCtrl {
   public handleSelectPartEvent(selectParts, part, evt) {
     switch (evt.name) {
       case "get-param-options": {
-        // TODO for group-by aggregates, return tags transformToSegment
+        return this.metadataClient.getTagsOrValues({type: "key"}, 0, null, false);
       }
       case "part-param-changed": {
         this.panelCtrl.refresh();
@@ -144,7 +144,7 @@ export class HeroicQueryCtrl extends QueryCtrl {
   public handleGroupByPartEvent(part, index, evt) {
     switch (evt.name) {
       case "get-param-options": {
-        // TODO: implement to fill tags for group by aggregates
+        return this.metadataClient.getTagsOrValues({type: "key"}, 0, null, false);
       }
       case "part-param-changed": {
         this.panelCtrl.refresh();

@@ -27,6 +27,7 @@ export class QueryPartDef {
   category: any;
   addStrategy: any;
   categoryName: any;
+  dynamicParameters: boolean;
 
   constructor(options: any) {
     this.type = options.type;
@@ -36,6 +37,7 @@ export class QueryPartDef {
     this.category = options.category;
     this.addStrategy = options.addStrategy;
     this.categoryName = options.categoryName;
+    this.dynamicParameters = options.dynamicParameters;
   }
 }
 
@@ -125,4 +127,3 @@ export function functionRenderer(part, innerExpr) {
   }
   return str + parameters.join(', ') + ')';
 }
-
