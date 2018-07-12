@@ -58,6 +58,7 @@ System.register(['lodash'], function(exports_1) {
                     this.category = options.category;
                     this.addStrategy = options.addStrategy;
                     this.categoryName = options.categoryName;
+                    this.dynamicParameters = options.dynamicParameters;
                 }
                 return QueryPartDef;
             })();

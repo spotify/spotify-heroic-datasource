@@ -53,6 +53,7 @@ export function queryPartEditorLabeledDirective($compile, templateSrv) {
       const partDef = part.def;
       const $paramsContainer = elem.find('.query-part-parameters');
       const debounceLookup = $scope.debounce;
+      let currentParam = 0;
 
       $scope.partActions = [];
 
@@ -81,14 +82,20 @@ export function queryPartEditorLabeledDirective($compile, templateSrv) {
         const $input = $(this);
         const $link = $input.prev();
         const newValue = $input.val();
-
-        if (newValue !== '' || part.def.params[paramIndex].optional) {
+        let partDefParamIndex = paramIndex;
+        if (partDef.dynamicParameters) {
+          partDefParamIndex = 0;
+        }
+        if (newValue !== '' || part.def.params[partDefParamIndex].optional) {
           $link.html(templateSrv.highlightVariablesAsHtml(newValue));
 
           part.updateParam($input.val(), paramIndex);
           $scope.$apply(() => {
             $scope.handleEvent({ $event: { name: 'part-param-changed' } });
           });
+          if (partDef.dynamicParameters && paramIndex === currentParam - 1) {
+            addParams(partDef.params[0], currentParam);
+          }
         }
 
         $input.hide();
@@ -169,30 +176,43 @@ export function queryPartEditorLabeledDirective($compile, templateSrv) {
         $scope.handleEvent({ $event: { name: 'action', action: action } });
       };
 
+      function addParams(param, index) {
+        if (param.optional && part.params.length <= index) {
+          return;
+        }
+
+        if (index > 0) {
+          $('<span>, </span>').appendTo($paramsContainer);
+        }
+        let paramValue = templateSrv.highlightVariablesAsHtml(part.params[index]);
+        if (!paramValue) {
+          paramValue = "&nbsp&nbsp";
+        }
+        const $paramLink = $('<a class="graphite-func-param-link pointer">' + paramValue + '</a>');
+        const $input = $(paramTemplate);
+
+        $paramLink.appendTo($paramsContainer);
+        $input.appendTo($paramsContainer);
+
+        $input.blur(_.partial(inputBlur, index));
+        $input.keyup(inputKeyDown);
+        $input.keypress(_.partial(inputKeyPress, index));
+        $paramLink.click(_.partial(clickFuncParam, index));
+
+        addTypeahead($input, param, index);
+        currentParam += 1;
+      }
+
       function addElementsAndCompile() {
-        _.each(partDef.params, function(param, index) {
-          if (param.optional && part.params.length <= index) {
-            return;
-          }
+        if (partDef.dynamicParameters) {
+          _.each(part.params, ((param, index) => {
+            addParams(partDef.params[0], index)
+          }));
+          addParams(partDef.params[0], currentParam);
 
-          if (index > 0) {
-            $('<span>, </span>').appendTo($paramsContainer);
-          }
-
-          const paramValue = templateSrv.highlightVariablesAsHtml(part.params[index]);
-          const $paramLink = $('<a class="graphite-func-param-link pointer">' + paramValue + '</a>');
-          const $input = $(paramTemplate);
-
-          $paramLink.appendTo($paramsContainer);
-          $input.appendTo($paramsContainer);
-
-          $input.blur(_.partial(inputBlur, index));
-          $input.keyup(inputKeyDown);
-          $input.keypress(_.partial(inputKeyPress, index));
-          $paramLink.click(_.partial(clickFuncParam, index));
-
-          addTypeahead($input, param, index);
-        });
+        } else {
+          _.each(partDef.params, addParams);
+        }
       }
 
       function relink() {

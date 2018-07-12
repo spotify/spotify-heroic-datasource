@@ -10,7 +10,7 @@
 		</div>
 
 		<div class="gf-form" ng-repeat="segment in ctrl.tagSegments">
-			<metric-segment segment="segment" get-options="ctrl.metadataClient.getTagsOrValues(segment, $index, $query)" on-change="ctrl.tagSegmentUpdated(segment, $index)"></metric-segment>
+			<metric-segment segment="segment" get-options="ctrl.metadataClient.getTagsOrValues(segment, $index, $query, true)" on-change="ctrl.tagSegmentUpdated(segment, $index)"></metric-segment>
 		</div>
 
 		<div class="gf-form gf-form--grow">

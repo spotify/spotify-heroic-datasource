@@ -36,6 +36,7 @@ System.register(['lodash', 'jquery', 'angular'], function(exports_1) {
                 var partDef = part.def;
                 var $paramsContainer = elem.find('.query-part-parameters');
                 var debounceLookup = $scope.debounce;
+                var currentParam = 0;
                 $scope.partActions = [];
                 function clickFuncParam(paramIndex) {
                     /*jshint validthis:true */
@@ -58,12 +59,19 @@ System.register(['lodash', 'jquery', 'angular'], function(exports_1) {
                     var $input = jquery_1.default(this);
                     var $link = $input.prev();
                     var newValue = $input.val();
-                    if (newValue !== '' || part.def.params[paramIndex].optional) {
+                    var partDefParamIndex = paramIndex;
+                    if (partDef.dynamicParameters) {
+                        partDefParamIndex = 0;
+                    }
+                    if (newValue !== '' || part.def.params[partDefParamIndex].optional) {
                         $link.html(templateSrv.highlightVariablesAsHtml(newValue));
                         part.updateParam($input.val(), paramIndex);
                         $scope.$apply(function () {
                             $scope.handleEvent({ $event: { name: 'part-param-changed' } });
                         });
+                        if (partDef.dynamicParameters && paramIndex === currentParam - 1) {
+                            addParams(partDef.params[0], currentParam);
+                        }
                     }
                     $input.hide();
                     $link.show();
@@ -131,25 +139,38 @@ System.register(['lodash', 'jquery', 'angular'], function(exports_1) {
                 $scope.triggerPartAction = function (action) {
                     $scope.handleEvent({ $event: { name: 'action', action: action } });
                 };
+                function addParams(param, index) {
+                    if (param.optional && part.params.length <= index) {
+                        return;
+                    }
+                    if (index > 0) {
+                        jquery_1.default('<span>, </span>').appendTo($paramsContainer);
+                    }
+                    var paramValue = templateSrv.highlightVariablesAsHtml(part.params[index]);
+                    if (!paramValue) {
+                        paramValue = "&nbsp&nbsp";
+                    }
+                    var $paramLink = jquery_1.default('<a class="graphite-func-param-link pointer">' + paramValue + '</a>');
+                    var $input = jquery_1.default(paramTemplate);
+                    $paramLink.appendTo($paramsContainer);
+                    $input.appendTo($paramsContainer);
+                    $input.blur(lodash_1.default.partial(inputBlur, index));
+                    $input.keyup(inputKeyDown);
+                    $input.keypress(lodash_1.default.partial(inputKeyPress, index));
+                    $paramLink.click(lodash_1.default.partial(clickFuncParam, index));
+                    addTypeahead($input, param, index);
+                    currentParam += 1;
+                }
                 function addElementsAndCompile() {
-                    lodash_1.default.each(partDef.params, function (param, index) {
-                        if (param.optional && part.params.length <= index) {
-                            return;
-                        }
-                        if (index > 0) {
-                            jquery_1.default('<span>, </span>').appendTo($paramsContainer);
-                        }
-                        var paramValue = templateSrv.highlightVariablesAsHtml(part.params[index]);
-                        var $paramLink = jquery_1.default('<a class="graphite-func-param-link pointer">' + paramValue + '</a>');
-                        var $input = jquery_1.default(paramTemplate);
-                        $paramLink.appendTo($paramsContainer);
-                        $input.appendTo($paramsContainer);
-                        $input.blur(lodash_1.default.partial(inputBlur, index));
-                        $input.keyup(inputKeyDown);
-                        $input.keypress(lodash_1.default.partial(inputKeyPress, index));
-                        $paramLink.click(lodash_1.default.partial(clickFuncParam, index));
-                        addTypeahead($input, param, index);
-                    });
+                    if (partDef.dynamicParameters) {
+                        lodash_1.default.each(part.params, (function (param, index) {
+                            addParams(partDef.params[0], index);
+                        }));
+                        addParams(partDef.params[0], currentParam);
+                    }
+                    else {
+                        lodash_1.default.each(partDef.params, addParams);
+                    }
                 }
                 function relink() {
                     $paramsContainer.empty();

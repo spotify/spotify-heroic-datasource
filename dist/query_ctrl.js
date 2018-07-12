@@ -119,6 +119,7 @@ System.register(["app/plugins/sdk", "lodash", "./heroic_query", "./metadata_clie
                 HeroicQueryCtrl.prototype.handleSelectPartEvent = function (selectParts, part, evt) {
                     switch (evt.name) {
                         case "get-param-options": {
+                            return this.metadataClient.getTagsOrValues({ type: "key" }, 0, null, false);
                         }
                         case "part-param-changed": {
                             this.panelCtrl.refresh();
@@ -137,6 +138,7 @@ System.register(["app/plugins/sdk", "lodash", "./heroic_query", "./metadata_clie
                 HeroicQueryCtrl.prototype.handleGroupByPartEvent = function (part, index, evt) {
                     switch (evt.name) {
                         case "get-param-options": {
+                            return this.metadataClient.getTagsOrValues({ type: "key" }, 0, null, false);
                         }
                         case "part-param-changed": {
                             this.panelCtrl.refresh();
