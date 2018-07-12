@@ -23,10 +23,9 @@ Add the following to your `grafana.ini` to deploy to your local Grafana instance
 /{path-to-heroic-grafana-datasource}
 ```
 
+TODO: start versioning releases
 
-TODO: build first version
-
-`grafana-cli --pluginUrl https://github.com/spotify/heroic-grafana-datasource/archive/rel-0.1.0.zip plugins install heroic-grafana-datasource`
+`grafana-cli --pluginUrl https://github.com/spotify/heroic-grafana-datasource/archive/master.zip plugins install heroic-grafana-datasource`
 
 # Code of Conduct
 
