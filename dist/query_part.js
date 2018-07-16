@@ -52,9 +52,9 @@ System.register(["./query_part_base/query_part"], function(exports_1) {
     function buildAggregateRenderer(ctype, of) {
         function aggregateRenderer(part, innerExpr) {
             var tagGroup = of;
-            if (part.params) {
+            if (part.params.length) {
                 tagGroup = part.params;
-            }
+            } // otherwise, use the default `of` passed in to buildAggregateRenderer
             var aggregation = {
                 type: "group",
                 of: tagGroup,
