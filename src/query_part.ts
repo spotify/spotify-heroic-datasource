@@ -88,10 +88,12 @@ function replaceAggregationAddStrategy(selectParts, partModel) {
 
 function buildAggregateRenderer(ctype, of) {
   function aggregateRenderer(part, innerExpr) {
+
     let tagGroup = of;
-    if (part.params) {
+    if (part.params.length) { // if the part def has any params, use those
       tagGroup = part.params;
-    }
+    } // otherwise, use the default `of` passed in to buildAggregateRenderer
+
     const aggregation = {
       type: "group",
       of: tagGroup,
