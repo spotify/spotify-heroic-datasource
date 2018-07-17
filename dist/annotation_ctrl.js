@@ -23,12 +23,6 @@ System.register(["lodash", "./heroic_query", "./metadata_client", "./query_part"
                     this.uiSegmentSrv = uiSegmentSrv;
                     this.tagSegments = [];
                     this.queryModel = new heroic_query_1.default(this.annotation, templateSrv, null);
-                    if (!this.annotation.measurement) {
-                        this.measurementSegment = uiSegmentSrv.newSelectMeasurement();
-                    }
-                    else {
-                        this.measurementSegment = uiSegmentSrv.newSegment(this.annotation.measurement);
-                    }
                     if (!this.annotation.tags) {
                         this.annotation.tags = [];
                     }
@@ -76,10 +70,6 @@ System.register(["lodash", "./heroic_query", "./metadata_client", "./query_part"
                     if (!lastSegment || lastSegment.type !== "plus-button") {
                         this.tagSegments.push(this.uiSegmentSrv.newPlusButton());
                     }
-                };
-                HeroicAnnotationsQueryCtrl.prototype.measurementChanged = function (query) {
-                    this.annotation.measurement = this.measurementSegment.value;
-                    this.rebuildTargetTagConditions();
                 };
                 HeroicAnnotationsQueryCtrl.prototype.tagSegmentUpdated = function (segment, index) {
                     this.tagSegments[index] = segment;

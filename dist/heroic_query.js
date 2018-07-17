@@ -140,9 +140,10 @@ System.register(["app/core/utils/kbn", "lodash", "./query_part"], function(expor
                 };
                 HeroicQuery.prototype.buildCurrentFilter = function (includeVariables, includeScopedFilter) {
                     var base;
-                    var filteredTags = this.target.tags.filter(function (tag) { return tag.value !== "select tag value"; });
-                    if (this.target.measurement) {
-                        base = ["and", ["key", this.target.measurement]];
+                    var keyTag = lodash_1.default.find(this.target.tags, function (tag) { return tag.key === "$key" && tag.value !== "select tag value"; });
+                    var filteredTags = this.target.tags.filter(function (tag) { return tag.value !== "select tag value" && tag.key !== "$key"; });
+                    if (keyTag) {
+                        base = ["and", ["key", keyTag.value]];
                     }
                     else if (filteredTags.length) {
                         base = ["and"];

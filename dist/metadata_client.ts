@@ -141,6 +141,7 @@ export class MetadataClient {
     };
     if (segment.type === "key" || segment.type === "plus-button") {
       data.key = query;
+
       return this.queryTagsAndValues(data, "key", this.lruTag)
         .then(this.transformToSegments(true, "key"))
         .then((results) => {
@@ -150,7 +151,10 @@ export class MetadataClient {
           return results;
         });
     } else if (segment.type === "value") {
-      data.key = this.tagSegments[index - 2].value;
+      const key = this.tagSegments[index - 2].value;
+      if (key === "$key") return this.getMeasurements(query);
+
+      data.key = key
       data["value"] = query;
       return this.queryTagsAndValues(data, "value", this.lruTagValue)
         .then(this.transformToSegments(true, "value"));

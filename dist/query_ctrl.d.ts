@@ -14,7 +14,6 @@ export declare class HeroicQueryCtrl extends QueryCtrl {
     tagSegments: any[];
     selectMenu: any;
     target: any;
-    measurementSegment: any;
     removeTagFilterSegment: any;
     metadataClient: MetadataClient;
     /** @ngInject **/
@@ -26,7 +25,6 @@ export declare class HeroicQueryCtrl extends QueryCtrl {
     handleSelectPartEvent(selectParts: any, part: any, evt: any): any;
     handleGroupByPartEvent(part: any, index: any, evt: any): any;
     fixTagSegments(): void;
-    measurementChanged(): void;
     toggleEditorMode(): void;
     tagSegmentUpdated(segment: any, index: any): void;
     rebuildTargetTagConditions(): void;
