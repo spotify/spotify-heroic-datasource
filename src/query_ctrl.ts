@@ -35,7 +35,6 @@ export class HeroicQueryCtrl extends QueryCtrl {
   public tagSegments: any[];
   public selectMenu: any;
   public target: any;
-  public measurementSegment: any;
   public removeTagFilterSegment: any;
 
 
@@ -49,11 +48,6 @@ export class HeroicQueryCtrl extends QueryCtrl {
     this.groupBySegment = this.uiSegmentSrv.newPlusButton();
     this.resultFormats = [{ text: "Time series", value: "time_series" }, { text: "Table", value: "table" }];
     this.tagSegments = [];
-    if (!this.target.measurement) {
-      this.measurementSegment = uiSegmentSrv.newSelectMeasurement();
-    } else {
-      this.measurementSegment = uiSegmentSrv.newSegment(this.target.measurement);
-    }
 
     for (const tag of this.target.tags) {
       if (!tag.operator) {
@@ -168,11 +162,6 @@ export class HeroicQueryCtrl extends QueryCtrl {
     if (!lastSegment || lastSegment.type !== "plus-button") {
       this.tagSegments.push(this.uiSegmentSrv.newPlusButton());
     }
-  }
-
-  public measurementChanged() {
-    this.target.measurement = this.measurementSegment.value;
-    this.panelCtrl.refresh();
   }
 
   public toggleEditorMode() {

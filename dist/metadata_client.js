@@ -100,7 +100,10 @@ System.register(["angular", "lodash", "./heroic_query", "./lru_cache"], function
                             });
                         }
                         else if (segment.type === "value") {
-                            data.key = _this.tagSegments[index - 2].value;
+                            var key = _this.tagSegments[index - 2].value;
+                            if (key === "$key")
+                                return _this.getMeasurements(query);
+                            data.key = key;
                             data["value"] = query;
                             return _this.queryTagsAndValues(data, "value", _this.lruTagValue)
                                 .then(_this.transformToSegments(true, "value"));

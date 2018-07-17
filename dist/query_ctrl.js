@@ -55,12 +55,6 @@ System.register(["app/plugins/sdk", "lodash", "./heroic_query", "./metadata_clie
                     this.groupBySegment = this.uiSegmentSrv.newPlusButton();
                     this.resultFormats = [{ text: "Time series", value: "time_series" }, { text: "Table", value: "table" }];
                     this.tagSegments = [];
-                    if (!this.target.measurement) {
-                        this.measurementSegment = uiSegmentSrv.newSelectMeasurement();
-                    }
-                    else {
-                        this.measurementSegment = uiSegmentSrv.newSegment(this.target.measurement);
-                    }
                     for (var _i = 0, _a = this.target.tags; _i < _a.length; _i++) {
                         var tag = _a[_i];
                         if (!tag.operator) {
@@ -160,10 +154,6 @@ System.register(["app/plugins/sdk", "lodash", "./heroic_query", "./metadata_clie
                     if (!lastSegment || lastSegment.type !== "plus-button") {
                         this.tagSegments.push(this.uiSegmentSrv.newPlusButton());
                     }
-                };
-                HeroicQueryCtrl.prototype.measurementChanged = function () {
-                    this.target.measurement = this.measurementSegment.value;
-                    this.panelCtrl.refresh();
                 };
                 HeroicQueryCtrl.prototype.toggleEditorMode = function () {
                     // TODO: do not render template variables when toggling to manual editor

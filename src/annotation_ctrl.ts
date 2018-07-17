@@ -31,7 +31,6 @@ export class HeroicAnnotationsQueryCtrl {
   public annotation: any;
 
   public removeTagFilterSegment: any;
-  public measurementSegment: any;
   public selectMenu: any;
   public queryModel: any;
   public metadataClient: MetadataClient;
@@ -40,11 +39,6 @@ export class HeroicAnnotationsQueryCtrl {
     this.tagSegments = [];
     this.queryModel = new HeroicQuery(this.annotation, templateSrv, null);
 
-    if (!this.annotation.measurement) {
-      this.measurementSegment = uiSegmentSrv.newSelectMeasurement();
-    } else {
-      this.measurementSegment = uiSegmentSrv.newSegment(this.annotation.measurement);
-    }
     if (!this.annotation.tags) {
       this.annotation.tags = [];
     }
@@ -101,12 +95,6 @@ export class HeroicAnnotationsQueryCtrl {
     if (!lastSegment || lastSegment.type !== "plus-button") {
       this.tagSegments.push(this.uiSegmentSrv.newPlusButton());
     }
-  }
-  public measurementChanged(query) {
-
-    this.annotation.measurement = this.measurementSegment.value;
-    this.rebuildTargetTagConditions();
-
   }
 
   public tagSegmentUpdated(segment, index) {

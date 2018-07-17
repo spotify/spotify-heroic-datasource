@@ -148,9 +148,10 @@ export default class HeroicQuery {
 
   public buildCurrentFilter(includeVariables, includeScopedFilter) {
     let base;
-    const filteredTags = this.target.tags.filter((tag) => tag.value !== "select tag value");
-    if (this.target.measurement) {
-      base = ["and", ["key", this.target.measurement]];
+    const keyTag = _.find(this.target.tags, tag => tag.key === "$key" && tag.value !== "select tag value");
+    const filteredTags = this.target.tags.filter(tag => tag.value !== "select tag value" && tag.key !== "$key");
+    if (keyTag) {
+      base = ["and", ["key", keyTag.value]];
     } else if (filteredTags.length) {
       base = ["and"];
     } else {
