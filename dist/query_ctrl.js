@@ -227,6 +227,7 @@ System.register(["app/plugins/sdk", "lodash", "./heroic_query", "./metadata_clie
                         }
                     });
                     this.target.tags = tags;
+                    this.target.query = JSON.stringify(this.queryModel.render());
                     this.panelCtrl.refresh();
                 };
                 HeroicQueryCtrl.templateUrl = "partials/query.editor.html";

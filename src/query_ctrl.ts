@@ -236,6 +236,8 @@ export class HeroicQueryCtrl extends QueryCtrl {
     });
 
     this.target.tags = tags;
+    this.target.query = JSON.stringify(this.queryModel.render());
+
     this.panelCtrl.refresh();
   }
 
