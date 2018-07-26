@@ -44,11 +44,7 @@ export class HeroicAnnotationsQueryCtrl {
     }
     for (const tag of this.annotation.tags) {
       if (!tag.operator) {
-        if (/^\/.*\/$/.test(tag.value)) {
-          tag.operator = "=~";
-        } else {
-          tag.operator = "=";
-        }
+        tag.operator = "=";
       }
 
       if (tag.condition) {

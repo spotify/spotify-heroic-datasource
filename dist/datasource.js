@@ -17,8 +17,8 @@
 * limitations under the License.
 * -/-/-
 */
-System.register(["lodash", "app/core/utils/datemath", "./heroic_query", "./heroic_series", "./query_part", "./time_range"], function(exports_1) {
-    var lodash_1, dateMath, heroic_query_1, heroic_series_1, query_part_1, time_range_1;
+System.register(["lodash", "app/core/utils/datemath", "./heroic_query", "./heroic_series", "./query_part", "./time_range", "./metadata_client"], function(exports_1) {
+    var lodash_1, dateMath, heroic_query_1, heroic_series_1, query_part_1, time_range_1, metadata_client_1;
     var HeroicDatasource;
     return {
         setters:[
@@ -39,6 +39,9 @@ System.register(["lodash", "app/core/utils/datemath", "./heroic_query", "./heroi
             },
             function (time_range_1_1) {
                 time_range_1 = time_range_1_1;
+            },
+            function (metadata_client_1_1) {
+                metadata_client_1 = metadata_client_1_1;
             }],
         execute: function() {
             HeroicDatasource = (function () {
@@ -65,6 +68,7 @@ System.register(["lodash", "app/core/utils/datemath", "./heroic_query", "./heroi
                     this.annotationModels = lodash_1.default.map(this.annotationModels, function (parts) {
                         return lodash_1.default.map(parts, query_part_1.default.create);
                     });
+                    this.queryBuilder = new metadata_client_1.MetadataClient(this, null, this.templateSrv, this.$q, {}, {}, null, {}, true, true);
                 }
                 HeroicDatasource.prototype.query = function (options) {
                     var _this = this;
@@ -87,6 +91,10 @@ System.register(["lodash", "app/core/utils/datemath", "./heroic_query", "./heroi
                     }
                     allQueries.forEach(function (query) {
                         query.range = timeFilter;
+                        var adhocFilters = _this.templateSrv.getAdhocFilters(_this.name);
+                        if (adhocFilters.length > 0) {
+                            query.filter.push(queryModel.renderAdhocFilters(adhocFilters));
+                        }
                     });
                     // TODO: add globaal ad hoc filters
                     // add global adhoc filters to timeFilter
@@ -235,6 +243,68 @@ System.register(["lodash", "app/core/utils/datemath", "./heroic_query", "./heroi
                         date = dateMath.parse(date, roundUp);
                     }
                     return date.valueOf() + "ms";
+                };
+                HeroicDatasource.prototype.getTagKeys = function () {
+                    var data = {
+                        filter: ["true"],
+                        limit: 100,
+                        key: null
+                    };
+                    return this.queryBuilder.queryTagsAndValues(data, "key", this.queryBuilder.lruTag).then(function (result) {
+                        return result.map(function (iresult) {
+                            return { value: iresult.key, text: iresult.key };
+                        });
+                    });
+                };
+                HeroicDatasource.prototype.getTagValues = function (options) {
+                    var data = {
+                        filter: ["true"],
+                        limit: 100,
+                        key: options.key
+                    };
+                    return this.queryBuilder.queryTagsAndValues(data, "value", this.queryBuilder.lruTagValue).then(function (result) {
+                        return result.map(function (iresult) {
+                            return { value: iresult.value, text: iresult.value };
+                        });
+                    });
+                };
+                HeroicDatasource.prototype.metricFindQuery = function (query, variableOptions) {
+                    // TODO: improve this. supposedly a new version of Grafana is going to consolidate query builders
+                    if (!(query.startsWith("tag:") || query.startsWith("tagValue:"))) {
+                        return [
+                            "ERROR"
+                        ];
+                    }
+                    var variableSrv = variableOptions.variable.templateSrv;
+                    var splitquery = query.split(":");
+                    var action = splitquery[0];
+                    var toGet;
+                    var cacheKey;
+                    var lookupKey;
+                    var rawRealQuery;
+                    if (action === "tag") {
+                        toGet = "key";
+                        cacheKey = "lruTag";
+                        rawRealQuery = splitquery[1];
+                    }
+                    else {
+                        toGet = "value";
+                        cacheKey = "lruTagValue";
+                        lookupKey = splitquery[1];
+                        rawRealQuery = splitquery[2];
+                    }
+                    var cache = this.queryBuilder["lru"];
+                    var realQuery = variableSrv.replace(rawRealQuery, variableSrv.variables);
+                    var data = {
+                        filter: ["and", ["q", realQuery]],
+                        limit: 500,
+                        key: lookupKey
+                    };
+                    return this.queryBuilder.queryTagsAndValues(data, toGet, this.queryBuilder[cacheKey]).then(function (result) {
+                        return result.map(function (iresult) {
+                            return { value: iresult[toGet], text: iresult[toGet] };
+                        });
+                    });
                 };
                 return HeroicDatasource;
             })();

@@ -135,21 +135,19 @@ export default class HeroicQuery {
     return this.templateSrv.replace(measurement, this.scopedVars, "regex");
   }
 
-  public getScopedFilter() {
-    const scopedFilter = [];
-    _.forEach(this.scopedVars, (values, key) => {
-      if (key === "interval" || key === "__interval" || key === "__interval_ms") {
-        return;
-      }
-      scopedFilter.push(["=", key, values.value]);
-    });
-    return scopedFilter;
+  public renderSubFilter(tag) {
+    switch (tag.operator) {
+      case ("="):
+        return [tag.operator, tag.key, tag.value];
+      default:
+        return ["q", `${tag.key} ${tag.operator} ${tag.value}`];
+    }
   }
 
-  public buildCurrentFilter(includeVariables, includeScopedFilter) {
+  public buildFilter(filterChoices, includeVariables, includeScopedFilter) {
     let base;
-    const keyTag = _.find(this.target.tags, tag => tag.key === "$key" && tag.value !== "select tag value");
-    const filteredTags = this.target.tags.filter(tag => tag.value !== "select tag value" && tag.key !== "$key");
+    const keyTag = _.find(filterChoices, tag => tag.key === "$key" && tag.value !== "select tag value");
+    const filteredTags = filterChoices.filter(tag => tag.value !== "select tag value" && tag.key !== "$key");
     if (keyTag) {
       base = ["and", ["key", keyTag.value]];
     } else if (filteredTags.length) {
@@ -158,16 +156,15 @@ export default class HeroicQuery {
       return ["true"];
     }
     const filter = base.concat(filteredTags
-      .map((tag) => {
-        return [tag.operator, tag.key, tag.value];
-      }));
-    if (includeScopedFilter) {
-      filter.push.apply(filter, this.getScopedFilter());
-    }
+      .map(this.renderSubFilter));
+
     if (includeVariables) {
       return JSON.parse(this.templateSrv.replace(JSON.stringify(filter), this.scopedVars));
     }
     return filter;
+  }
+  public buildCurrentFilter(includeVariables, includeScopedFilter) {
+    return this.buildFilter(this.target.tags, includeVariables, includeScopedFilter);
   }
 
   public render() {
@@ -196,7 +193,7 @@ export default class HeroicQuery {
         return renderOption;
       });
     });
-    // query += '$timeFilter';
+
     return {
       filter: currentFilter,
       aggregators: aggregators[0],
@@ -204,13 +201,10 @@ export default class HeroicQuery {
       range: "$timeFilter",
     };
 
-    // if (groupBySection.length) {
-    //   query += ' GROUP BY ' + groupBySection;
-    // } // TODO: group by, aggregators
 
   }
 
   public renderAdhocFilters(filters) {
-    // TODO local adhoc filters
+    return this.buildFilter(filters, false, false);
   }
 }

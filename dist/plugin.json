@@ -28,7 +28,7 @@
       }
     ],
     "version": "0.0.1",
-    "updated": "2018-07-17"
+    "updated": "2018-07-26"
   },
 
   "dependencies": {
@@ -37,5 +37,6 @@
   },
 
   "metrics": true,
-  "annotations": true
+  "annotations": true,
+  "alerting": true
 }

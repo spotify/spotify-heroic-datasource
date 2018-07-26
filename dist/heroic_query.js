@@ -128,20 +128,18 @@ System.register(["app/core/utils/kbn", "lodash", "./query_part"], function(expor
                     var measurement = this.target.measurement || "measurement";
                     return this.templateSrv.replace(measurement, this.scopedVars, "regex");
                 };
-                HeroicQuery.prototype.getScopedFilter = function () {
-                    var scopedFilter = [];
-                    lodash_1.default.forEach(this.scopedVars, function (values, key) {
-                        if (key === "interval" || key === "__interval" || key === "__interval_ms") {
-                            return;
-                        }
-                        scopedFilter.push(["=", key, values.value]);
-                    });
-                    return scopedFilter;
+                HeroicQuery.prototype.renderSubFilter = function (tag) {
+                    switch (tag.operator) {
+                        case ("="):
+                            return [tag.operator, tag.key, tag.value];
+                        default:
+                            return ["q", (tag.key + " " + tag.operator + " " + tag.value)];
+                    }
                 };
-                HeroicQuery.prototype.buildCurrentFilter = function (includeVariables, includeScopedFilter) {
+                HeroicQuery.prototype.buildFilter = function (filterChoices, includeVariables, includeScopedFilter) {
                     var base;
-                    var keyTag = lodash_1.default.find(this.target.tags, function (tag) { return tag.key === "$key" && tag.value !== "select tag value"; });
-                    var filteredTags = this.target.tags.filter(function (tag) { return tag.value !== "select tag value" && tag.key !== "$key"; });
+                    var keyTag = lodash_1.default.find(filterChoices, function (tag) { return tag.key === "$key" && tag.value !== "select tag value"; });
+                    var filteredTags = filterChoices.filter(function (tag) { return tag.value !== "select tag value" && tag.key !== "$key"; });
                     if (keyTag) {
                         base = ["and", ["key", keyTag.value]];
                     }
@@ -152,16 +150,14 @@ System.register(["app/core/utils/kbn", "lodash", "./query_part"], function(expor
                         return ["true"];
                     }
                     var filter = base.concat(filteredTags
-                        .map(function (tag) {
-                        return [tag.operator, tag.key, tag.value];
-                    }));
-                    if (includeScopedFilter) {
-                        filter.push.apply(filter, this.getScopedFilter());
-                    }
+                        .map(this.renderSubFilter));
                     if (includeVariables) {
                         return JSON.parse(this.templateSrv.replace(JSON.stringify(filter), this.scopedVars));
                     }
                     return filter;
+                };
+                HeroicQuery.prototype.buildCurrentFilter = function (includeVariables, includeScopedFilter) {
+                    return this.buildFilter(this.target.tags, includeVariables, includeScopedFilter);
                 };
                 HeroicQuery.prototype.render = function () {
                     var target = this.target;
@@ -185,19 +181,15 @@ System.register(["app/core/utils/kbn", "lodash", "./query_part"], function(expor
                             return renderOption;
                         });
                     });
-                    // query += '$timeFilter';
                     return {
                         filter: currentFilter,
                         aggregators: aggregators[0],
                         features: ["com.spotify.heroic.distributed_aggregations"],
                         range: "$timeFilter",
                     };
-                    // if (groupBySection.length) {
-                    //   query += ' GROUP BY ' + groupBySection;
-                    // } // TODO: group by, aggregators
                 };
                 HeroicQuery.prototype.renderAdhocFilters = function (filters) {
-                    // TODO local adhoc filters
+                    return this.buildFilter(filters, false, false);
                 };
                 return HeroicQuery;
             })();

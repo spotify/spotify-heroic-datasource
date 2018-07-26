@@ -58,12 +58,7 @@ System.register(["app/plugins/sdk", "lodash", "./heroic_query", "./metadata_clie
                     for (var _i = 0, _a = this.target.tags; _i < _a.length; _i++) {
                         var tag = _a[_i];
                         if (!tag.operator) {
-                            if (/^\/.*\/$/.test(tag.value)) {
-                                tag.operator = "=~";
-                            }
-                            else {
-                                tag.operator = "=";
-                            }
+                            tag.operator = "=";
                         }
                         if (tag.condition) {
                             this.tagSegments.push(uiSegmentSrv.newCondition(tag.condition));

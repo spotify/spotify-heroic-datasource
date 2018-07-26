@@ -25,6 +25,8 @@ import HeroicQuery from "./heroic_query";
 import HeroicSeries from "./heroic_series";
 import queryPart from "./query_part";
 import TimeRange from "./time_range";
+import { MetadataClient } from "./metadata_client";
+
 
 export default class HeroicDatasource {
   public type: string;
@@ -41,6 +43,7 @@ export default class HeroicDatasource {
   public supportMetrics: boolean;
   public templateSrv: any;
   public annotationModels: any;
+  public queryBuilder: any;
 
   /** @ngInject */
   constructor(instanceSettings, private $q, private backendSrv, templateSrv) {
@@ -64,6 +67,8 @@ export default class HeroicDatasource {
     this.annotationModels = _.map(this.annotationModels, function(parts: any) {
       return _.map(parts, queryPart.create);
     });
+    this.queryBuilder = new MetadataClient(this, null, this.templateSrv, this.$q, {}, {}, null, {}, true, true);
+
 
   }
   public query(options) {
@@ -89,6 +94,10 @@ export default class HeroicDatasource {
     }
     allQueries.forEach((query) => {
       query.range = timeFilter;
+      const adhocFilters = this.templateSrv.getAdhocFilters(this.name);
+      if (adhocFilters.length > 0) {
+        query.filter.push(queryModel.renderAdhocFilters(adhocFilters));
+      }
     });
 
     // TODO: add globaal ad hoc filters
@@ -258,6 +267,70 @@ export default class HeroicDatasource {
     }
 
     return date.valueOf() + "ms";
+  }
+
+  getTagKeys() {
+    const data = {
+      filter: ["true"],
+      limit: 100,
+      key: null
+    };
+    return this.queryBuilder.queryTagsAndValues(data, "key", this.queryBuilder.lruTag).then(result => {
+      return result.map(iresult => {
+        return {value: iresult.key, text: iresult.key};
+      });
+    });
+  }
+
+  getTagValues(options) {
+    const data = {
+      filter: ["true"],
+      limit: 100,
+      key: options.key
+    };
+    return this.queryBuilder.queryTagsAndValues(data, "value", this.queryBuilder.lruTagValue).then(result => {
+      return result.map(iresult => {
+        return {value: iresult.value, text: iresult.value};
+      });
+    });
+  }
+
+  metricFindQuery(query, variableOptions) {
+    // TODO: improve this. supposedly a new version of Grafana is going to consolidate query builders
+    if (!(query.startsWith("tag:") || query.startsWith("tagValue:"))) {
+      return [
+        "ERROR"
+      ];
+    }
+    const variableSrv = variableOptions.variable.templateSrv;
+    const splitquery = query.split(":");
+    const action = splitquery[0];
+    let toGet;
+    let cacheKey;
+    let lookupKey;
+    let rawRealQuery;
+    if (action === "tag") {
+      toGet = "key";
+      cacheKey = "lruTag";
+      rawRealQuery = splitquery[1];
+    } else {
+      toGet = "value";
+      cacheKey = "lruTagValue";
+      lookupKey = splitquery[1];
+      rawRealQuery = splitquery[2];
+    }
+    const cache = this.queryBuilder[`lru`]
+    const realQuery = variableSrv.replace(rawRealQuery, variableSrv.variables);
+    const data = {
+      filter: ["and", ["q", realQuery]],
+      limit: 500,
+      key: lookupKey
+    };
+    return this.queryBuilder.queryTagsAndValues(data, toGet, this.queryBuilder[cacheKey]).then(result => {
+      return result.map(iresult => {
+        return {value: iresult[toGet], text: iresult[toGet]};
+      });
+    });
   }
 
 }

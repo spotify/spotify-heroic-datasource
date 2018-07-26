@@ -16,6 +16,7 @@ export default class HeroicDatasource {
     supportMetrics: boolean;
     templateSrv: any;
     annotationModels: any;
+    queryBuilder: any;
     /** @ngInject */
     constructor(instanceSettings: any, $q: any, backendSrv: any, templateSrv: any);
     query(options: any): any;
@@ -26,4 +27,7 @@ export default class HeroicDatasource {
     parseRelativeUnit(unit: any): string;
     getTimeFilter(options: any): TimeRange;
     convertRawTime(date: any, roundUp: any): string;
+    getTagKeys(): any;
+    getTagValues(options: any): any;
+    metricFindQuery(query: any, variableOptions: any): any;
 }

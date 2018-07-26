@@ -75,14 +75,13 @@ System.register(["angular", "lodash", "./heroic_query", "./lru_cache"], function
                         }
                         if (segment.type === "operator") {
                             var nextValue = _this.tagSegments[index + 1].value;
-                            if (/^\/.*\/$/.test(nextValue)) {
-                                return _this.$q.when(_this.uiSegmentSrv.newOperators(["=~", "!~"]));
-                            }
-                            else {
-                                return _this.$q.when(_this.uiSegmentSrv.newOperators(["=", "!=", "<>", "<", ">"]));
-                            }
+                            return _this.$q.when(_this.uiSegmentSrv.newOperators(["=", "!=", "^", "!^"]));
                         }
-                        var filter = _this.queryModel.buildCurrentFilter(_this.includeVariables, _this.includeScopes); // do not include scoped variables
+                        var tagsCopy = _this.queryModel.target.tags.slice();
+                        if (segment.type === "value") {
+                            tagsCopy = tagsCopy.splice(0, tagsCopy.length - 1);
+                        }
+                        var filter = _this.queryModel.buildFilter(tagsCopy, _this.includeVariables, _this.includeScopes); // do not include scoped variables
                         var data = {
                             filter: filter,
                             limit: 25,

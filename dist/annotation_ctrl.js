@@ -29,12 +29,7 @@ System.register(["lodash", "./heroic_query", "./metadata_client", "./query_part"
                     for (var _i = 0, _a = this.annotation.tags; _i < _a.length; _i++) {
                         var tag = _a[_i];
                         if (!tag.operator) {
-                            if (/^\/.*\/$/.test(tag.value)) {
-                                tag.operator = "=~";
-                            }
-                            else {
-                                tag.operator = "=";
-                            }
+                            tag.operator = "=";
                         }
                         if (tag.condition) {
                             this.tagSegments.push(uiSegmentSrv.newCondition(tag.condition));

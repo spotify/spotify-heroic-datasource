@@ -51,11 +51,7 @@ export class HeroicQueryCtrl extends QueryCtrl {
 
     for (const tag of this.target.tags) {
       if (!tag.operator) {
-        if (/^\/.*\/$/.test(tag.value)) {
-          tag.operator = "=~";
-        } else {
-          tag.operator = "=";
-        }
+        tag.operator = "=";
       }
 
       if (tag.condition) {
