@@ -280,21 +280,25 @@ System.register(["lodash", "app/core/utils/datemath", "./heroic_query", "./heroi
                     var action = splitquery[0];
                     var toGet;
                     var cacheKey;
+                    var lookupKey;
+                    var rawRealQuery;
                     if (action === "tag") {
                         toGet = "key";
                         cacheKey = "lruTag";
+                        rawRealQuery = splitquery[1];
                     }
                     else {
                         toGet = "value";
                         cacheKey = "lruTagValue";
+                        lookupKey = splitquery[1];
+                        rawRealQuery = splitquery[2];
                     }
                     var cache = this.queryBuilder["lru"];
-                    var realQuery = variableSrv.replace(splitquery[1], variableSrv.variables);
-                    ;
+                    var realQuery = variableSrv.replace(rawRealQuery, variableSrv.variables);
                     var data = {
                         filter: ["and", ["q", realQuery]],
                         limit: 500,
-                        key: realQuery.key
+                        key: lookupKey
                     };
                     return this.queryBuilder.queryTagsAndValues(data, toGet, this.queryBuilder[cacheKey]).then(function (result) {
                         return result.map(function (iresult) {

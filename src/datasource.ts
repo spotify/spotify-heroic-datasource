@@ -307,19 +307,24 @@ export default class HeroicDatasource {
     const action = splitquery[0];
     let toGet;
     let cacheKey;
+    let lookupKey;
+    let rawRealQuery;
     if (action === "tag") {
       toGet = "key";
       cacheKey = "lruTag";
+      rawRealQuery = splitquery[1];
     } else {
       toGet = "value";
       cacheKey = "lruTagValue";
+      lookupKey = splitquery[1];
+      rawRealQuery = splitquery[2];
     }
     const cache = this.queryBuilder[`lru`]
-    const realQuery = variableSrv.replace(splitquery[1], variableSrv.variables);;
+    const realQuery = variableSrv.replace(rawRealQuery, variableSrv.variables);
     const data = {
       filter: ["and", ["q", realQuery]],
       limit: 500,
-      key: realQuery.key
+      key: lookupKey
     };
     return this.queryBuilder.queryTagsAndValues(data, toGet, this.queryBuilder[cacheKey]).then(result => {
       return result.map(iresult => {
