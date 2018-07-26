@@ -125,14 +125,13 @@ export class MetadataClient {
     }
     if (segment.type === "operator") {
       const nextValue = this.tagSegments[index + 1].value;
-      if (/^\/.*\/$/.test(nextValue)) {
-        return this.$q.when(this.uiSegmentSrv.newOperators(["=~", "!~"]));
-      } else {
-        return this.$q.when(this.uiSegmentSrv.newOperators(["=", "!=", "<>", "<", ">"]));
-      }
+      return this.$q.when(this.uiSegmentSrv.newOperators(["=", "!=", "^", "!^"]))
     }
-
-    const filter = this.queryModel.buildCurrentFilter(this.includeVariables, this.includeScopes); // do not include scoped variables
+    let tagsCopy = [... this.queryModel.target.tags];
+    if (segment.type === "value") {
+      tagsCopy = tagsCopy.splice(0, tagsCopy.length - 1);
+    }
+    const filter = this.queryModel.buildFilter(tagsCopy, this.includeVariables, this.includeScopes); // do not include scoped variables
 
     const data = {
       filter: filter,

@@ -14,7 +14,8 @@ export default class HeroicQuery {
     removeSelectPart(selectParts: any, part: any): void;
     addSelectPart(selectParts: any, categoryName: any, type: any): void;
     getKey(): any;
-    getScopedFilter(): any[];
+    renderSubFilter(tag: any): any[];
+    buildFilter(filterChoices: any, includeVariables: any, includeScopedFilter: any): any;
     buildCurrentFilter(includeVariables: any, includeScopedFilter: any): any;
     render(): {
         filter: any;
@@ -22,5 +23,5 @@ export default class HeroicQuery {
         features: string[];
         range: string;
     };
-    renderAdhocFilters(filters: any): void;
+    renderAdhocFilters(filters: any): any;
 }
