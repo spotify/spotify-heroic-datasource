@@ -23,9 +23,11 @@ export declare class HeroicQueryCtrl extends QueryCtrl {
     groupByAction(): void;
     addSelectPart(selectParts: any, cat: any, subitem: any): void;
     handleSelectPartEvent(selectParts: any, part: any, evt: any): any;
+    refresh(): void;
     handleGroupByPartEvent(part: any, index: any, evt: any): any;
     fixTagSegments(): void;
     toggleEditorMode(): void;
     tagSegmentUpdated(segment: any, index: any): void;
+    getCollapsedText(): any;
     rebuildTargetTagConditions(): void;
 }
