@@ -103,12 +103,12 @@ export class HeroicQueryCtrl extends QueryCtrl {
     const plusButton = this.uiSegmentSrv.newPlusButton();
     this.groupBySegment.value = plusButton.value;
     this.groupBySegment.html = plusButton.html;
-    this.panelCtrl.refresh();
+    this.refresh();
   }
 
   public addSelectPart(selectParts, cat, subitem) {
     this.queryModel.addSelectPart(selectParts, cat.text, subitem.value);
-    this.panelCtrl.refresh();
+    this.refresh();
   }
 
   public handleSelectPartEvent(selectParts, part, evt) {
@@ -117,18 +117,22 @@ export class HeroicQueryCtrl extends QueryCtrl {
         return this.metadataClient.getTagsOrValues({type: "key"}, 0, null, false);
       }
       case "part-param-changed": {
-        this.panelCtrl.refresh();
+        this.refresh();
         break;
       }
       case "action": {
         this.queryModel.removeSelectPart(selectParts, part);
-        this.panelCtrl.refresh();
+        this.refresh();
         break;
       }
       case "get-part-actions": {
         return this.$q.when([{ text: "Remove", value: "remove-part" }]);
       }
     }
+  }
+  public refresh() {
+    this.target.query = JSON.stringify(this.queryModel.render());
+    this.panelCtrl.refresh();
   }
 
   public handleGroupByPartEvent(part, index, evt) {
@@ -137,12 +141,12 @@ export class HeroicQueryCtrl extends QueryCtrl {
         return this.metadataClient.getTagsOrValues({type: "key"}, 0, null, false);
       }
       case "part-param-changed": {
-        this.panelCtrl.refresh();
+        this.refresh();
         break;
       }
       case "action": {
         this.queryModel.removeGroupByPart(part, index);
-        this.panelCtrl.refresh();
+        this.refresh();
         break;
       }
       case "get-part-actions": {
@@ -205,6 +209,10 @@ export class HeroicQueryCtrl extends QueryCtrl {
     this.rebuildTargetTagConditions();
   }
 
+  public getCollapsedText() {
+    return this.target.query;
+  }
+
   public rebuildTargetTagConditions() {
     const tags = [];
     let tagIndex = 0;
@@ -232,9 +240,7 @@ export class HeroicQueryCtrl extends QueryCtrl {
     });
 
     this.target.tags = tags;
-    this.target.query = JSON.stringify(this.queryModel.render());
-
-    this.panelCtrl.refresh();
+    this.refresh();
   }
 
 }
