@@ -137,7 +137,6 @@ System.register(["app/core/table_model", "lodash"], function(exports_1) {
                 };
                 HeroicSeries.prototype.buildScoped = function (group, common) {
                     var scoped = {};
-                    console.log(group);
                     for (var tk in group.tagCounts) {
                         scoped[("tag_" + tk)] = { text: "<" + group.tagCounts[tk] + ">" };
                         scoped[("{tag_" + tk + "_count")] = { text: "<" + group.tagCounts[tk] + ">" };
@@ -147,8 +146,11 @@ System.register(["app/core/table_model", "lodash"], function(exports_1) {
                         scoped[("tag_" + t + "_count")] = { text: "<" + 1 + ">" };
                     }
                     for (var c in common) {
+                        if (group.tags[c]) {
+                            continue; // do not override series tags
+                        }
                         scoped[("tag_" + c)] = { text: common[c] };
-                        scoped[("tag_" + c + "_count")] = { text: "<" + 1 + ">" };
+                        scoped[("tag_" + c + "_count")] = { text: "<" + common[c].length + ">" };
                     }
                     scoped["tags"] = { text: this.buildTags(group.tags, group.tagCounts) };
                     return scoped;

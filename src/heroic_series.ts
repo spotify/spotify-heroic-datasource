@@ -153,7 +153,6 @@ export default class HeroicSeries {
 
   public buildScoped(group, common) {
     let scoped = {};
-    console.log(group);
     for (let tk in group.tagCounts) {
       scoped[`tag_${tk}`] = { text: "<" + group.tagCounts[tk] + ">" };
       scoped[`{tag_${tk}_count`] = { text: "<" + group.tagCounts[tk] + ">" };
@@ -165,8 +164,11 @@ export default class HeroicSeries {
     }
 
     for (let c in common) {
+      if (group.tags[c]) {
+        continue; // do not override series tags
+      }
       scoped[`tag_${c}`] = { text: common[c] };
-      scoped[`tag_${c}_count`] = { text: "<" + 1 + ">" };
+      scoped[`tag_${c}_count`] = { text: "<" + common[c].length + ">" };
     }
 
     scoped["tags"] = { text: this.buildTags(group.tags, group.tagCounts) };
