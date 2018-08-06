@@ -40,7 +40,7 @@ export default class HeroicSeries {
 
   public getTimeSeries() {
     return this.series.result.map((series) => {
-      const scoped = this.buildScoped(series, {});
+      const scoped = this.buildScoped(series, this.series.commonTags);
       const name = this.templateSrv.replaceWithText(this.alias || "$tags", scoped);
       return { target: name, datapoints: series.values.map(this._convertData) };
     });
@@ -153,38 +153,38 @@ export default class HeroicSeries {
 
   public buildScoped(group, common) {
     let scoped = {};
+    console.log(group);
     for (let tk in group.tagCounts) {
-      scoped[tk] = { text: "<" + group.tagCounts[tk] + ">" };
-      scoped[tk + "_count"] = { text: "<" + group.tagCounts[tk] + ">" };
+      scoped[`tag_${tk}`] = { text: "<" + group.tagCounts[tk] + ">" };
+      scoped[`{tag_${tk}_count`] = { text: "<" + group.tagCounts[tk] + ">" };
     }
 
     for (let t in group.tags) {
-      scoped[t] = { text: group.tags[t] };
-      scoped[t + "_count"] = { text: "<" + 1 + ">" };
+      scoped[`tag_${t}`] = { text: group.tags[t] };
+      scoped[`tag_${t}_count`] = { text: "<" + 1 + ">" };
     }
 
     for (let c in common) {
-      scoped[c] = { text: common[c] };
-      scoped[c + "_count"] = { text: "<" + 1 + ">" };
+      scoped[`tag_${c}`] = { text: common[c] };
+      scoped[`tag_${c}_count`] = { text: "<" + 1 + ">" };
     }
 
-    for (let s in group.shard) {
-      scoped["shard_" + s] = { text: group.shard[s] };
-      scoped["shard_" + s + "_count"] = { text: "<" + 1 + ">" };
-    }
-
-    scoped["tags"] = { text: this.buildTags(group.tags) };
+    scoped["tags"] = { text: this.buildTags(group.tags, group.tagCounts) };
     return scoped;
   }
 
-  public buildTags(tags) {
+  public buildTags(tags, tagCounts) {
     let parts = [];
 
     for (let k in tags) {
-      parts.push(this.quoteString(k) + ": " + this.quoteString(tags[k]));
+      parts.push(this.quoteString(k) + "=" + this.quoteString(tags[k]));
     }
 
-    return "{" + parts.join(", ") + "}";
+    for (let tk in tagCounts) {
+      parts.push(this.quoteString(tk) + "=" + `<${tagCounts[tk]}>`);
+    }
+
+    return parts.join(", ");
   }
   public quoteString(s) {
     let quoted = false;

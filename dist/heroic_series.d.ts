@@ -9,6 +9,6 @@ export default class HeroicSeries {
     getAnnotations(): any[];
     getTable(): any;
     buildScoped(group: any, common: any): {};
-    buildTags(tags: any): string;
+    buildTags(tags: any, tagCounts: any): string;
     quoteString(s: any): string;
 }

@@ -42,7 +42,7 @@ System.register(["app/core/table_model", "lodash"], function(exports_1) {
                 HeroicSeries.prototype.getTimeSeries = function () {
                     var _this = this;
                     return this.series.result.map(function (series) {
-                        var scoped = _this.buildScoped(series, {});
+                        var scoped = _this.buildScoped(series, _this.series.commonTags);
                         var name = _this.templateSrv.replaceWithText(_this.alias || "$tags", scoped);
                         return { target: name, datapoints: series.values.map(_this._convertData) };
                     });
@@ -137,31 +137,31 @@ System.register(["app/core/table_model", "lodash"], function(exports_1) {
                 };
                 HeroicSeries.prototype.buildScoped = function (group, common) {
                     var scoped = {};
+                    console.log(group);
                     for (var tk in group.tagCounts) {
-                        scoped[tk] = { text: "<" + group.tagCounts[tk] + ">" };
-                        scoped[tk + "_count"] = { text: "<" + group.tagCounts[tk] + ">" };
+                        scoped[("tag_" + tk)] = { text: "<" + group.tagCounts[tk] + ">" };
+                        scoped[("{tag_" + tk + "_count")] = { text: "<" + group.tagCounts[tk] + ">" };
                     }
                     for (var t in group.tags) {
-                        scoped[t] = { text: group.tags[t] };
-                        scoped[t + "_count"] = { text: "<" + 1 + ">" };
+                        scoped[("tag_" + t)] = { text: group.tags[t] };
+                        scoped[("tag_" + t + "_count")] = { text: "<" + 1 + ">" };
                     }
                     for (var c in common) {
-                        scoped[c] = { text: common[c] };
-                        scoped[c + "_count"] = { text: "<" + 1 + ">" };
+                        scoped[("tag_" + c)] = { text: common[c] };
+                        scoped[("tag_" + c + "_count")] = { text: "<" + 1 + ">" };
                     }
-                    for (var s in group.shard) {
-                        scoped["shard_" + s] = { text: group.shard[s] };
-                        scoped["shard_" + s + "_count"] = { text: "<" + 1 + ">" };
-                    }
-                    scoped["tags"] = { text: this.buildTags(group.tags) };
+                    scoped["tags"] = { text: this.buildTags(group.tags, group.tagCounts) };
                     return scoped;
                 };
-                HeroicSeries.prototype.buildTags = function (tags) {
+                HeroicSeries.prototype.buildTags = function (tags, tagCounts) {
                     var parts = [];
                     for (var k in tags) {
-                        parts.push(this.quoteString(k) + ": " + this.quoteString(tags[k]));
+                        parts.push(this.quoteString(k) + "=" + this.quoteString(tags[k]));
                     }
-                    return "{" + parts.join(", ") + "}";
+                    for (var tk in tagCounts) {
+                        parts.push(this.quoteString(tk) + "=" + ("<" + tagCounts[tk] + ">"));
+                    }
+                    return parts.join(", ");
                 };
                 HeroicSeries.prototype.quoteString = function (s) {
                     var quoted = false;
