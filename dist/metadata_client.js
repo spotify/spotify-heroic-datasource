@@ -133,7 +133,6 @@ System.register(["angular", "lodash", "./heroic_query", "./lru_cache"], function
                             for (var _i = 0, _a = _this.templateSrv.variables; _i < _a.length; _i++) {
                                 var variable = _a[_i];
                                 segments.unshift(_this.uiSegmentSrv.newSegment({
-                                    type: "value",
                                     value: "$" + variable.name,
                                     expandable: false,
                                 }));

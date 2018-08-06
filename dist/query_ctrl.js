@@ -99,11 +99,11 @@ System.register(["app/plugins/sdk", "lodash", "./heroic_query", "./metadata_clie
                     var plusButton = this.uiSegmentSrv.newPlusButton();
                     this.groupBySegment.value = plusButton.value;
                     this.groupBySegment.html = plusButton.html;
-                    this.panelCtrl.refresh();
+                    this.refresh();
                 };
                 HeroicQueryCtrl.prototype.addSelectPart = function (selectParts, cat, subitem) {
                     this.queryModel.addSelectPart(selectParts, cat.text, subitem.value);
-                    this.panelCtrl.refresh();
+                    this.refresh();
                 };
                 HeroicQueryCtrl.prototype.handleSelectPartEvent = function (selectParts, part, evt) {
                     switch (evt.name) {
@@ -111,12 +111,12 @@ System.register(["app/plugins/sdk", "lodash", "./heroic_query", "./metadata_clie
                             return this.metadataClient.getTagsOrValues({ type: "key" }, 0, null, false);
                         }
                         case "part-param-changed": {
-                            this.panelCtrl.refresh();
+                            this.refresh();
                             break;
                         }
                         case "action": {
                             this.queryModel.removeSelectPart(selectParts, part);
-                            this.panelCtrl.refresh();
+                            this.refresh();
                             break;
                         }
                         case "get-part-actions": {
@@ -124,18 +124,22 @@ System.register(["app/plugins/sdk", "lodash", "./heroic_query", "./metadata_clie
                         }
                     }
                 };
+                HeroicQueryCtrl.prototype.refresh = function () {
+                    this.target.query = JSON.stringify(this.queryModel.render());
+                    this.panelCtrl.refresh();
+                };
                 HeroicQueryCtrl.prototype.handleGroupByPartEvent = function (part, index, evt) {
                     switch (evt.name) {
                         case "get-param-options": {
                             return this.metadataClient.getTagsOrValues({ type: "key" }, 0, null, false);
                         }
                         case "part-param-changed": {
-                            this.panelCtrl.refresh();
+                            this.refresh();
                             break;
                         }
                         case "action": {
                             this.queryModel.removeGroupByPart(part, index);
-                            this.panelCtrl.refresh();
+                            this.refresh();
                             break;
                         }
                         case "get-part-actions": {
@@ -193,6 +197,9 @@ System.register(["app/plugins/sdk", "lodash", "./heroic_query", "./metadata_clie
                     }
                     this.rebuildTargetTagConditions();
                 };
+                HeroicQueryCtrl.prototype.getCollapsedText = function () {
+                    return this.target.query;
+                };
                 HeroicQueryCtrl.prototype.rebuildTargetTagConditions = function () {
                     var _this = this;
                     var tags = [];
@@ -222,8 +229,7 @@ System.register(["app/plugins/sdk", "lodash", "./heroic_query", "./metadata_clie
                         }
                     });
                     this.target.tags = tags;
-                    this.target.query = JSON.stringify(this.queryModel.render());
-                    this.panelCtrl.refresh();
+                    this.refresh();
                 };
                 HeroicQueryCtrl.templateUrl = "partials/query.editor.html";
                 return HeroicQueryCtrl;

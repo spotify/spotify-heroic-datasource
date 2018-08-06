@@ -83,7 +83,6 @@ export class MetadataClient {
         for (const variable of this.templateSrv.variables) {
           segments.unshift(
             this.uiSegmentSrv.newSegment({
-              type: "value",
               value: "$" + variable.name,
               expandable: false,
             })
