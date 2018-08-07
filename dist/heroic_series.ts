@@ -80,7 +80,7 @@ export default class HeroicSeries {
         }
       });
 
-      _.each(series.values, (value) => {
+      _.each(series.values, (value, index) => {
         let data = {
           annotation: this.annotation,
           time: +new Date(value[0]),
@@ -98,7 +98,7 @@ export default class HeroicSeries {
           text: series.tags[textCol],
         };
         if (this.annotation.ranged) {
-          data['regionId'] = series.hash;
+          data['regionId'] = `${series.hash}-${index}`;
           const dataCopy = Object.assign({}, data);
 
           switch (this.annotation.rangeType) {

@@ -79,7 +79,7 @@ System.register(["app/core/table_model", "lodash"], function(exports_1) {
                                 return;
                             }
                         });
-                        lodash_1.default.each(series.values, function (value) {
+                        lodash_1.default.each(series.values, function (value, index) {
                             var data = {
                                 annotation: _this.annotation,
                                 time: +new Date(value[0]),
@@ -95,7 +95,7 @@ System.register(["app/core/table_model", "lodash"], function(exports_1) {
                                 text: series.tags[textCol],
                             };
                             if (_this.annotation.ranged) {
-                                data['regionId'] = series.hash;
+                                data['regionId'] = series.hash + "-" + index;
                                 var dataCopy = Object.assign({}, data);
                                 switch (_this.annotation.rangeType) {
                                     case "endTimeSeconds":
