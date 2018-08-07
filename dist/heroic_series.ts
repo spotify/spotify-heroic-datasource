@@ -97,8 +97,31 @@ export default class HeroicSeries {
           ),
           text: series.tags[textCol],
         };
+        if (this.annotation.ranged) {
+          data['regionId'] = series.hash;
+          const dataCopy = Object.assign({}, data);
 
-        list.push(data);
+          switch (this.annotation.rangeType) {
+            case "endTimeSeconds":
+              dataCopy.time = +new Date(value[1] * 1000);
+              break;
+            case "durationMs":
+              dataCopy.time = +new Date(value[0] + value[1]);
+              break;
+            case "durationSeconds":
+              dataCopy.time = +new Date(value[0] + (value[1] * 1000));
+              break;
+            case "endTimeMs":
+            default:
+              dataCopy.time = +new Date(value[1]);
+          }
+          list.push(data);
+          list.push(dataCopy);
+
+        } else {
+          list.push(data);
+        }
+
       });
     });
 
