@@ -49,7 +49,7 @@ System.register(["angular", "lodash", "./heroic_query", "./lru_cache"], function
                     this.tagSegments = tagSegments;
                     this.includeVariables = includeVariables;
                     this.includeScopes = includeScopes;
-                    this.getMeasurements = lodash_1.default.debounce((function (measurementFilter) {
+                    this.getMeasurements = function (measurementFilter) {
                         var filter = {
                             key: measurementFilter,
                             filter: _this.queryModel.buildCurrentFilter(_this.includeVariables, _this.includeScopes),
@@ -68,8 +68,8 @@ System.register(["angular", "lodash", "./heroic_query", "./lru_cache"], function
                             _this.keyLru.put(cacheKey, result);
                             return result;
                         });
-                    }), MetadataClient.DEBOUNCE_MS, { leading: true });
-                    this.getTagsOrValues = lodash_1.default.debounce((function (segment, index, query, includeRemove) {
+                    };
+                    this.getTagsOrValues = function (segment, index, query, includeRemove) {
                         if (segment.type === "condition") {
                             return _this.$q.when([_this.uiSegmentSrv.newSegment("AND"), _this.uiSegmentSrv.newSegment("OR")]);
                         }
@@ -107,7 +107,7 @@ System.register(["angular", "lodash", "./heroic_query", "./lru_cache"], function
                             return _this.queryTagsAndValues(data, "value", _this.lruTagValue)
                                 .then(_this.transformToSegments(true, "value"));
                         }
-                    }), MetadataClient.DEBOUNCE_MS, { leading: true });
+                    };
                     this.lruTag = new lru_cache_1.LruCache();
                     this.lruTagValue = new lru_cache_1.LruCache();
                     this.keyLru = new lru_cache_1.LruCache();
