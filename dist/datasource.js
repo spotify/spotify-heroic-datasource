@@ -139,8 +139,8 @@ System.register(["lodash", "app/core/utils/datemath", "./heroic_query", "./heroi
                             message: "Query missing in annotation definition",
                         });
                     }
-                    var currentFilter = options.annotation.query;
-                    // TODO: template vars
+                    var queryModel = new heroic_query_1.default({ tags: options.annotation.tags }, this.templateSrv, {});
+                    var currentFilter = queryModel.buildCurrentFilter(true, false);
                     var query = {
                         filter: currentFilter,
                         aggregators: [],

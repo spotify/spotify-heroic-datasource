@@ -150,8 +150,8 @@ export default class HeroicDatasource {
         message: "Query missing in annotation definition",
       });
     }
-    const currentFilter = options.annotation.query;
-    // TODO: template vars
+    const queryModel = new HeroicQuery({tags: options.annotation.tags}, this.templateSrv, {});
+    const currentFilter = queryModel.buildCurrentFilter(true, false);
 
     const query = {
       filter: currentFilter,
