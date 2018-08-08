@@ -44,7 +44,7 @@ export class MetadataClient {
     this.includeScopes = includeScopes;
   }
 
-  public getMeasurements = _.debounce(((measurementFilter) => {
+  public getMeasurements = (measurementFilter) => {
     const filter = {
       key: measurementFilter,
       filter: this.queryModel.buildCurrentFilter(this.includeVariables, this.includeScopes),
@@ -63,7 +63,7 @@ export class MetadataClient {
         this.keyLru.put(cacheKey, result);
         return result;
       });
-  }), MetadataClient.DEBOUNCE_MS, { leading: true });
+  }
 
   public handleQueryError(err) {
     this.error = err.message || "Failed to issue metric query";
@@ -118,7 +118,7 @@ export class MetadataClient {
 
   }
 
-  public getTagsOrValues = _.debounce(((segment, index, query, includeRemove) => {
+  public getTagsOrValues = (segment, index, query, includeRemove) => {
     if (segment.type === "condition") {
       return this.$q.when([this.uiSegmentSrv.newSegment("AND"), this.uiSegmentSrv.newSegment("OR")]);
     }
@@ -158,7 +158,7 @@ export class MetadataClient {
         .then(this.transformToSegments(true, "value"));
     }
 
-  }), MetadataClient.DEBOUNCE_MS, { leading: true });
+  }
 
   public getTagValueOperator(tagValue, tagOperator): string {
     if (tagOperator !== "=~" && tagOperator !== "!~" && /^\/.*\/$/.test(tagValue)) {
