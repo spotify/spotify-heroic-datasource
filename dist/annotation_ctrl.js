@@ -23,6 +23,9 @@ System.register(["lodash", "./heroic_query", "./metadata_client", "./query_part"
                     this.uiSegmentSrv = uiSegmentSrv;
                     this.tagSegments = [];
                     this.queryModel = new heroic_query_1.default(this.annotation, templateSrv, null);
+                    this.rangeTypes = ["endTimeMs", "endTimeSeconds", "durationMs", "durationSeconds"];
+                    this.annotation.rangeType = this.annotation.rangeType || this.rangeTypes[0];
+                    this.annotation.range = this.annotation.range || false;
                     if (!this.annotation.tags) {
                         this.annotation.tags = [];
                     }

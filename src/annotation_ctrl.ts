@@ -34,11 +34,17 @@ export class HeroicAnnotationsQueryCtrl {
   public selectMenu: any;
   public queryModel: any;
   public metadataClient: MetadataClient;
+  public range: boolean;
+  public rangeType: any;
+  public rangeTypes: any;
+
 
   constructor($scope, $injector, private templateSrv, private $q, private uiSegmentSrv) {
     this.tagSegments = [];
     this.queryModel = new HeroicQuery(this.annotation, templateSrv, null);
-
+    this.rangeTypes = ["endTimeMs", "endTimeSeconds", "durationMs", "durationSeconds"];
+    this.annotation.rangeType = this.annotation.rangeType || this.rangeTypes[0];
+    this.annotation.range = this.annotation.range || false;
     if (!this.annotation.tags) {
       this.annotation.tags = [];
     }

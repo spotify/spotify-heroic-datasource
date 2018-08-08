@@ -11,6 +11,9 @@ export declare class HeroicAnnotationsQueryCtrl {
     selectMenu: any;
     queryModel: any;
     metadataClient: MetadataClient;
+    range: boolean;
+    rangeType: any;
+    rangeTypes: any;
     constructor($scope: any, $injector: any, templateSrv: any, $q: any, uiSegmentSrv: any);
     buildSelectMenu(): void;
     fixTagSegments(): void;
