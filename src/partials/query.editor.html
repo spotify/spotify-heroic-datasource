@@ -120,6 +120,13 @@
 				<div class="gf-form-label gf-form-label--grow"></div>
 			</div>
 		</div>
+		<gf-form-switch class="gf-form"
+			label="Global Aggregations"
+			tooltip="Enables aggregation across shards. Having this option unset is deprecated as global aggregation lets you group on 'site' specifically."
+			checked="ctrl.target.globalAggregation"
+			label-class="width-13"
+			on-change="ctrl.refresh()">
+		</gf-form-switch>
 	</div>
 
 </query-editor-row>

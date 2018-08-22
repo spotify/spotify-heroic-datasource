@@ -194,10 +194,18 @@ export default class HeroicQuery {
       });
     });
 
+
+    let features;
+    if (this.target.globalAggregation === false) {
+      features = [];
+    } else {
+      features = ["com.spotify.heroic.distributed_aggregations"];
+    }
+
     return {
       filter: currentFilter,
       aggregators: aggregators[0],
-      features: ["com.spotify.heroic.distributed_aggregations"],
+      features: features,
       range: "$timeFilter",
     };
 

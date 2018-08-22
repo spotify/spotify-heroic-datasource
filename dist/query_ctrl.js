@@ -51,6 +51,7 @@ System.register(["app/plugins/sdk", "lodash", "./heroic_query", "./metadata_clie
                     this.templateSrv = templateSrv;
                     this.$q = $q;
                     this.uiSegmentSrv = uiSegmentSrv;
+                    this.target.globalAggregation = this.target.globalAggregation || true;
                     this.queryModel = new heroic_query_1.default(this.target, templateSrv, this.panel.scopedVars);
                     this.groupBySegment = this.uiSegmentSrv.newPlusButton();
                     this.resultFormats = [{ text: "Time series", value: "time_series" }, { text: "Table", value: "table" }];
