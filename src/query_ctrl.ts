@@ -44,6 +44,7 @@ export class HeroicQueryCtrl extends QueryCtrl {
   /** @ngInject **/
   constructor($scope, $injector, private templateSrv, private $q, private uiSegmentSrv) {
     super($scope, $injector);
+    this.target.globalAggregation = this.target.globalAggregation || true;
     this.queryModel = new HeroicQuery(this.target, templateSrv, this.panel.scopedVars);
     this.groupBySegment = this.uiSegmentSrv.newPlusButton();
     this.resultFormats = [{ text: "Time series", value: "time_series" }, { text: "Table", value: "table" }];

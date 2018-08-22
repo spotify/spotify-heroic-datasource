@@ -20,7 +20,7 @@ export default class HeroicQuery {
     render(): {
         filter: any;
         aggregators: any;
-        features: string[];
+        features: any;
         range: string;
     };
     renderAdhocFilters(filters: any): any;
