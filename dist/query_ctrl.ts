@@ -32,45 +32,30 @@ export class HeroicQueryCtrl extends QueryCtrl {
   public resultFormats: any[];
   public orderByTime: any[];
   public panelCtrl: any;
-  public tagSegments: any[];
   public selectMenu: any;
   public target: any;
-  public removeTagFilterSegment: any;
-
-
-
   public metadataClient: MetadataClient;
 
   /** @ngInject **/
   constructor($scope, $injector, private templateSrv, private $q, private uiSegmentSrv) {
     super($scope, $injector);
+    console.log($scope);
+
     this.target.globalAggregation = this.target.globalAggregation || true;
     this.queryModel = new HeroicQuery(this.target, templateSrv, this.panel.scopedVars);
     this.groupBySegment = this.uiSegmentSrv.newPlusButton();
     this.resultFormats = [{ text: "Time series", value: "time_series" }, { text: "Table", value: "table" }];
-    this.tagSegments = [];
 
-    for (const tag of this.target.tags) {
-      if (!tag.operator) {
-        tag.operator = "=";
-      }
-
-      if (tag.condition) {
-        this.tagSegments.push(uiSegmentSrv.newCondition(tag.condition));
-      }
-
-      this.tagSegments.push(uiSegmentSrv.newKey(tag.key));
-      this.tagSegments.push(uiSegmentSrv.newOperator(tag.operator));
-      this.tagSegments.push(uiSegmentSrv.newKeyValue(tag.value));
-    }
-
-    this.fixTagSegments();
     this.buildSelectMenu();
-    this.removeTagFilterSegment = uiSegmentSrv.newSegment({
-      fake: true,
-      value: "-- remove tag filter --",
-    });
-    this.metadataClient = new MetadataClient(this.datasource, this.uiSegmentSrv, this.templateSrv, this.$q, this.panel.scopedVars, this.target, this.removeTagFilterSegment, this.tagSegments, true, false);
+
+    this.metadataClient = new MetadataClient(
+      this,
+      this.datasource,
+      this.panel.scopedVars,
+      this.target,
+      true,
+      false
+    );
 
   }
 
@@ -156,14 +141,6 @@ export class HeroicQueryCtrl extends QueryCtrl {
     }
   }
 
-  public fixTagSegments() {
-    const count = this.tagSegments.length;
-    const lastSegment = this.tagSegments[Math.max(count - 1, 0)];
-
-    if (!lastSegment || lastSegment.type !== "plus-button") {
-      this.tagSegments.push(this.uiSegmentSrv.newPlusButton());
-    }
-  }
 
   public toggleEditorMode() {
     // TODO: do not render template variables when toggling to manual editor
@@ -175,73 +152,17 @@ export class HeroicQueryCtrl extends QueryCtrl {
     this.target.rawQuery = !this.target.rawQuery;
   }
 
-  public tagSegmentUpdated(segment, index) {
-    this.tagSegments[index] = segment;
-    // AND, Z, =, A, AND, B, =, C,  AND, D, =,  E]
-    // 3  , 4, 5, 6, 7,   8, 9, 10, 11, 12, 13, 14]
-
-    // handle remove tag condition
-    if (segment.value === this.removeTagFilterSegment.value) {
-      this.tagSegments.splice(index, 3);
-      if (this.tagSegments.length === 0) {
-        this.tagSegments.push(this.uiSegmentSrv.newPlusButton());
-      } else if (this.tagSegments.length > 2) {
-        this.tagSegments.splice(Math.max(index - 1, 0), 1);
-        if (this.tagSegments[this.tagSegments.length - 1].type !== "plus-button") {
-          this.tagSegments.push(this.uiSegmentSrv.newPlusButton());
-        }
-      }
-    } else {
-      if (segment.type === "plus-button") {
-        if (index > 2) {
-          this.tagSegments.splice(index, 0, this.uiSegmentSrv.newCondition("AND"));
-        }
-        this.tagSegments.push(this.uiSegmentSrv.newOperator("="));
-        this.tagSegments.push(this.uiSegmentSrv.newFake("select tag value", "value", "query-segment-value"));
-        segment.type = "key";
-        segment.cssClass = "query-segment-key";
-      }
-
-      if (index + 1 === this.tagSegments.length) {
-        this.tagSegments.push(this.uiSegmentSrv.newPlusButton());
-      }
-    }
-
-    this.rebuildTargetTagConditions();
-  }
-
   public getCollapsedText() {
     return this.target.query;
   }
 
-  public rebuildTargetTagConditions() {
-    const tags = [];
-    let tagIndex = 0;
-    let tagOperator = "";
-
-    _.each(this.tagSegments, (segment2, index) => {
-      if (segment2.type === "key") {
-        if (tags.length === 0) {
-          tags.push({});
-        }
-        tags[tagIndex].key = segment2.value;
-      } else if (segment2.type === "value") {
-        tagOperator = this.metadataClient.getTagValueOperator(segment2.value, tags[tagIndex].operator);
-        if (tagOperator) {
-          this.tagSegments[index - 1] = this.uiSegmentSrv.newOperator(tagOperator);
-          tags[tagIndex].operator = tagOperator;
-        }
-        tags[tagIndex].value = segment2.value;
-      } else if (segment2.type === "condition") {
-        tags.push({ condition: segment2.value });
-        tagIndex += 1;
-      } else if (segment2.type === "operator") {
-        tags[tagIndex].operator = segment2.value;
-      }
-    });
-
-    this.target.tags = tags;
-    this.refresh();
+  public getTags() {
+    return this.target.tags;
   }
+
+  public setTags(tags) {
+    this.target.tags = tags;
+  }
+
 
 }

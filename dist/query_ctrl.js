@@ -51,30 +51,13 @@ System.register(["app/plugins/sdk", "lodash", "./heroic_query", "./metadata_clie
                     this.templateSrv = templateSrv;
                     this.$q = $q;
                     this.uiSegmentSrv = uiSegmentSrv;
+                    console.log($scope);
                     this.target.globalAggregation = this.target.globalAggregation || true;
                     this.queryModel = new heroic_query_1.default(this.target, templateSrv, this.panel.scopedVars);
                     this.groupBySegment = this.uiSegmentSrv.newPlusButton();
                     this.resultFormats = [{ text: "Time series", value: "time_series" }, { text: "Table", value: "table" }];
-                    this.tagSegments = [];
-                    for (var _i = 0, _a = this.target.tags; _i < _a.length; _i++) {
-                        var tag = _a[_i];
-                        if (!tag.operator) {
-                            tag.operator = "=";
-                        }
-                        if (tag.condition) {
-                            this.tagSegments.push(uiSegmentSrv.newCondition(tag.condition));
-                        }
-                        this.tagSegments.push(uiSegmentSrv.newKey(tag.key));
-                        this.tagSegments.push(uiSegmentSrv.newOperator(tag.operator));
-                        this.tagSegments.push(uiSegmentSrv.newKeyValue(tag.value));
-                    }
-                    this.fixTagSegments();
                     this.buildSelectMenu();
-                    this.removeTagFilterSegment = uiSegmentSrv.newSegment({
-                        fake: true,
-                        value: "-- remove tag filter --",
-                    });
-                    this.metadataClient = new metadata_client_1.MetadataClient(this.datasource, this.uiSegmentSrv, this.templateSrv, this.$q, this.panel.scopedVars, this.target, this.removeTagFilterSegment, this.tagSegments, true, false);
+                    this.metadataClient = new metadata_client_1.MetadataClient(this, this.datasource, this.panel.scopedVars, this.target, true, false);
                 }
                 HeroicQueryCtrl.prototype.buildSelectMenu = function () {
                     var categories = query_part_1.default.getCategories();
@@ -148,13 +131,6 @@ System.register(["app/plugins/sdk", "lodash", "./heroic_query", "./metadata_clie
                         }
                     }
                 };
-                HeroicQueryCtrl.prototype.fixTagSegments = function () {
-                    var count = this.tagSegments.length;
-                    var lastSegment = this.tagSegments[Math.max(count - 1, 0)];
-                    if (!lastSegment || lastSegment.type !== "plus-button") {
-                        this.tagSegments.push(this.uiSegmentSrv.newPlusButton());
-                    }
-                };
                 HeroicQueryCtrl.prototype.toggleEditorMode = function () {
                     // TODO: do not render template variables when toggling to manual editor
                     try {
@@ -165,72 +141,14 @@ System.register(["app/plugins/sdk", "lodash", "./heroic_query", "./metadata_clie
                     }
                     this.target.rawQuery = !this.target.rawQuery;
                 };
-                HeroicQueryCtrl.prototype.tagSegmentUpdated = function (segment, index) {
-                    this.tagSegments[index] = segment;
-                    // AND, Z, =, A, AND, B, =, C,  AND, D, =,  E]
-                    // 3  , 4, 5, 6, 7,   8, 9, 10, 11, 12, 13, 14]
-                    // handle remove tag condition
-                    if (segment.value === this.removeTagFilterSegment.value) {
-                        this.tagSegments.splice(index, 3);
-                        if (this.tagSegments.length === 0) {
-                            this.tagSegments.push(this.uiSegmentSrv.newPlusButton());
-                        }
-                        else if (this.tagSegments.length > 2) {
-                            this.tagSegments.splice(Math.max(index - 1, 0), 1);
-                            if (this.tagSegments[this.tagSegments.length - 1].type !== "plus-button") {
-                                this.tagSegments.push(this.uiSegmentSrv.newPlusButton());
-                            }
-                        }
-                    }
-                    else {
-                        if (segment.type === "plus-button") {
-                            if (index > 2) {
-                                this.tagSegments.splice(index, 0, this.uiSegmentSrv.newCondition("AND"));
-                            }
-                            this.tagSegments.push(this.uiSegmentSrv.newOperator("="));
-                            this.tagSegments.push(this.uiSegmentSrv.newFake("select tag value", "value", "query-segment-value"));
-                            segment.type = "key";
-                            segment.cssClass = "query-segment-key";
-                        }
-                        if (index + 1 === this.tagSegments.length) {
-                            this.tagSegments.push(this.uiSegmentSrv.newPlusButton());
-                        }
-                    }
-                    this.rebuildTargetTagConditions();
-                };
                 HeroicQueryCtrl.prototype.getCollapsedText = function () {
                     return this.target.query;
                 };
-                HeroicQueryCtrl.prototype.rebuildTargetTagConditions = function () {
-                    var _this = this;
-                    var tags = [];
-                    var tagIndex = 0;
-                    var tagOperator = "";
-                    lodash_1.default.each(this.tagSegments, function (segment2, index) {
-                        if (segment2.type === "key") {
-                            if (tags.length === 0) {
-                                tags.push({});
-                            }
-                            tags[tagIndex].key = segment2.value;
-                        }
-                        else if (segment2.type === "value") {
-                            tagOperator = _this.metadataClient.getTagValueOperator(segment2.value, tags[tagIndex].operator);
-                            if (tagOperator) {
-                                _this.tagSegments[index - 1] = _this.uiSegmentSrv.newOperator(tagOperator);
-                                tags[tagIndex].operator = tagOperator;
-                            }
-                            tags[tagIndex].value = segment2.value;
-                        }
-                        else if (segment2.type === "condition") {
-                            tags.push({ condition: segment2.value });
-                            tagIndex += 1;
-                        }
-                        else if (segment2.type === "operator") {
-                            tags[tagIndex].operator = segment2.value;
-                        }
-                    });
+                HeroicQueryCtrl.prototype.getTags = function () {
+                    return this.target.tags;
+                };
+                HeroicQueryCtrl.prototype.setTags = function (tags) {
                     this.target.tags = tags;
-                    this.refresh();
                 };
                 HeroicQueryCtrl.templateUrl = "partials/query.editor.html";
                 return HeroicQueryCtrl;

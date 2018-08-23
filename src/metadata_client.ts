@@ -32,17 +32,67 @@ export class MetadataClient {
   public lruTagValue: any;
   public keyLru: any;
   public error: any;
+  public addCustomQuery: any;
+  public removeTagFilterSegment: any;
+  public tagSegments: any[];
+  public customTagSegments: any[];
+
 
   /** @ngInject **/
-  constructor(private datasource, private uiSegmentSrv, private templateSrv, private $q, private scopedVars, private target, private removeTagFilterSegment, private tagSegments, private includeVariables, private includeScopes) {
+  constructor(
+    private controller,
+    private datasource,
+    private scopedVars,
+    private target,
+    private includeVariables,
+    private includeScopes
+  ) {
+    this.tagSegments = [];
+    this.customTagSegments = [];
+    if (!this.controller.fakeController) {
+      for (const tag of this.controller.getTags()) {
+        if (tag.type && tag.type === "custom") {
+          this.customTagSegments.push(this.controller.uiSegmentSrv.newSegment({value: tag.key, valid: true, expandable: false}));
+          continue;
+        }
+        if (!tag.operator) {
+          tag.operator = "=";
+        }
+
+        if (tag.condition) {
+          this.tagSegments.push(this.controller.uiSegmentSrv.newCondition(tag.condition));
+        }
+
+        this.tagSegments.push(this.controller.uiSegmentSrv.newKey(tag.key));
+        this.tagSegments.push(this.controller.uiSegmentSrv.newOperator(tag.operator));
+        this.tagSegments.push(this.controller.uiSegmentSrv.newKeyValue(tag.value));
+      }
+      this.fixTagSegments();
+    }
+
     this.lruTag = new LruCache();
     this.lruTagValue = new LruCache();
     this.keyLru = new LruCache();
-    this.queryModel = new HeroicQuery(this.target, templateSrv, this.scopedVars);
-    this.removeTagFilterSegment = removeTagFilterSegment;
+    this.queryModel = new HeroicQuery(this.target, this.controller.templateSrv, this.scopedVars);
     this.includeVariables = includeVariables;
     this.includeScopes = includeScopes;
+    this.addCustomQuery = this.controller.uiSegmentSrv.newPlusButton();
+    this.removeTagFilterSegment = this.controller.uiSegmentSrv.newSegment({
+      fake: true,
+      value: "-- remove tag filter --",
+    });
+
   }
+
+  public fixTagSegments() {
+    const count = this.tagSegments.length;
+    const lastSegment = this.tagSegments[Math.max(count - 1, 0)];
+
+    if (!lastSegment || lastSegment.type !== "plus-button") {
+      this.tagSegments.push(this.controller.uiSegmentSrv.newPlusButton());
+    }
+  }
+
 
   public getMeasurements = (measurementFilter) => {
     const filter = {
@@ -73,16 +123,16 @@ export class MetadataClient {
   public transformToSegments(addTemplateVars, segmentKey) {
     return (results) => {
       const segments = _.map(results, (segment) => {
-        return this.uiSegmentSrv.newSegment({
+        return this.controller.uiSegmentSrv.newSegment({
           value: segment[segmentKey],
           expandable: false,
         });
       });
 
       if (addTemplateVars) {
-        for (const variable of this.templateSrv.variables) {
+        for (const variable of this.controller.templateSrv.variables) {
           segments.unshift(
-            this.uiSegmentSrv.newSegment({
+            this.controller.uiSegmentSrv.newSegment({
               value: "$" + variable.name,
               expandable: false,
             })
@@ -120,11 +170,11 @@ export class MetadataClient {
 
   public getTagsOrValues = (segment, index, query, includeRemove) => {
     if (segment.type === "condition") {
-      return this.$q.when([this.uiSegmentSrv.newSegment("AND"), this.uiSegmentSrv.newSegment("OR")]);
+      return this.controller.$q.when([this.controller.uiSegmentSrv.newSegment("AND")]);
     }
     if (segment.type === "operator") {
       const nextValue = this.tagSegments[index + 1].value;
-      return this.$q.when(this.uiSegmentSrv.newOperators(["=", "!=", "^", "!^"]))
+      return this.controller.$q.when(this.controller.uiSegmentSrv.newOperators(["=", "!=", "^", "!^"]))
     }
     let tagsCopy = [... this.queryModel.target.tags];
     if (segment.type === "value") {
@@ -167,6 +217,100 @@ export class MetadataClient {
       return "=";
     }
     return null;
+  }
+
+  public validateCustomQuery = (segment, index, query, includeRemove) => {
+    segment.style= {color: "red"};
+    const headers =  { "Content-Type": "text/plain;charset=UTF-8" };
+    return this.datasource
+      .doRequestWithHeaders("/parser/parse-filter", { method: "POST", data: query }, headers)
+      .then(
+        (result) => {
+          segment.valid = true;
+          segment.cssClass = "";
+        },
+        (error) => {
+          segment.valid = false;
+          segment.cssClass = "text-error";
+          console.log(error);
+        }
+      );
+
+  }
+  public createCustomQuery = () => {
+    this.customTagSegments.push(this.controller.uiSegmentSrv.newSegment({value: "--custom--", valid: false, expandable: false}));
+
+  }
+
+  public tagSegmentUpdated(segment, index) {
+    this.tagSegments[index] = segment;
+    // AND, Z, =, A, AND, B, =, C,  AND, D, =,  E]
+    // 3  , 4, 5, 6, 7,   8, 9, 10, 11, 12, 13, 14]
+
+    // handle remove tag condition
+    if (segment.value === this.removeTagFilterSegment.value) {
+      this.tagSegments.splice(index, 3);
+      if (this.tagSegments.length === 0) {
+        this.tagSegments.push(this.controller.uiSegmentSrv.newPlusButton());
+      } else if (this.tagSegments.length > 2) {
+        this.tagSegments.splice(Math.max(index - 1, 0), 1);
+        if (this.tagSegments[this.tagSegments.length - 1].type !== "plus-button") {
+          this.tagSegments.push(this.controller.uiSegmentSrv.newPlusButton());
+        }
+      }
+    } else {
+      if (segment.type === "plus-button") {
+        if (index > 2) {
+          this.tagSegments.splice(index, 0, this.controller.uiSegmentSrv.newCondition("AND"));
+        }
+        this.tagSegments.push(this.controller.uiSegmentSrv.newOperator("="));
+        this.tagSegments.push(this.controller.uiSegmentSrv.newFake("select tag value", "value", "query-segment-value"));
+        segment.type = "key";
+        segment.cssClass = "query-segment-key";
+      }
+
+      if (index + 1 === this.tagSegments.length) {
+        this.tagSegments.push(this.controller.uiSegmentSrv.newPlusButton());
+      }
+    }
+
+    this.rebuildTargetTagConditions();
+  }
+
+  public rebuildTargetTagConditions() {
+    const tags = [];
+    let tagIndex = 0;
+    let tagOperator = "";
+
+    _.each(this.tagSegments, (segment2, index) => {
+      if (segment2.type === "key") {
+        if (tags.length === 0) {
+          tags.push({});
+        }
+        tags[tagIndex].key = segment2.value;
+      } else if (segment2.type === "value") {
+        tagOperator = this.getTagValueOperator(segment2.value, tags[tagIndex].operator);
+        if (tagOperator) {
+          this.tagSegments[index - 1] = this.controller.uiSegmentSrv.newOperator(tagOperator);
+          tags[tagIndex].operator = tagOperator;
+        }
+        tags[tagIndex].value = segment2.value;
+      } else if (segment2.type === "condition") {
+        tags.push({ condition: segment2.value });
+        tagIndex += 1;
+      } else if (segment2.type === "operator") {
+        tags[tagIndex].operator = segment2.value;
+      }
+    });
+    
+    _.each(this.customTagSegments, (segment, index) => {
+      if (segment.valid) {
+        tags.push({operator: "q", type: "custom", key: segment.value});
+      }
+    });
+
+    this.controller.setTags(tags);
+    this.controller.refresh();
   }
 
 }

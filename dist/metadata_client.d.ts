@@ -1,13 +1,9 @@
 import HeroicQuery from "./heroic_query";
 export declare class MetadataClient {
+    private controller;
     private datasource;
-    private uiSegmentSrv;
-    private templateSrv;
-    private $q;
     private scopedVars;
     private target;
-    private removeTagFilterSegment;
-    private tagSegments;
     private includeVariables;
     private includeScopes;
     static templateUrl: string;
@@ -17,12 +13,21 @@ export declare class MetadataClient {
     lruTagValue: any;
     keyLru: any;
     error: any;
+    addCustomQuery: any;
+    removeTagFilterSegment: any;
+    tagSegments: any[];
+    customTagSegments: any[];
     /** @ngInject **/
-    constructor(datasource: any, uiSegmentSrv: any, templateSrv: any, $q: any, scopedVars: any, target: any, removeTagFilterSegment: any, tagSegments: any, includeVariables: any, includeScopes: any);
+    constructor(controller: any, datasource: any, scopedVars: any, target: any, includeVariables: any, includeScopes: any);
+    fixTagSegments(): void;
     getMeasurements: (measurementFilter: any) => any;
     handleQueryError(err: any): any[];
     transformToSegments(addTemplateVars: any, segmentKey: any): (results: any) => any;
     queryTagsAndValues(data: any, dedupe: any, cache: any): any;
     getTagsOrValues: (segment: any, index: any, query: any, includeRemove: any) => any;
     getTagValueOperator(tagValue: any, tagOperator: any): string;
+    validateCustomQuery: (segment: any, index: any, query: any, includeRemove: any) => any;
+    createCustomQuery: () => void;
+    tagSegmentUpdated(segment: any, index: any): void;
+    rebuildTargetTagConditions(): void;
 }

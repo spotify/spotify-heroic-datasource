@@ -44,9 +44,10 @@ export default class HeroicDatasource {
   public templateSrv: any;
   public annotationModels: any;
   public queryBuilder: any;
+  public fakeController: any;
 
   /** @ngInject */
-  constructor(instanceSettings, private $q, private backendSrv, templateSrv) {
+  constructor(instanceSettings, private $q, private backendSrv, templateSrv, private uiSegmentSrv) {
     this.type = "heroic";
     this.url = instanceSettings.url;
     this.templateSrv = templateSrv;
@@ -67,7 +68,15 @@ export default class HeroicDatasource {
     this.annotationModels = _.map(this.annotationModels, function(parts: any) {
       return _.map(parts, queryPart.create);
     });
-    this.queryBuilder = new MetadataClient(this, null, this.templateSrv, this.$q, {}, {}, null, {}, true, true);
+    this.fakeController = true;
+    this.queryBuilder = new MetadataClient(
+      this,
+      this,
+      {},
+      {},
+      true,
+      true
+    );
 
 
   }
@@ -203,13 +212,16 @@ export default class HeroicDatasource {
     });
   }
 
-  public doRequest(path, options) {
-    const headers = { "Content-Type": "application/json;charset=UTF-8" };
+  public doRequestWithHeaders(path, options, headers) {
     options = options || {};
     options.headers = headers;
     options.url = this.url + path;
     options.inspect = { type: "heroic" };
     return this.backendSrv.datasourceRequest(options);
+  }
+  public doRequest(path, options) {
+    const headers = { "Content-Type": "application/json;charset=UTF-8" };
+    return this.doRequestWithHeaders(path, options, headers);
   }
 
   public parseRelativeUnit(unit) {

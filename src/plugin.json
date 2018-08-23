@@ -38,5 +38,6 @@
 
   "metrics": true,
   "annotations": true,
-  "alerting": true
+  "alerting": true,
+  "hasQueryHelp": true
 }
