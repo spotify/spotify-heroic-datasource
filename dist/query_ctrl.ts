@@ -39,7 +39,6 @@ export class HeroicQueryCtrl extends QueryCtrl {
   /** @ngInject **/
   constructor($scope, $injector, private templateSrv, private $q, private uiSegmentSrv) {
     super($scope, $injector);
-    console.log($scope);
 
     this.target.globalAggregation = this.target.globalAggregation || true;
     this.queryModel = new HeroicQuery(this.target, templateSrv, this.panel.scopedVars);
@@ -100,7 +99,7 @@ export class HeroicQueryCtrl extends QueryCtrl {
   public handleSelectPartEvent(selectParts, part, evt) {
     switch (evt.name) {
       case "get-param-options": {
-        return this.metadataClient.getTagsOrValues({type: "key"}, 0, null, false);
+        return this.metadataClient.getTagsOrValues({type: "key"}, 0, null, true);
       }
       case "part-param-changed": {
         this.refresh();

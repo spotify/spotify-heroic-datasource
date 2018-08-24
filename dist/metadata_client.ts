@@ -32,6 +32,7 @@ export class MetadataClient {
   public lruTagValue: any;
   public keyLru: any;
   public error: any;
+  public complexError: any;
   public addCustomQuery: any;
   public removeTagFilterSegment: any;
   public tagSegments: any[];
@@ -52,7 +53,9 @@ export class MetadataClient {
     if (!this.controller.fakeController) {
       for (const tag of this.controller.getTags()) {
         if (tag.type && tag.type === "custom") {
-          this.customTagSegments.push(this.controller.uiSegmentSrv.newSegment({value: tag.key, valid: true, expandable: false}));
+          const newSeg = this.controller.uiSegmentSrv.newSegment({value: tag.key, expandable: false});
+          newSeg.valid = true;
+          this.customTagSegments.push(newSeg);
           continue;
         }
         if (!tag.operator) {
@@ -79,7 +82,7 @@ export class MetadataClient {
     this.addCustomQuery = this.controller.uiSegmentSrv.newPlusButton();
     this.removeTagFilterSegment = this.controller.uiSegmentSrv.newSegment({
       fake: true,
-      value: "-- remove tag filter --",
+      value: "-- remove --",
     });
 
   }
@@ -219,28 +222,7 @@ export class MetadataClient {
     return null;
   }
 
-  public validateCustomQuery = (segment, index, query, includeRemove) => {
-    segment.style= {color: "red"};
-    const headers =  { "Content-Type": "text/plain;charset=UTF-8" };
-    return this.datasource
-      .doRequestWithHeaders("/parser/parse-filter", { method: "POST", data: query }, headers)
-      .then(
-        (result) => {
-          segment.valid = true;
-          segment.cssClass = "";
-        },
-        (error) => {
-          segment.valid = false;
-          segment.cssClass = "text-error";
-          console.log(error);
-        }
-      );
 
-  }
-  public createCustomQuery = () => {
-    this.customTagSegments.push(this.controller.uiSegmentSrv.newSegment({value: "--custom--", valid: false, expandable: false}));
-
-  }
 
   public tagSegmentUpdated(segment, index) {
     this.tagSegments[index] = segment;
@@ -302,7 +284,6 @@ export class MetadataClient {
         tags[tagIndex].operator = segment2.value;
       }
     });
-    
     _.each(this.customTagSegments, (segment, index) => {
       if (segment.valid) {
         tags.push({operator: "q", type: "custom", key: segment.value});
@@ -313,4 +294,39 @@ export class MetadataClient {
     this.controller.refresh();
   }
 
+  public validateCustomQuery = (segment, index, query, includeRemove) => {
+    segment.style= {color: "red"};
+    const headers =  { "Content-Type": "text/plain;charset=UTF-8" };
+    return this.datasource
+      .doRequestWithHeaders("/parser/parse-filter", { method: "POST", data: query }, headers)
+      .then(
+        (result) => {
+          segment.valid = true;
+          segment.cssClass = "";
+          this.complexError = null;
+          return [];
+        },
+        (error) => {
+          segment.valid = false;
+          segment.cssClass = "text-error";
+          this.complexError = "Complex filter contains invalid syntax. See help dropdown.";
+          return [];
+        }
+      )
+      .then(result => {
+        result.splice(0, 0, angular.copy(this.removeTagFilterSegment));
+        return result;
+      });
+
+  }
+  public createCustomQuery = () => {
+    this.customTagSegments.push(this.controller.uiSegmentSrv.newSegment({value: "--custom--", valid: false, expandable: false}));
+
+  }
+  public customFilterChanged = (segment, index) => {
+    if (segment.value === this.removeTagFilterSegment.value) {
+      this.customTagSegments.splice(index, 1);
+    }
+    this.rebuildTargetTagConditions();
+  }
 }

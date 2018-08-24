@@ -1,3 +1,12 @@
+###### Aliasing series
+You can create dynamic alias names for your results by using the following syntax:
+
+`$tag_{TAGNAME}`
+
+For `TAGNAME`s with dashes in them, use `[[tag_{TAGNAME}]]`
+
+Using either of these, you can make your legends more readable. You can alias on combinations of `TAGNAME`s too.
+
 ###### Custom Filter Legend
 | | | | | |
 |----------|:-------------:|-|----------|:-------------:|

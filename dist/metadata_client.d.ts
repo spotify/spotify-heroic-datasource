@@ -13,6 +13,7 @@ export declare class MetadataClient {
     lruTagValue: any;
     keyLru: any;
     error: any;
+    complexError: any;
     addCustomQuery: any;
     removeTagFilterSegment: any;
     tagSegments: any[];
@@ -26,8 +27,9 @@ export declare class MetadataClient {
     queryTagsAndValues(data: any, dedupe: any, cache: any): any;
     getTagsOrValues: (segment: any, index: any, query: any, includeRemove: any) => any;
     getTagValueOperator(tagValue: any, tagOperator: any): string;
-    validateCustomQuery: (segment: any, index: any, query: any, includeRemove: any) => any;
-    createCustomQuery: () => void;
     tagSegmentUpdated(segment: any, index: any): void;
     rebuildTargetTagConditions(): void;
+    validateCustomQuery: (segment: any, index: any, query: any, includeRemove: any) => any;
+    createCustomQuery: () => void;
+    customFilterChanged: (segment: any, index: any) => void;
 }

@@ -17,6 +17,7 @@ export declare class QueryPart {
     constructor(part: any, def: any);
     render(innerExpr: string): any;
     hasMultipleParamsInString(strValue: any, index: any): any;
+    removeParam(index: any): void;
     updateParam(strValue: any, index: any): void;
     updateText(): void;
 }

@@ -51,7 +51,6 @@ System.register(["app/plugins/sdk", "lodash", "./heroic_query", "./metadata_clie
                     this.templateSrv = templateSrv;
                     this.$q = $q;
                     this.uiSegmentSrv = uiSegmentSrv;
-                    console.log($scope);
                     this.target.globalAggregation = this.target.globalAggregation || true;
                     this.queryModel = new heroic_query_1.default(this.target, templateSrv, this.panel.scopedVars);
                     this.groupBySegment = this.uiSegmentSrv.newPlusButton();
@@ -92,7 +91,7 @@ System.register(["app/plugins/sdk", "lodash", "./heroic_query", "./metadata_clie
                 HeroicQueryCtrl.prototype.handleSelectPartEvent = function (selectParts, part, evt) {
                     switch (evt.name) {
                         case "get-param-options": {
-                            return this.metadataClient.getTagsOrValues({ type: "key" }, 0, null, false);
+                            return this.metadataClient.getTagsOrValues({ type: "key" }, 0, null, true);
                         }
                         case "part-param-changed": {
                             this.refresh();

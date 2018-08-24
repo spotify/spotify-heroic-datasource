@@ -83,6 +83,11 @@ System.register(['lodash'], function(exports_1) {
                     }
                     return this.def.params[index + 1] && this.def.params[index + 1].optional;
                 };
+                QueryPart.prototype.removeParam = function (index) {
+                    this.params.splice(index, 1);
+                    this.part.params = this.params;
+                    this.updateText();
+                };
                 QueryPart.prototype.updateParam = function (strValue, index) {
                     var _this = this;
                     // handle optional parameters

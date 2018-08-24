@@ -25,6 +25,7 @@ System.register(["./metadata_client"], function(exports_1) {
                 };
                 HeroicAnnotationsQueryCtrl.prototype.setTags = function (tags) {
                     this.annotation.tags = tags;
+                    this.annotation.query = this.metadataClient.queryModel.buildCurrentFilter(false, false);
                 };
                 HeroicAnnotationsQueryCtrl.prototype.refresh = function () {
                 };

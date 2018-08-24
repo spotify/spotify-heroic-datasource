@@ -19,7 +19,7 @@
 	</div>
 	<div class="gf-form-inline">
 		<div class="gf-form">
-			<label class="gf-form-label query-keyword">CUSTOM FILTERS</label>
+			<label class="gf-form-label query-keyword">COMPLEX FILTERS</label>
 		</div>
 
 		<div class="gf-form" ng-repeat="segment in ctrl.metadataClient.customTagSegments">
@@ -27,7 +27,7 @@
 				segment="segment"
 				get-options="ctrl.metadataClient.validateCustomQuery(segment, $index, $query, true)"
 				debounce="true"
-				on-change="ctrl.metadataClient.rebuildTargetTagConditions()"
+				on-change="ctrl.metadataClient.customFilterChanged(segment, $index)"
 				>
 			</metric-segment>
 		</div>

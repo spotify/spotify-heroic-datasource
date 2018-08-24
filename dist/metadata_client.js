@@ -112,14 +112,27 @@ System.register(["angular", "lodash", "./heroic_query", "./lru_cache"], function
                             .then(function (result) {
                             segment.valid = true;
                             segment.cssClass = "";
+                            _this.complexError = null;
+                            return [];
                         }, function (error) {
                             segment.valid = false;
                             segment.cssClass = "text-error";
-                            console.log(error);
+                            _this.complexError = "Complex filter contains invalid syntax. See help dropdown.";
+                            return [];
+                        })
+                            .then(function (result) {
+                            result.splice(0, 0, angular_1.default.copy(_this.removeTagFilterSegment));
+                            return result;
                         });
                     };
                     this.createCustomQuery = function () {
                         _this.customTagSegments.push(_this.controller.uiSegmentSrv.newSegment({ value: "--custom--", valid: false, expandable: false }));
+                    };
+                    this.customFilterChanged = function (segment, index) {
+                        if (segment.value === _this.removeTagFilterSegment.value) {
+                            _this.customTagSegments.splice(index, 1);
+                        }
+                        _this.rebuildTargetTagConditions();
                     };
                     this.tagSegments = [];
                     this.customTagSegments = [];
@@ -127,7 +140,9 @@ System.register(["angular", "lodash", "./heroic_query", "./lru_cache"], function
                         for (var _i = 0, _a = this.controller.getTags(); _i < _a.length; _i++) {
                             var tag = _a[_i];
                             if (tag.type && tag.type === "custom") {
-                                this.customTagSegments.push(this.controller.uiSegmentSrv.newSegment({ value: tag.key, valid: true, expandable: false }));
+                                var newSeg = this.controller.uiSegmentSrv.newSegment({ value: tag.key, expandable: false });
+                                newSeg.valid = true;
+                                this.customTagSegments.push(newSeg);
                                 continue;
                             }
                             if (!tag.operator) {
@@ -151,7 +166,7 @@ System.register(["angular", "lodash", "./heroic_query", "./lru_cache"], function
                     this.addCustomQuery = this.controller.uiSegmentSrv.newPlusButton();
                     this.removeTagFilterSegment = this.controller.uiSegmentSrv.newSegment({
                         fake: true,
-                        value: "-- remove tag filter --",
+                        value: "-- remove --",
                     });
                 }
                 MetadataClient.prototype.fixTagSegments = function () {

@@ -71,6 +71,12 @@ export class QueryPart {
     return this.def.params[index + 1] && this.def.params[index + 1].optional;
   }
 
+  removeParam(index) {
+    this.params.splice(index, 1);
+    this.part.params = this.params;
+    this.updateText();
+  }
+
   updateParam(strValue, index) {
     // handle optional parameters
     // if string contains ',' and next param is optional, split and update both
