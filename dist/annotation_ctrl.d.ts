@@ -4,19 +4,14 @@ export declare class HeroicAnnotationsQueryCtrl {
     private $q;
     private uiSegmentSrv;
     static templateUrl: string;
-    tagSegments: any;
     datasource: any;
     annotation: any;
-    removeTagFilterSegment: any;
-    selectMenu: any;
-    queryModel: any;
     metadataClient: MetadataClient;
     range: boolean;
     rangeType: any;
     rangeTypes: any;
     constructor($scope: any, $injector: any, templateSrv: any, $q: any, uiSegmentSrv: any);
-    buildSelectMenu(): void;
-    fixTagSegments(): void;
-    tagSegmentUpdated(segment: any, index: any): void;
-    rebuildTargetTagConditions(): void;
+    getTags(): any;
+    setTags(tags: any): void;
+    refresh(): void;
 }

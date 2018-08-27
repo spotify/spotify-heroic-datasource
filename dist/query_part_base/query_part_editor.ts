@@ -86,7 +86,14 @@ export function queryPartEditorLabeledDirective($compile, templateSrv) {
         if (partDef.dynamicParameters) {
           partDefParamIndex = 0;
         }
-        if (newValue !== '' || part.def.params[partDefParamIndex].optional) {
+        if (newValue === "-- remove --") {
+          part.removeParam(paramIndex);
+          currentParam = 0;
+          relink();
+          $scope.$apply(() => {
+            $scope.handleEvent({ $event: { name: 'part-param-changed' } });
+          });
+        } else if (newValue !== '' || part.def.params[partDefParamIndex].optional) {
           $link.html(templateSrv.highlightVariablesAsHtml(newValue));
 
           part.updateParam($input.val(), paramIndex);

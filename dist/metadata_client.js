@@ -37,16 +37,12 @@ System.register(["angular", "lodash", "./heroic_query", "./lru_cache"], function
         execute: function() {
             MetadataClient = (function () {
                 /** @ngInject **/
-                function MetadataClient(datasource, uiSegmentSrv, templateSrv, $q, scopedVars, target, removeTagFilterSegment, tagSegments, includeVariables, includeScopes) {
+                function MetadataClient(controller, datasource, scopedVars, target, includeVariables, includeScopes) {
                     var _this = this;
+                    this.controller = controller;
                     this.datasource = datasource;
-                    this.uiSegmentSrv = uiSegmentSrv;
-                    this.templateSrv = templateSrv;
-                    this.$q = $q;
                     this.scopedVars = scopedVars;
                     this.target = target;
-                    this.removeTagFilterSegment = removeTagFilterSegment;
-                    this.tagSegments = tagSegments;
                     this.includeVariables = includeVariables;
                     this.includeScopes = includeScopes;
                     this.getMeasurements = function (measurementFilter) {
@@ -71,11 +67,11 @@ System.register(["angular", "lodash", "./heroic_query", "./lru_cache"], function
                     };
                     this.getTagsOrValues = function (segment, index, query, includeRemove) {
                         if (segment.type === "condition") {
-                            return _this.$q.when([_this.uiSegmentSrv.newSegment("AND"), _this.uiSegmentSrv.newSegment("OR")]);
+                            return _this.controller.$q.when([_this.controller.uiSegmentSrv.newSegment("AND")]);
                         }
                         if (segment.type === "operator") {
                             var nextValue = _this.tagSegments[index + 1].value;
-                            return _this.$q.when(_this.uiSegmentSrv.newOperators(["=", "!=", "^", "!^"]));
+                            return _this.controller.$q.when(_this.controller.uiSegmentSrv.newOperators(["=", "!=", "^", "!^"]));
                         }
                         var tagsCopy = _this.queryModel.target.tags.slice();
                         if (segment.type === "value") {
@@ -108,14 +104,78 @@ System.register(["angular", "lodash", "./heroic_query", "./lru_cache"], function
                                 .then(_this.transformToSegments(true, "value"));
                         }
                     };
+                    this.validateCustomQuery = function (segment, index, query, includeRemove) {
+                        segment.style = { color: "red" };
+                        var headers = { "Content-Type": "text/plain;charset=UTF-8" };
+                        return _this.datasource
+                            .doRequestWithHeaders("/parser/parse-filter", { method: "POST", data: query }, headers)
+                            .then(function (result) {
+                            segment.valid = true;
+                            segment.cssClass = "";
+                            _this.complexError = null;
+                            return [];
+                        }, function (error) {
+                            segment.valid = false;
+                            segment.cssClass = "text-error";
+                            _this.complexError = "Complex filter contains invalid syntax. See help dropdown.";
+                            return [];
+                        })
+                            .then(function (result) {
+                            result.splice(0, 0, angular_1.default.copy(_this.removeTagFilterSegment));
+                            return result;
+                        });
+                    };
+                    this.createCustomQuery = function () {
+                        _this.customTagSegments.push(_this.controller.uiSegmentSrv.newSegment({ value: "--custom--", valid: false, expandable: false }));
+                    };
+                    this.customFilterChanged = function (segment, index) {
+                        if (segment.value === _this.removeTagFilterSegment.value) {
+                            _this.customTagSegments.splice(index, 1);
+                        }
+                        _this.rebuildTargetTagConditions();
+                    };
+                    this.tagSegments = [];
+                    this.customTagSegments = [];
+                    if (!this.controller.fakeController) {
+                        for (var _i = 0, _a = this.controller.getTags(); _i < _a.length; _i++) {
+                            var tag = _a[_i];
+                            if (tag.type && tag.type === "custom") {
+                                var newSeg = this.controller.uiSegmentSrv.newSegment({ value: tag.key, expandable: false });
+                                newSeg.valid = true;
+                                this.customTagSegments.push(newSeg);
+                                continue;
+                            }
+                            if (!tag.operator) {
+                                tag.operator = "=";
+                            }
+                            if (tag.condition) {
+                                this.tagSegments.push(this.controller.uiSegmentSrv.newCondition(tag.condition));
+                            }
+                            this.tagSegments.push(this.controller.uiSegmentSrv.newKey(tag.key));
+                            this.tagSegments.push(this.controller.uiSegmentSrv.newOperator(tag.operator));
+                            this.tagSegments.push(this.controller.uiSegmentSrv.newKeyValue(tag.value));
+                        }
+                        this.fixTagSegments();
+                    }
                     this.lruTag = new lru_cache_1.LruCache();
                     this.lruTagValue = new lru_cache_1.LruCache();
                     this.keyLru = new lru_cache_1.LruCache();
-                    this.queryModel = new heroic_query_1.default(this.target, templateSrv, this.scopedVars);
-                    this.removeTagFilterSegment = removeTagFilterSegment;
+                    this.queryModel = new heroic_query_1.default(this.target, this.controller.templateSrv, this.scopedVars);
                     this.includeVariables = includeVariables;
                     this.includeScopes = includeScopes;
+                    this.addCustomQuery = this.controller.uiSegmentSrv.newPlusButton();
+                    this.removeTagFilterSegment = this.controller.uiSegmentSrv.newSegment({
+                        fake: true,
+                        value: "-- remove --",
+                    });
                 }
+                MetadataClient.prototype.fixTagSegments = function () {
+                    var count = this.tagSegments.length;
+                    var lastSegment = this.tagSegments[Math.max(count - 1, 0)];
+                    if (!lastSegment || lastSegment.type !== "plus-button") {
+                        this.tagSegments.push(this.controller.uiSegmentSrv.newPlusButton());
+                    }
+                };
                 MetadataClient.prototype.handleQueryError = function (err) {
                     this.error = err.message || "Failed to issue metric query";
                     return [];
@@ -124,15 +184,15 @@ System.register(["angular", "lodash", "./heroic_query", "./lru_cache"], function
                     var _this = this;
                     return function (results) {
                         var segments = lodash_1.default.map(results, function (segment) {
-                            return _this.uiSegmentSrv.newSegment({
+                            return _this.controller.uiSegmentSrv.newSegment({
                                 value: segment[segmentKey],
                                 expandable: false,
                             });
                         });
                         if (addTemplateVars) {
-                            for (var _i = 0, _a = _this.templateSrv.variables; _i < _a.length; _i++) {
+                            for (var _i = 0, _a = _this.controller.templateSrv.variables; _i < _a.length; _i++) {
                                 var variable = _a[_i];
-                                segments.unshift(_this.uiSegmentSrv.newSegment({
+                                segments.unshift(_this.controller.uiSegmentSrv.newSegment({
                                     value: "$" + variable.name,
                                     expandable: false,
                                 }));
@@ -172,6 +232,75 @@ System.register(["angular", "lodash", "./heroic_query", "./lru_cache"], function
                         return "=";
                     }
                     return null;
+                };
+                MetadataClient.prototype.tagSegmentUpdated = function (segment, index) {
+                    this.tagSegments[index] = segment;
+                    // AND, Z, =, A, AND, B, =, C,  AND, D, =,  E]
+                    // 3  , 4, 5, 6, 7,   8, 9, 10, 11, 12, 13, 14]
+                    // handle remove tag condition
+                    if (segment.value === this.removeTagFilterSegment.value) {
+                        this.tagSegments.splice(index, 3);
+                        if (this.tagSegments.length === 0) {
+                            this.tagSegments.push(this.controller.uiSegmentSrv.newPlusButton());
+                        }
+                        else if (this.tagSegments.length > 2) {
+                            this.tagSegments.splice(Math.max(index - 1, 0), 1);
+                            if (this.tagSegments[this.tagSegments.length - 1].type !== "plus-button") {
+                                this.tagSegments.push(this.controller.uiSegmentSrv.newPlusButton());
+                            }
+                        }
+                    }
+                    else {
+                        if (segment.type === "plus-button") {
+                            if (index > 2) {
+                                this.tagSegments.splice(index, 0, this.controller.uiSegmentSrv.newCondition("AND"));
+                            }
+                            this.tagSegments.push(this.controller.uiSegmentSrv.newOperator("="));
+                            this.tagSegments.push(this.controller.uiSegmentSrv.newFake("select tag value", "value", "query-segment-value"));
+                            segment.type = "key";
+                            segment.cssClass = "query-segment-key";
+                        }
+                        if (index + 1 === this.tagSegments.length) {
+                            this.tagSegments.push(this.controller.uiSegmentSrv.newPlusButton());
+                        }
+                    }
+                    this.rebuildTargetTagConditions();
+                };
+                MetadataClient.prototype.rebuildTargetTagConditions = function () {
+                    var _this = this;
+                    var tags = [];
+                    var tagIndex = 0;
+                    var tagOperator = "";
+                    lodash_1.default.each(this.tagSegments, function (segment2, index) {
+                        if (segment2.type === "key") {
+                            if (tags.length === 0) {
+                                tags.push({});
+                            }
+                            tags[tagIndex].key = segment2.value;
+                        }
+                        else if (segment2.type === "value") {
+                            tagOperator = _this.getTagValueOperator(segment2.value, tags[tagIndex].operator);
+                            if (tagOperator) {
+                                _this.tagSegments[index - 1] = _this.controller.uiSegmentSrv.newOperator(tagOperator);
+                                tags[tagIndex].operator = tagOperator;
+                            }
+                            tags[tagIndex].value = segment2.value;
+                        }
+                        else if (segment2.type === "condition") {
+                            tags.push({ condition: segment2.value });
+                            tagIndex += 1;
+                        }
+                        else if (segment2.type === "operator") {
+                            tags[tagIndex].operator = segment2.value;
+                        }
+                    });
+                    lodash_1.default.each(this.customTagSegments, function (segment, index) {
+                        if (segment.valid) {
+                            tags.push({ operator: "q", type: "custom", key: segment.value });
+                        }
+                    });
+                    this.controller.setTags(tags);
+                    this.controller.refresh();
                 };
                 MetadataClient.templateUrl = "partials/query.editor.html";
                 MetadataClient.DEBOUNCE_MS = 500; // milliseconds to wait between keystrokes before sending queries for metadata

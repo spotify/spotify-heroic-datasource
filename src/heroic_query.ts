@@ -136,11 +136,14 @@ export default class HeroicQuery {
   }
 
   public renderSubFilter(tag) {
-    switch (tag.operator) {
-      case ("="):
-        return [tag.operator, tag.key, tag.value];
+    switch (tag.type) {
+      case ("custom"):
+        return ["q", tag.key];
       default:
-        return ["q", `${tag.key} ${tag.operator} ${tag.value}`];
+        if (tag.operator.startsWith("!")) {
+          return ["not", [tag.operator.split("!")[1], tag.key, tag.value]];
+        }
+        return [tag.operator, tag.key, tag.value];
     }
   }
 

@@ -46,9 +46,10 @@ System.register(["lodash", "app/core/utils/datemath", "./heroic_query", "./heroi
         execute: function() {
             HeroicDatasource = (function () {
                 /** @ngInject */
-                function HeroicDatasource(instanceSettings, $q, backendSrv, templateSrv) {
+                function HeroicDatasource(instanceSettings, $q, backendSrv, templateSrv, uiSegmentSrv) {
                     this.$q = $q;
                     this.backendSrv = backendSrv;
+                    this.uiSegmentSrv = uiSegmentSrv;
                     this.type = "heroic";
                     this.url = instanceSettings.url;
                     this.templateSrv = templateSrv;
@@ -68,7 +69,8 @@ System.register(["lodash", "app/core/utils/datemath", "./heroic_query", "./heroi
                     this.annotationModels = lodash_1.default.map(this.annotationModels, function (parts) {
                         return lodash_1.default.map(parts, query_part_1.default.create);
                     });
-                    this.queryBuilder = new metadata_client_1.MetadataClient(this, null, this.templateSrv, this.$q, {}, {}, null, {}, true, true);
+                    this.fakeController = true;
+                    this.queryBuilder = new metadata_client_1.MetadataClient(this, this, {}, {}, true, true);
                 }
                 HeroicDatasource.prototype.query = function (options) {
                     var _this = this;
@@ -184,13 +186,16 @@ System.register(["lodash", "app/core/utils/datemath", "./heroic_query", "./heroi
                         };
                     });
                 };
-                HeroicDatasource.prototype.doRequest = function (path, options) {
-                    var headers = { "Content-Type": "application/json;charset=UTF-8" };
+                HeroicDatasource.prototype.doRequestWithHeaders = function (path, options, headers) {
                     options = options || {};
                     options.headers = headers;
                     options.url = this.url + path;
                     options.inspect = { type: "heroic" };
                     return this.backendSrv.datasourceRequest(options);
+                };
+                HeroicDatasource.prototype.doRequest = function (path, options) {
+                    var headers = { "Content-Type": "application/json;charset=UTF-8" };
+                    return this.doRequestWithHeaders(path, options, headers);
                 };
                 HeroicDatasource.prototype.parseRelativeUnit = function (unit) {
                     switch (unit) {

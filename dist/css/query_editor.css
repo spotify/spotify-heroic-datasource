@@ -17,3 +17,6 @@
 .gf-form-select-wrapper--caret-indent.gf-form-select-wrapper::after {
   right: 0.775rem
 }
+.query-segment-operator {
+  color: $red;
+}
