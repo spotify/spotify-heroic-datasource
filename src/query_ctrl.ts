@@ -41,7 +41,9 @@ export class HeroicQueryCtrl extends QueryCtrl {
     super($scope, $injector);
 
     this.target.globalAggregation = this.target.globalAggregation || true;
-    this.queryModel = new HeroicQuery(this.target, templateSrv, this.panel.scopedVars);
+    this.queryModel = new HeroicQuery(this.target,
+        templateSrv,
+        this.panel.scopedVars || {});
     this.groupBySegment = this.uiSegmentSrv.newPlusButton();
     this.resultFormats = [{ text: "Time series", value: "time_series" }, { text: "Table", value: "table" }];
 
@@ -76,20 +78,6 @@ export class HeroicQueryCtrl extends QueryCtrl {
     );
   }
 
-  public getGroupByOptions() {
-    // TODO: Group By tags aggregates
-    const options = [];
-    options.push(this.uiSegmentSrv.newSegment({ value: "time($interval)" }));
-    return Promise.resolve(options);
-  }
-
-  public groupByAction() {
-    this.queryModel.addGroupBy(this.groupBySegment.value);
-    const plusButton = this.uiSegmentSrv.newPlusButton();
-    this.groupBySegment.value = plusButton.value;
-    this.groupBySegment.html = plusButton.html;
-    this.refresh();
-  }
 
   public addSelectPart(selectParts, cat, subitem) {
     this.queryModel.addSelectPart(selectParts, cat.text, subitem.value);
@@ -116,6 +104,8 @@ export class HeroicQueryCtrl extends QueryCtrl {
     }
   }
   public refresh() {
+    this.queryModel.scopedVars["interval"] = {value: this.panelCtrl.interval};
+    this.queryModel.scopedVars["__interval"] = {value: this.panelCtrl.interval};
     this.target.query = JSON.stringify(this.queryModel.render());
     this.panelCtrl.refresh();
   }
@@ -135,6 +125,9 @@ export class HeroicQueryCtrl extends QueryCtrl {
         break;
       }
       case "get-part-actions": {
+        if (part.def.type === "time") {
+          return Promise.resolve([]);
+        }
         return this.$q.when([{ text: "Remove", value: "remove-part" }]);
       }
     }

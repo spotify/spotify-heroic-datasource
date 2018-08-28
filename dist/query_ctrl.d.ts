@@ -17,8 +17,6 @@ export declare class HeroicQueryCtrl extends QueryCtrl {
     /** @ngInject **/
     constructor($scope: any, $injector: any, templateSrv: any, $q: any, uiSegmentSrv: any);
     buildSelectMenu(): void;
-    getGroupByOptions(): Promise<any[]>;
-    groupByAction(): void;
     addSelectPart(selectParts: any, cat: any, subitem: any): void;
     handleSelectPartEvent(selectParts: any, part: any, evt: any): any;
     refresh(): void;
