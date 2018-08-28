@@ -52,7 +52,7 @@ System.register(["app/plugins/sdk", "lodash", "./heroic_query", "./metadata_clie
                     this.$q = $q;
                     this.uiSegmentSrv = uiSegmentSrv;
                     this.target.globalAggregation = this.target.globalAggregation || true;
-                    this.queryModel = new heroic_query_1.default(this.target, templateSrv, this.panel.scopedVars);
+                    this.queryModel = new heroic_query_1.default(this.target, templateSrv, this.panel.scopedVars || {});
                     this.groupBySegment = this.uiSegmentSrv.newPlusButton();
                     this.resultFormats = [{ text: "Time series", value: "time_series" }, { text: "Table", value: "table" }];
                     this.buildSelectMenu();
@@ -70,19 +70,6 @@ System.register(["app/plugins/sdk", "lodash", "./heroic_query", "./metadata_clie
                         memo.push(menu);
                         return memo;
                     }, []);
-                };
-                HeroicQueryCtrl.prototype.getGroupByOptions = function () {
-                    // TODO: Group By tags aggregates
-                    var options = [];
-                    options.push(this.uiSegmentSrv.newSegment({ value: "time($interval)" }));
-                    return Promise.resolve(options);
-                };
-                HeroicQueryCtrl.prototype.groupByAction = function () {
-                    this.queryModel.addGroupBy(this.groupBySegment.value);
-                    var plusButton = this.uiSegmentSrv.newPlusButton();
-                    this.groupBySegment.value = plusButton.value;
-                    this.groupBySegment.html = plusButton.html;
-                    this.refresh();
                 };
                 HeroicQueryCtrl.prototype.addSelectPart = function (selectParts, cat, subitem) {
                     this.queryModel.addSelectPart(selectParts, cat.text, subitem.value);
@@ -108,6 +95,8 @@ System.register(["app/plugins/sdk", "lodash", "./heroic_query", "./metadata_clie
                     }
                 };
                 HeroicQueryCtrl.prototype.refresh = function () {
+                    this.queryModel.scopedVars["interval"] = { value: this.panelCtrl.interval };
+                    this.queryModel.scopedVars["__interval"] = { value: this.panelCtrl.interval };
                     this.target.query = JSON.stringify(this.queryModel.render());
                     this.panelCtrl.refresh();
                 };
@@ -126,6 +115,9 @@ System.register(["app/plugins/sdk", "lodash", "./heroic_query", "./metadata_clie
                             break;
                         }
                         case "get-part-actions": {
+                            if (part.def.type === "time") {
+                                return Promise.resolve([]);
+                            }
                             return this.$q.when([{ text: "Remove", value: "remove-part" }]);
                         }
                     }
