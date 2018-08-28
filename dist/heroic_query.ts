@@ -184,16 +184,7 @@ export default class HeroicQuery {
 
     const aggregators = this.selectModels.map((modelParts) => {
       return modelParts.map((modelPart) => {
-        const renderOption = modelPart.render();
-        if (currentIntervalUnit) {
-
-          renderOption.each.forEach((each) => {
-            each.sampling.unit = currentIntervalUnit; // TODO: fix
-            each.sampling.value = currentIntervalValue;
-          });
-        }
-
-        return renderOption;
+        return modelPart.def.renderer(modelPart, undefined, currentIntervalValue);
       });
     });
 

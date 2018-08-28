@@ -19,37 +19,32 @@
 */
 
 import { functionRenderer, QueryPart, QueryPartDef} from "./query_part_base/query_part";
-const rootAggregations = [
+
+const filterAggregations = [
   "abovek",
-  "average",
   "belowk",
-  "bottomk",
-  "cardinality",
-  "chain",
-  "collapse",
+  "topk",
+  "bottomk"
+]
+const rootAggregations = [
+  "average",
   "count",
   "delta",
-  "empty",
-  "group",
-  "group-unique",
+  "deltaPerSecond",
   "max",
   "min",
-  "opts",
-  "pointsabove",
-  "pointsbelow",
-  "quantile",
-  "spread",
+  "notNegative",
   "stddev",
   "sum",
   "sum2",
-  "topk",
-  "tpl",
 ];
+
 let index = {};
 let categories = {
   "For Each": [],
   "Collapse": [],
-  "Group By": []
+  "Group By": [],
+  "Filters": []
 };
 
 function createPart(part): any {
@@ -87,7 +82,7 @@ function replaceAggregationAddStrategy(selectParts, partModel) {
 }
 
 function buildAggregateRenderer(ctype, of) {
-  function aggregateRenderer(part, innerExpr) {
+  function aggregateRenderer(part, innerExpr, secondsInterval) {
 
     let tagGroup = of;
     if (part.params.length) { // if the part def has any params, use those
@@ -103,15 +98,27 @@ function buildAggregateRenderer(ctype, of) {
         },
       ],
     };
-    if (ctype !== "delta" && ctype !== "deltaPerSecond" && ctype !== "notNegative") {
-      aggregation.each[0]["sampling"] = {
-        unit: "minutes",
-        value: 30,
-      };
+    if (ctype !== "delta" && ctype !== "deltaPerSecond" && ctype !== "notNegative" && ctype !== "stddev") {
+      aggregation.each.forEach(each => {
+        each["sampling"] = {
+          unit: "seconds",
+          value: secondsInterval,
+        };
+      });
     }
     return aggregation;
   }
   return aggregateRenderer;
+}
+function buildFilterRenderer(ctype) {
+  function filterRenderer(part, innerExpr, secondsInterval) {
+    return {
+      type: ctype,
+      k: parseInt(part.params[0]),
+      of: {type: "empty"}
+    }
+  }
+  return filterRenderer;
 }
 
 function registerForEach(options: any) {
@@ -159,6 +166,21 @@ rootAggregations.forEach((aggregation) => {
     ],
     defaultParams: [],
   });
+});
+
+filterAggregations.forEach(aggregation => {
+  register({
+    type: aggregation,
+    addStrategy: replaceAggregationAddStrategy,
+    renderer: buildFilterRenderer(aggregation),
+    categoryName: "Filters",
+    params: [{
+      name: "k",
+      type: "int",
+      options: []
+    }],
+    defaultParams: ["5"]
+  })
 });
 
 register({

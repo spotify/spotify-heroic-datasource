@@ -174,14 +174,7 @@ System.register(["app/core/utils/kbn", "lodash", "./query_part"], function(expor
                     }
                     var aggregators = this.selectModels.map(function (modelParts) {
                         return modelParts.map(function (modelPart) {
-                            var renderOption = modelPart.render();
-                            if (currentIntervalUnit) {
-                                renderOption.each.forEach(function (each) {
-                                    each.sampling.unit = currentIntervalUnit; // TODO: fix
-                                    each.sampling.value = currentIntervalValue;
-                                });
-                            }
-                            return renderOption;
+                            return modelPart.def.renderer(modelPart, undefined, currentIntervalValue);
                         });
                     });
                     var features;
