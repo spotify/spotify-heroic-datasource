@@ -39,8 +39,11 @@ export class HeroicQueryCtrl extends QueryCtrl {
   /** @ngInject **/
   constructor($scope, $injector, private templateSrv, private $q, private uiSegmentSrv) {
     super($scope, $injector);
-
-    this.target.globalAggregation = this.target.globalAggregation || true;
+    if (this.target.globalAggregation !== undefined) {
+      this.target.globalAggregation = this.target.globalAggregation;
+    } else {
+      this.target.globalAggregation = true;
+    }
     this.queryModel = new HeroicQuery(this.target,
         templateSrv,
         this.panel.scopedVars || {});
