@@ -19,7 +19,7 @@
 */
 System.register(["./query_part_base/query_part"], function(exports_1) {
     var query_part_1;
-    var rootAggregations, index, categories, groupByTimeFunctions;
+    var filterAggregations, rootAggregations, index, categories, groupByTimeFunctions;
     function createPart(part) {
         var def = index[part.categoryName][part.type];
         if (!def) {
@@ -50,7 +50,7 @@ System.register(["./query_part_base/query_part"], function(exports_1) {
         selectParts.push(partModel);
     }
     function buildAggregateRenderer(ctype, of) {
-        function aggregateRenderer(part, innerExpr) {
+        function aggregateRenderer(part, innerExpr, secondsInterval) {
             var tagGroup = of;
             if (part.params.length) {
                 tagGroup = part.params;
@@ -64,15 +64,27 @@ System.register(["./query_part_base/query_part"], function(exports_1) {
                     },
                 ],
             };
-            if (ctype !== "delta" && ctype !== "deltaPerSecond" && ctype !== "notNegative") {
-                aggregation.each[0]["sampling"] = {
-                    unit: "minutes",
-                    value: 30,
-                };
+            if (ctype !== "delta" && ctype !== "deltaPerSecond" && ctype !== "notNegative" && ctype !== "stddev") {
+                aggregation.each.forEach(function (each) {
+                    each["sampling"] = {
+                        unit: "seconds",
+                        value: secondsInterval,
+                    };
+                });
             }
             return aggregation;
         }
         return aggregateRenderer;
+    }
+    function buildFilterRenderer(ctype) {
+        function filterRenderer(part, innerExpr, secondsInterval) {
+            return {
+                type: ctype,
+                k: parseInt(part.params[0]),
+                of: { type: "empty" }
+            };
+        }
+        return filterRenderer;
     }
     function registerForEach(options) {
         options.renderer = buildAggregateRenderer(options.type, null);
@@ -92,37 +104,30 @@ System.register(["./query_part_base/query_part"], function(exports_1) {
                 query_part_1 = query_part_1_1;
             }],
         execute: function() {
-            rootAggregations = [
+            filterAggregations = [
                 "abovek",
-                "average",
                 "belowk",
-                "bottomk",
-                "cardinality",
-                "chain",
-                "collapse",
+                "topk",
+                "bottomk"
+            ];
+            rootAggregations = [
+                "average",
                 "count",
                 "delta",
-                "empty",
-                "group",
-                "group-unique",
+                "deltaPerSecond",
                 "max",
                 "min",
-                "opts",
-                "pointsabove",
-                "pointsbelow",
-                "quantile",
-                "spread",
+                "notNegative",
                 "stddev",
                 "sum",
                 "sum2",
-                "topk",
-                "tpl",
             ];
             index = {};
             categories = {
                 "For Each": [],
                 "Collapse": [],
-                "Group By": []
+                "Group By": [],
+                "Filters": []
             };
             groupByTimeFunctions = [];
             rootAggregations.forEach(function (aggregation) {
@@ -153,6 +158,20 @@ System.register(["./query_part_base/query_part"], function(exports_1) {
                         }
                     ],
                     defaultParams: [],
+                });
+            });
+            filterAggregations.forEach(function (aggregation) {
+                register({
+                    type: aggregation,
+                    addStrategy: replaceAggregationAddStrategy,
+                    renderer: buildFilterRenderer(aggregation),
+                    categoryName: "Filters",
+                    params: [{
+                            name: "k",
+                            type: "int",
+                            options: []
+                        }],
+                    defaultParams: ["5"]
                 });
             });
             register({

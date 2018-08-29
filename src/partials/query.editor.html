@@ -103,32 +103,12 @@
 				<query-part-editor-labeled ng-repeat="part in ctrl.queryModel.groupByParts"  debounce="true" part="part" class="gf-form-label query-part" handle-event="ctrl.handleGroupByPartEvent(part, $index, $event)">
 				</query-part-editor-labeled>
 			</div>
-			 
+
 			<div class="gf-form gf-form--grow">
 				<div class="gf-form-label gf-form-label--grow"></div>
 			</div>
 		</div>
 
-
-		<div class="gf-form-inline" ng-if="ctrl.target.limit">
-			<div class="gf-form">
-				<label class="gf-form-label query-keyword width-7">LIMIT</label>
-				<input type="text" class="gf-form-input width-9" ng-model="ctrl.target.limit" spellcheck='false' placeholder="No Limit" ng-blur="ctrl.refresh()">
-			</div>
-			<div class="gf-form gf-form--grow">
-				<div class="gf-form-label gf-form-label--grow"></div>
-			</div>
-		</div>
-
-		<div class="gf-form-inline" ng-if="ctrl.target.slimit">
-			<div class="gf-form">
-				<label class="gf-form-label query-keyword width-7">SLIMIT</label>
-				<input type="text" class="gf-form-input width-9" ng-model="ctrl.target.slimit" spellcheck='false' placeholder="No Limit" ng-blur="ctrl.refresh()">
-			</div>
-			<div class="gf-form gf-form--grow">
-				<div class="gf-form-label gf-form-label--grow"></div>
-			</div>
-		</div>
 
 		<div class="gf-form-inline">
 			<div class="gf-form">
