@@ -87,7 +87,9 @@ System.register(["lodash", "app/core/utils/datemath", "./heroic_query", "./heroi
                         scopedVars.interval = scopedVars.__interval;
                         queryModel = new heroic_query_1.default(target, _this.templateSrv, scopedVars);
                         return queryModel.render();
-                    }).filter(function (query) { return query !== null; });
+                    }).filter(function (query) {
+                        return query !== null && JSON.stringify(query.filter) !== "[\"true\"]";
+                    });
                     if (!allQueries) {
                         return this.$q.when({ data: [] });
                     }
@@ -98,12 +100,6 @@ System.register(["lodash", "app/core/utils/datemath", "./heroic_query", "./heroi
                             query.filter.push(queryModel.renderAdhocFilters(adhocFilters));
                         }
                     });
-                    // TODO: add globaal ad hoc filters
-                    // add global adhoc filters to timeFilter
-                    // var adhocFilters = this.templateSrv.getAdhocFilters(this.name);
-                    // if (adhocFilters.length > 0) {
-                    //   timeFilter += ' AND ' + queryModel.renderAdhocFilters(adhocFilters);
-                    // }
                     var output = [];
                     var batchQuery = { queries: {} };
                     allQueries.forEach(function (query, index) {

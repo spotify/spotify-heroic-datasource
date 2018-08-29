@@ -97,7 +97,10 @@ export default class HeroicDatasource {
 
       queryModel = new HeroicQuery(target, this.templateSrv, scopedVars);
       return queryModel.render();
-    }).filter((query) => query !== null);
+    }).filter((query) => {
+      return query !== null && JSON.stringify(query.filter) !== "[\"true\"]";
+    });
+
     if (!allQueries) {
       return this.$q.when({ data: [] });
     }
@@ -108,13 +111,6 @@ export default class HeroicDatasource {
         query.filter.push(queryModel.renderAdhocFilters(adhocFilters));
       }
     });
-
-    // TODO: add globaal ad hoc filters
-    // add global adhoc filters to timeFilter
-    // var adhocFilters = this.templateSrv.getAdhocFilters(this.name);
-    // if (adhocFilters.length > 0) {
-    //   timeFilter += ' AND ' + queryModel.renderAdhocFilters(adhocFilters);
-    // }
 
     const output = [];
     const batchQuery = { queries: {} };
