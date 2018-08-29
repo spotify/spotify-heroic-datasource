@@ -42,7 +42,7 @@ System.register(["app/core/utils/kbn", "lodash", "./query_part"], function(expor
                     target.orderByTime = target.orderByTime || "ASC";
                     target.tags = target.tags || [];
                     target.groupBy = target.groupBy || [{ type: "time", params: ["$__interval"] }];
-                    target.select = target.select || [[{ type: "average", categoryName: "For Each", params: [] }]];
+                    target.select = target.select || [[]];
                     this.updateProjection();
                 }
                 HeroicQuery.prototype.updateProjection = function () {
