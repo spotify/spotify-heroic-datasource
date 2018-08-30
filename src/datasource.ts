@@ -96,7 +96,13 @@ export default class HeroicDatasource {
       scopedVars.interval = scopedVars.__interval;
 
       queryModel = new HeroicQuery(target, this.templateSrv, scopedVars);
-      return queryModel.render();
+      const query = queryModel.render();
+      if (query.aggregators.length) {
+        target.queryResolution = query.aggregators[0].each[0].sampling.value;
+      } else {
+        target.queryResolution = null
+      }
+      return query;
     }).filter((query) => {
       return query !== null && JSON.stringify(query.filter) !== "[\"true\"]";
     });
