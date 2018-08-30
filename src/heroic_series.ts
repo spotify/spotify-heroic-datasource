@@ -128,14 +128,13 @@ export default class HeroicSeries {
           return;
         }
       });
-
       _.each(series.values, (value, index) => {
         let data = {
           annotation: this.annotation,
           time: +new Date(value[0]),
           title: series.tags[titleCol],
           // Remove empty values, then split in different tags for comma separated values
-          tags: _.flatten(
+          tags: _.uniq(_.flatten(
             tagsCol
               .filter(function(t) {
                 return series.tags[t];
@@ -143,7 +142,7 @@ export default class HeroicSeries {
               .map(function(t) {
                 return series.tags[t].split(",");
               })
-          ),
+          )),
           text: series.tags[textCol],
         };
         if (this.annotation.ranged) {
