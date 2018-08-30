@@ -3,8 +3,8 @@
   "version": "0.0.1",
   "description": "Heroic Timeseries Database Data Source for Grafana.",
   "scripts": {
-    "build": "grunt",
-    "watch": "grunt watch"
+    "build": "./node_modules/grunt/bin/grunt",
+    "watch": "./node_modules/grunt/bin/grunt watch"
   },
   "author": "Spotify",
   "license": "Apache",
