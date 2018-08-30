@@ -102,6 +102,7 @@ export default class HeroicDatasource {
       } else {
         target.queryResolution = null
       }
+      // target.queryResolution = query.ag
       return query;
     }).filter((query) => {
       return query !== null && JSON.stringify(query.filter) !== "[\"true\"]";

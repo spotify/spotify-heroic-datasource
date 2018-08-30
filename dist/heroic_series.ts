@@ -103,23 +103,29 @@ export default class HeroicSeries {
 
   public getAnnotations() {
     let list = [];
-    const tagsColumnList = (this.annotation.tagsColumn || "").replace(/\s/g, "").split(",");
+
     _.each(this.series, (series) => {
       let titleCol = null;
+      let timeCol = null;
       let tagsCol = [];
       let textCol = null;
-      _.each(series.tags, (value, column) => {
 
+      _.each(series.tags, (value, column) => {
+        if (column === "time") {
+          timeCol = column;
+          return;
+        }
         if (column === "sequence_number") {
           return;
         }
-
+        if (!titleCol) {
+          titleCol = column;
+        }
         if (column === this.annotation.titleColumn) {
           titleCol = column;
           return;
         }
-
-        if (_.includes(tagsColumnList, column)) {
+        if (_.includes((this.annotation.tagsColumn || "").replace(" ", "").split(","), column)) {
           tagsCol.push(column);
           return;
         }
