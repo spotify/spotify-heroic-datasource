@@ -58,7 +58,7 @@ export default class HeroicSeries {
       curr += step;
     }
     const after = [];
-    curr = series.values[series.values.length - 1][0];
+    curr = series.values[series.values.length - 1][0] + step;
     while (curr < max) {
       after.push([curr, fillWith]);
       curr += step;
@@ -82,7 +82,6 @@ export default class HeroicSeries {
       }
     }
     newValues.push(series.values[series.values.length - 1]);
-    // const withBefore = before.concat(series.values);
     const withBefore = before.concat(newValues);
     const withAfter = withBefore.concat(after);
     series.values = withAfter;
