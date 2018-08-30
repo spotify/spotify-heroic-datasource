@@ -96,7 +96,13 @@ export default class HeroicDatasource {
       scopedVars.interval = scopedVars.__interval;
 
       queryModel = new HeroicQuery(target, this.templateSrv, scopedVars);
-      return queryModel.render();
+      const query = queryModel.render();
+      if (query.aggregators.length) {
+        target.queryResolution = query.aggregators[0].each[0].sampling.value;
+      } else {
+        target.queryResolution = null
+      }
+      return query;
     }).filter((query) => {
       return query !== null && JSON.stringify(query.filter) !== "[\"true\"]";
     });
@@ -130,7 +136,7 @@ export default class HeroicDatasource {
           if (alias) {
             alias = this.templateSrv.replaceWithText(alias, options.scopedVars);
           }
-          const heroicSeries = new HeroicSeries({ series: resultValue, alias, templateSrv: this.templateSrv });
+          const heroicSeries = new HeroicSeries({ series: resultValue, alias, templateSrv: this.templateSrv, resolution: target.queryResolution });
           switch (targets[resultKey].resultFormat) {
             case "table": {
               output.push(heroicSeries.getTable());

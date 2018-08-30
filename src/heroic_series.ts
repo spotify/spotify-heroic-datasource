@@ -26,20 +26,75 @@ export default class HeroicSeries {
   public alias: any;
   public annotation: any;
   public templateSrv: any;
+  public queryResolution: any;
+
 
   constructor(options) {
     this.series = options.series;
     this.alias = options.alias;
     this.annotation = options.annotation;
     this.templateSrv = options.templateSrv;
+    this.queryResolution = options.resolution;
   }
 
   public _convertData(dataPoint) {
     return [dataPoint[1], dataPoint[0]];
   }
 
+  public getMinFromResults(results) {
+    return _.min(results.map(series => series.values[0][0]));
+  }
+
+  public getMaxFromResults(results) {
+    return _.max(results.map(series => series.values[series.values.length -1][0]))
+  }
+
+  public fillTimeSeries(series, min, max, step) {
+    const fillWith = null;
+    let curr = min;
+    const before = [];
+    while (curr < series.values[0][0]) {
+      before.push([curr, fillWith]);
+      curr += step;
+    }
+    const after = [];
+    curr = series.values[series.values.length - 1][0];
+    while (curr < max) {
+      after.push([curr, fillWith]);
+      curr += step;
+    }
+    let index = 0;
+    const newValues = [];
+    while (index < series.values.length - 1) {
+      newValues.push(series.values[index]);
+      let currentValue = series.values[index][0];
+      let nextValue = series.values[index + 1][0];
+      if ((nextValue - currentValue) === step) {
+        index += 1
+        continue
+      } else {
+        const iterations = (nextValue - currentValue) / step;
+        for (let i=1; i < iterations; i+=1) {
+          newValues.push([currentValue + (step * i), fillWith]);
+        }
+        index += 1;
+
+      }
+    }
+    newValues.push(series.values[series.values.length - 1]);
+    // const withBefore = before.concat(series.values);
+    const withBefore = before.concat(newValues);
+    const withAfter = withBefore.concat(after);
+    series.values = withAfter;
+  }
+
   public getTimeSeries() {
+    const min = this.getMinFromResults(this.series.result);
+    const max = this.getMaxFromResults(this.series.result);
     return this.series.result.map((series) => {
+      if (this.queryResolution) {
+        this.fillTimeSeries(series, min, max, this.queryResolution*1000);
+      }
       const scoped = this.buildScoped(series, this.series.commonTags);
       const name = this.templateSrv.replaceWithText(this.alias || "$tags", scoped);
       return { target: name, datapoints: series.values.map(this._convertData) };
@@ -48,29 +103,23 @@ export default class HeroicSeries {
 
   public getAnnotations() {
     let list = [];
-
+    const tagsColumnList = (this.annotation.tagsColumn || "").replace(/\s/g, "").split(",");
     _.each(this.series, (series) => {
       let titleCol = null;
-      let timeCol = null;
       let tagsCol = [];
       let textCol = null;
-
       _.each(series.tags, (value, column) => {
-        if (column === "time") {
-          timeCol = column;
-          return;
-        }
+
         if (column === "sequence_number") {
           return;
         }
-        if (!titleCol) {
-          titleCol = column;
-        }
+
         if (column === this.annotation.titleColumn) {
           titleCol = column;
           return;
         }
-        if (_.includes((this.annotation.tagsColumn || "").replace(" ", "").split(","), column)) {
+
+        if (_.includes(tagsColumnList, column)) {
           tagsCol.push(column);
           return;
         }
