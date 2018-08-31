@@ -35,6 +35,7 @@ export class HeroicQueryCtrl extends QueryCtrl {
   public selectMenu: any;
   public target: any;
   public metadataClient: MetadataClient;
+  public previousQuery: any;
 
   /** @ngInject **/
   constructor($scope, $injector, private templateSrv, private $q, private uiSegmentSrv) {
@@ -49,7 +50,7 @@ export class HeroicQueryCtrl extends QueryCtrl {
         this.panel.scopedVars || {});
     this.groupBySegment = this.uiSegmentSrv.newPlusButton();
     this.resultFormats = [{ text: "Time series", value: "time_series" }, { text: "Table", value: "table" }];
-
+    this.previousQuery = this.target.query;
     this.buildSelectMenu();
 
     this.metadataClient = new MetadataClient(
@@ -110,7 +111,17 @@ export class HeroicQueryCtrl extends QueryCtrl {
     this.queryModel.scopedVars["interval"] = {value: this.panelCtrl.interval};
     this.queryModel.scopedVars["__interval"] = {value: this.panelCtrl.interval};
     this.target.query = JSON.stringify(this.queryModel.render());
-    this.panelCtrl.refresh();
+    if (this.target.query !== this.previousQuery) {
+      this.panelCtrl.refresh();
+    }
+    this.previousQuery = this.target.query;
+  }
+
+  public refreshAlias() {
+    this.panelCtrl.dataList.forEach(data => {
+      data.target = this.templateSrv.replaceWithText(this.target.alias || "$tags", data.scoped);
+    });
+    this.panelCtrl.events.emit('data-received', this.panelCtrl.dataList);
   }
 
   public handleGroupByPartEvent(part, index, evt) {
@@ -136,16 +147,6 @@ export class HeroicQueryCtrl extends QueryCtrl {
     }
   }
 
-
-  public toggleEditorMode() {
-    // TODO: do not render template variables when toggling to manual editor
-    try {
-      this.target.query = JSON.stringify(this.queryModel.render(), null, 2);
-    } catch (err) {
-      console.log("query render error");
-    }
-    this.target.rawQuery = !this.target.rawQuery;
-  }
 
   public getCollapsedText() {
     return this.target.query;
