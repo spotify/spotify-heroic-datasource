@@ -240,13 +240,19 @@ export default class HeroicSeries {
       scoped[`tag_${c}_count`] = { text: "<" + common[c].length + ">" };
     }
 
-    scoped["tags"] = { text: this.buildTags(tags, counts) };
   }
 
   public buildScoped(group) {
-    const scoped = {}
+    const scoped = {tags: {text: ""}};
     this.buildScopedHelper(scoped, group.tagCounts, group.tags, this.series.commonTags);
     this.buildScopedHelper(scoped, group.resourceCounts, group.resource, this.series.commonResource);
+    const tagsString = this.buildTags(group.tags, group.tagCounts);
+    const resourceString = this.buildTags(group.resource, group.resourceCounts);
+    if (resourceString) {
+      scoped.tags.text = [tagsString, resourceString].join(",");
+    } else {
+      scoped.tags.text = tagsString;
+    }
     return scoped;
   }
 
