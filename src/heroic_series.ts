@@ -94,9 +94,9 @@ export default class HeroicSeries {
       if (this.queryResolution) {
         this.fillTimeSeries(series, min, max, this.queryResolution*1000);
       }
-      const scoped = this.buildScoped(series, this.series.commonTags);
+      const scoped = this.buildScoped(series);
       const name = this.templateSrv.replaceWithText(this.alias || "$tags", scoped);
-      return { target: name, datapoints: series.values.map(this._convertData) };
+      return { target: name, datapoints: series.values.map(this._convertData), scoped: scoped };
     });
   }
 
@@ -221,27 +221,32 @@ export default class HeroicSeries {
     return table;
   }
 
-  public buildScoped(group, common) {
-    let scoped = {};
-    for (let tk in group.tagCounts) {
-      scoped[`tag_${tk}`] = { text: "<" + group.tagCounts[tk] + ">" };
-      scoped[`{tag_${tk}_count`] = { text: "<" + group.tagCounts[tk] + ">" };
+  public buildScopedHelper(scoped, counts, tags, common) {
+    for (let tk in counts) {
+      scoped[`tag_${tk}`] = { text: "<" + counts[tk] + ">" };
+      scoped[`{tag_${tk}_count`] = { text: "<" + counts[tk] + ">" };
     }
 
-    for (let t in group.tags) {
-      scoped[`tag_${t}`] = { text: group.tags[t] };
+    for (let t in tags) {
+      scoped[`tag_${t}`] = { text: tags[t] };
       scoped[`tag_${t}_count`] = { text: "<" + 1 + ">" };
     }
 
     for (let c in common) {
-      if (group.tags[c]) {
+      if (tags[c]) {
         continue; // do not override series tags
       }
       scoped[`tag_${c}`] = { text: common[c] };
       scoped[`tag_${c}_count`] = { text: "<" + common[c].length + ">" };
     }
 
-    scoped["tags"] = { text: this.buildTags(group.tags, group.tagCounts) };
+    scoped["tags"] = { text: this.buildTags(tags, counts) };
+  }
+
+  public buildScoped(group) {
+    const scoped = {}
+    this.buildScopedHelper(scoped, group.tagCounts, group.tags, this.series.commonTags);
+    this.buildScopedHelper(scoped, group.resourceCounts, group.resource, this.series.commonResource);
     return scoped;
   }
 
