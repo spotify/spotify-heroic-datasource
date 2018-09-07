@@ -155,12 +155,6 @@ export default class HeroicDatasource {
   }
 
   public annotationQuery(options) {
-
-    if (!options.annotation.query) {
-      return this.$q.reject({
-        message: "Query missing in annotation definition",
-      });
-    }
     const queryModel = new HeroicQuery({tags: options.annotation.tags}, this.templateSrv, {});
     const currentFilter = queryModel.buildCurrentFilter(true, false);
 

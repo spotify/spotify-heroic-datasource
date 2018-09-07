@@ -58,7 +58,6 @@ export class HeroicAnnotationsQueryCtrl {
 
   public setTags(tags) {
     this.annotation.tags = tags;
-    this.annotation.query = this.metadataClient.queryModel.buildCurrentFilter(false, false);
   }
 
   public refresh() {
