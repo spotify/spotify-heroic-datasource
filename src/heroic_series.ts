@@ -204,16 +204,8 @@ export default class HeroicSeries {
             reordered.push.apply(reordered, table.columns
               .filter(column => column.type !== "time" && column.type !== "value")
               .map(column => series.tags[column.type]));
-            // console.log(reordered);
-            // for (var key in series.tags) {
-            //   if (series.tags.hasOwnProperty(key)) {
-            //     reordered.push(series.tags[key]);
-            //   }
-            // }
           }
-          // for (j = 1; j < values.length; j++) {
-          //   reordered.push(values[j]);
-          // }
+
           table.rows.push(reordered);
         }
       }
