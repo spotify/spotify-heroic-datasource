@@ -133,10 +133,10 @@ export default class HeroicDatasource {
         _.forEach(results, (resultValue, resultKey) => {
           const target = targets[resultKey];
           let alias = target.alias;
+          const query = data.config.data.queries[resultKey];
           if (alias) {
             alias = this.templateSrv.replaceWithText(alias, options.scopedVars);
-          } else {
-            const query = data.config.data.queries[resultKey];
+          } else if (query.aggregators.length) {
             const aggr = query.aggregators;
             const last = aggr[aggr.length - 1];
             if (last.of !== null && last.of.length) {
