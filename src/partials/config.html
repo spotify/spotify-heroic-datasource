@@ -1,2 +1,18 @@
 <datasource-http-settings current="ctrl.current" suggest-url="http://localhost:8086">
 </datasource-http-settings>
+
+
+<h3 class="page-heading">Additional Details</h3>
+
+<div class="gf-form-group">
+	<div class="gf-form-inline">
+		<div class="gf-form max-width-30">
+			<span class="gf-form-label width-7">Alerting URL</span>
+			<input type="text" class="gf-form-input" ng-model='ctrl.current.jsonData.alertingUrl' placeholder="" required></input>
+      <info-popover mode="right-absolute">
+      An alternate URL to hit for alerting. If no alternate is required, set to the same value as URL.
+      </info-popover>
+		</div>
+	</div>
+
+</div>
