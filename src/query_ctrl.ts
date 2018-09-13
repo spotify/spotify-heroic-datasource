@@ -120,6 +120,8 @@ export class HeroicQueryCtrl extends QueryCtrl {
   public refreshAlias() {
     if (this.panelCtrl.dataList === undefined) {
       // Some third party panel
+      this.queryModel.scopedVars["interval"] = {value: this.panelCtrl.interval};
+      this.queryModel.scopedVars["__interval"] = {value: this.panelCtrl.interval};
       this.panelCtrl.refresh();
       return;
     }
