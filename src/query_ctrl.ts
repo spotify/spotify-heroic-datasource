@@ -118,6 +118,11 @@ export class HeroicQueryCtrl extends QueryCtrl {
   }
 
   public refreshAlias() {
+    if (this.panelCtrl.dataList === undefined) {
+      // Some third party panel
+      this.panelCtrl.refresh();
+      return;
+    }
     this.panelCtrl.dataList.forEach(data => {
       data.target = this.templateSrv.replaceWithText(this.target.alias || "$tags", data.scoped);
     });
