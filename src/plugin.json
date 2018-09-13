@@ -1,6 +1,6 @@
 {
   "type": "datasource",
-  "name": "Heroic (forked from InfluxDB)",
+  "name": "Heroic",
   "id": "heroic-grafana-datasource",
 
   "info": {
@@ -32,7 +32,7 @@
   },
 
   "dependencies": {
-    "grafanaVersion": "4.5.x",
+    "grafanaVersion": "5.x.x",
     "plugins": []
   },
 
