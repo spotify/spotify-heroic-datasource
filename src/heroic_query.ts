@@ -173,7 +173,6 @@ export default class HeroicQuery {
   public render() {
     let target = this.target;
     const currentFilter = this.buildCurrentFilter(true, true);
-
     let currentIntervalUnit = null;
     let currentIntervalValue = null;
     if (target.groupBy.length) {
@@ -182,12 +181,13 @@ export default class HeroicQuery {
       currentIntervalValue = kbn.interval_to_seconds(newGroupBy[0].params[0]);
     }
 
-    const aggregators = this.selectModels.map((modelParts) => {
+    const aggregatorsRendered = this.selectModels.map((modelParts) => {
       return modelParts.map((modelPart) => {
         return modelPart.def.renderer(modelPart, undefined, currentIntervalValue);
       });
     });
 
+    const aggregators = JSON.parse(this.templateSrv.replace(JSON.stringify(aggregatorsRendered[0]), this.scopedVars));
 
     let features;
     if (this.target.globalAggregation === false) {
@@ -198,7 +198,7 @@ export default class HeroicQuery {
 
     return {
       filter: currentFilter,
-      aggregators: aggregators[0],
+      aggregators: aggregators,
       features: features,
       range: "$timeFilter",
     };
