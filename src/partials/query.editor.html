@@ -114,7 +114,7 @@
 			<div class="gf-form">
 				<label class="gf-form-label query-keyword width-7">FORMAT AS</label>
 				<div class="gf-form-select-wrapper">
-					<select class="gf-form-input gf-size-auto" ng-model="ctrl.target.resultFormat" ng-options="f.value as f.text for f in ctrl.resultFormats" ng-change="ctrl.refresh()"></select>
+					<select class="gf-form-input gf-size-auto" ng-model="ctrl.target.resultFormat" ng-options="f.value as f.text for f in ctrl.resultFormats" ng-change="ctrl.panelCtrl.refresh()"></select>
 				</div>
 			</div>
 			<div class="gf-form gf-form--grow">
