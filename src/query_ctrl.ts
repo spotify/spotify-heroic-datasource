@@ -126,8 +126,10 @@ export class HeroicQueryCtrl extends QueryCtrl {
       return;
     }
     this.panelCtrl.dataList.forEach(data => {
-      const alias = this.templateSrv.replaceWithText(this.target.alias || "$tags", {});
-      data.target = this.templateSrv.replaceWithText(alias, data.scoped);
+      if (data.refId === this.target.refId) {
+        const alias = this.templateSrv.replaceWithText(this.target.alias || "$tags", {});
+        data.target = this.templateSrv.replaceWithText(alias, data.scoped);
+      }
     });
     this.panelCtrl.events.emit('data-received', this.panelCtrl.dataList);
   }

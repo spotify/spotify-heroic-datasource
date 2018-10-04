@@ -146,11 +146,14 @@ export default class HeroicDatasource {
           const heroicSeries = new HeroicSeries({ series: resultValue, alias, templateSrv: this.templateSrv, resolution: target.queryResolution });
           switch (targets[resultKey].resultFormat) {
             case "table": {
-              output.push(heroicSeries.getTable());
+              const tableData = heroicSeries.getTable();
+              tableData.refId = target.refId;
+              output.push(tableData);
               break;
             }
             default: {
               heroicSeries.getTimeSeries().forEach((timeSeries) => {
+                timeSeries.refId = target.refId;
                 output.push(timeSeries);
               });
             }

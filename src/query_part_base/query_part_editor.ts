@@ -54,11 +54,13 @@ export function queryPartEditorLabeledDirective($compile, templateSrv) {
       const $paramsContainer = elem.find('.query-part-parameters');
       const debounceLookup = $scope.debounce;
       let currentParam = 0;
+      let linkMode = true;
 
       $scope.partActions = [];
 
       function clickFuncParam(paramIndex) {
         /*jshint validthis:true */
+        linkMode = false;
         const $link = $(this);
         const $input = $link.next();
 
@@ -79,6 +81,7 @@ export function queryPartEditorLabeledDirective($compile, templateSrv) {
 
       function inputBlur(paramIndex) {
         /*jshint validthis:true */
+        linkMode = true;
         const $input = $(this);
         const $link = $input.prev();
         const newValue = $input.val();
@@ -163,6 +166,9 @@ export function queryPartEditorLabeledDirective($compile, templateSrv) {
 
         const typeahead = $input.data('typeahead');
         typeahead.lookup = function() {
+          if (linkMode) {
+            return [];
+          }
           this.query = this.$element.val() || '';
           const items = this.source(this.query, $.proxy(this.process, this));
           return items ? this.process(items) : items;
