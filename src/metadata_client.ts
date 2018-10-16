@@ -67,7 +67,7 @@ export class MetadataClient {
         }
 
         this.tagSegments.push(this.controller.uiSegmentSrv.newKey(tag.key));
-        this.tagSegments.push(this.controller.uiSegmentSrv.newOperator(tag.operator));
+        this.tagSegments.push(this.newLockedOperator(tag.operator));
         this.tagSegments.push(this.controller.uiSegmentSrv.newKeyValue(tag.value));
       }
       this.fixTagSegments();
@@ -171,13 +171,23 @@ export class MetadataClient {
 
   }
 
+  public newLockedOperator = (operator) => {
+    return this.controller.uiSegmentSrv.newSegment({
+      value: operator,
+      type: 'operator',
+      cssClass: 'query-segment-operator',
+      custom: 'false'
+    });
+  }
+
   public getTagsOrValues = (segment, index, query, includeRemove) => {
     if (segment.type === "condition") {
-      return this.controller.$q.when([this.controller.uiSegmentSrv.newSegment("AND")]);
+      return this.controller.$q.when([this.controller.uiSegmentSrv.newCondition("AND")]);
     }
     if (segment.type === "operator") {
       const nextValue = this.tagSegments[index + 1].value;
-      return this.controller.$q.when(this.controller.uiSegmentSrv.newOperators(["=", "!=", "^", "!^"]))
+      const operators = ["=", "!=", "^", "!^"].map(this.newLockedOperator);
+      return this.controller.$q.when(operators);
     }
     let tagsCopy = [... this.queryModel.target.tags];
     if (segment.type === "value") {
@@ -245,7 +255,7 @@ export class MetadataClient {
         if (index > 2) {
           this.tagSegments.splice(index, 0, this.controller.uiSegmentSrv.newCondition("AND"));
         }
-        this.tagSegments.push(this.controller.uiSegmentSrv.newOperator("="));
+        this.tagSegments.push(this.newLockedOperator("="));
         this.tagSegments.push(this.controller.uiSegmentSrv.newFake("select tag value", "value", "query-segment-value"));
         segment.type = "key";
         segment.cssClass = "query-segment-key";
