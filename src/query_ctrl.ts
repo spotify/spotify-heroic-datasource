@@ -88,6 +88,32 @@ export class HeroicQueryCtrl extends QueryCtrl {
     this.refresh();
   }
 
+  public getAliasCompleter() {
+
+    return {
+        getCompletions: (editor, session, pos, prefix, callback) => {
+          let thisScoped;
+          if (this.panelCtrl.dataList === undefined) {
+            // Some third party panel
+            thisScoped = [];
+          } else {
+            thisScoped = _.uniq(
+                _.flatMap(this.panelCtrl.dataList
+                            .filter(data => data.refId === this.target.refId),
+                          data => Object.keys(data.scoped))
+            );
+          }
+
+          const predictions = thisScoped.map(scope => {
+            return {name: scope, value: `[[${scope}]]`};
+          });
+
+          callback(null, predictions);
+      }
+    }
+
+  }
+
   public handleSelectPartEvent(selectParts, part, evt) {
     switch (evt.name) {
       case "get-param-options": {

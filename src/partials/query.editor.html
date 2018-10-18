@@ -29,12 +29,21 @@
 			</div>
 
 			<div class="gf-form" ng-repeat="segment in ctrl.metadataClient.tagSegments">
-				<metric-segment
-					segment="segment"
-					get-options="ctrl.metadataClient.getTagsOrValues(segment, $index, $query, true)"
-					on-change="ctrl.metadataClient.tagSegmentUpdated(segment, $index)"
-					debounce="true">
-				</metric-segment>
+				<div ng-if="segment.type == 'condition'">
+					<div class="gf-form">
+						<label class="gf-form-label query-keyword">{{segment.value}}</label>
+					</div>
+				</div>
+
+				<div ng-if="segment.type != 'condition'">
+					<metric-segment
+						segment="segment"
+						get-options="ctrl.metadataClient.getTagsOrValues(segment, $index, $query, true)"
+						options="ctrl.metadataClient.options"
+						on-change="ctrl.metadataClient.tagSegmentUpdated(segment, $index)"
+						debounce="true">
+					</metric-segment>
+				</div>
 			</div>
 
 			<div class="gf-form gf-form--grow">
@@ -123,10 +132,19 @@
 		</div>
 
 		<div class="gf-form-inline" ng-hide="ctrl.target.resultFormat === 'table'">
-			<div class="gf-form max-width-30">
+				<div class="gf-form gf-form--grow">
 				<label class="gf-form-label query-keyword width-7">ALIAS BY</label>
-				<input type="text" class="gf-form-input" ng-model="ctrl.target.alias" spellcheck='false' placeholder="Naming pattern" ng-blur="ctrl.refreshAlias()">
+				<code-editor
+					content="ctrl.target.alias"
+					datasource="ctrl.datasource"
+					ng-blur="ctrl.refreshAlias()"
+					on-change="ctrl.refreshAlias()"
+					get-completer="ctrl.getAliasCompleter()"
+					data-mode="text"
+					data-max-lines=2>
+				</code-editor>
 			</div>
+
 			<div class="gf-form gf-form--grow">
 				<div class="gf-form-label gf-form-label--grow"></div>
 			</div>

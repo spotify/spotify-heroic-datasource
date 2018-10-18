@@ -84,15 +84,16 @@ export default class HeroicDatasource {
     const timeFilter = this.getTimeFilter(options);
     const scopedVars = options.scopedVars;
     const targets = _.cloneDeep(options.targets);
-    const queryTargets = [];
+    const targetsByRef = {};
+    targets.forEach(target => {
+      targetsByRef[target.refId] = target;
+    });
     let queryModel;
-
     const allQueries = _.map(targets, (target) => {
       if (target.hide) {
         return null;
       }
 
-      queryTargets.push(target);
       scopedVars.interval = scopedVars.__interval;
 
       queryModel = new HeroicQuery(target, this.templateSrv, scopedVars);
@@ -102,15 +103,17 @@ export default class HeroicDatasource {
       } else {
         target.queryResolution = null
       }
-      return query;
-    }).filter((query) => {
-      return query !== null && JSON.stringify(query.filter) !== "[\"true\"]";
+      return {query: query, refId: target.refId};
+    }).filter((queryWrapper) => {
+      return queryWrapper !== null && queryWrapper.query !== null && JSON.stringify(queryWrapper.query.filter) !== "[\"true\"]";
     });
 
     if (!allQueries) {
       return this.$q.when({ data: [] });
     }
-    allQueries.forEach((query) => {
+
+    allQueries.forEach((queryWrapper) => {
+      const query = queryWrapper.query;
       query.range = timeFilter;
       const adhocFilters = this.templateSrv.getAdhocFilters(this.name);
       if (adhocFilters.length > 0) {
@@ -120,8 +123,9 @@ export default class HeroicDatasource {
 
     const output = [];
     const batchQuery = { queries: {} };
-    allQueries.forEach((query, index) => {
-      batchQuery.queries[index] = query;
+    allQueries.forEach((queryWrapper, index) => {
+      const query = queryWrapper.query;
+      batchQuery.queries[queryWrapper.refId] = query;
     });
 
     return this.doRequest("/query/batch", { method: "POST", data: batchQuery })
@@ -131,7 +135,7 @@ export default class HeroicDatasource {
         // results.forEach((currentResult, resultIndex) => {})
 
         _.forEach(results, (resultValue, resultKey) => {
-          const target = targets[resultKey];
+          const target = targetsByRef[resultKey];
           let alias = target.alias;
           const query = data.config.data.queries[resultKey];
           if (alias) {
@@ -144,7 +148,7 @@ export default class HeroicDatasource {
             }
           }
           const heroicSeries = new HeroicSeries({ series: resultValue, alias, templateSrv: this.templateSrv, resolution: target.queryResolution });
-          switch (targets[resultKey].resultFormat) {
+          switch (targetsByRef[resultKey].resultFormat) {
             case "table": {
               const tableData = heroicSeries.getTable();
               tableData.refId = target.refId;
