@@ -22,7 +22,9 @@ import { QueryCtrl } from "app/plugins/sdk";
 import _ from "lodash";
 import HeroicQuery from "./heroic_query";
 import { MetadataClient } from "./metadata_client";
+import { HeroicValidator } from './validator';
 import queryPart from "./query_part";
+
 
 export class HeroicQueryCtrl extends QueryCtrl {
   public static templateUrl = "partials/query.editor.html";
@@ -36,7 +38,8 @@ export class HeroicQueryCtrl extends QueryCtrl {
   public target: any;
   public metadataClient: MetadataClient;
   public previousQuery: any;
-
+  public warningMessage: string;
+  public validator: HeroicValidator;
   /** @ngInject **/
   constructor($scope, $injector, private templateSrv, private $q, private uiSegmentSrv) {
     super($scope, $injector);
@@ -46,6 +49,9 @@ export class HeroicQueryCtrl extends QueryCtrl {
     } else {
       this.target.globalAggregation = true;
     }
+
+    this.panelCtrl.events.on('data-received', this.onDataReceived.bind(this), $scope);
+
     this.queryModel = new HeroicQuery(this.target,
         templateSrv,
         this.panel.scopedVars || {});
@@ -53,6 +59,11 @@ export class HeroicQueryCtrl extends QueryCtrl {
     this.resultFormats = [{ text: "Time series", value: "time_series" }, { text: "Table", value: "table" }];
     this.previousQuery = this.target.query;
     this.buildSelectMenu();
+
+    this.warningMessage = "";
+    this.validator = new HeroicValidator(this.target,
+      this.datasource.tagAggregationChecks,
+      this.datasource.tagCollapseChecks);
 
     this.metadataClient = new MetadataClient(
       this,
@@ -134,6 +145,7 @@ export class HeroicQueryCtrl extends QueryCtrl {
       }
     }
   }
+
   public refresh() {
     this.queryModel.scopedVars["interval"] = {value: this.panelCtrl.interval};
     this.queryModel.scopedVars["__interval"] = {value: this.panelCtrl.interval};
@@ -142,6 +154,14 @@ export class HeroicQueryCtrl extends QueryCtrl {
       this.panelCtrl.refresh();
     }
     this.previousQuery = this.target.query;
+  }
+
+  public clearWarnings() {
+    this.warningMessage = "";
+  }
+
+  public onDataReceived(dataList){
+    this.warningMessage = this.validator.checkForWarnings(dataList.filter(data => data.refId === this.target.refId));
   }
 
   public refreshAlias() {

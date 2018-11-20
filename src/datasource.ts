@@ -45,6 +45,8 @@ export default class HeroicDatasource {
   public annotationModels: any;
   public queryBuilder: any;
   public fakeController: any;
+  public tagAggregationChecks: any;
+  public tagCollapseChecks: any;
 
   /** @ngInject */
   constructor(instanceSettings, private $q, private backendSrv, templateSrv, private uiSegmentSrv) {
@@ -62,6 +64,15 @@ export default class HeroicDatasource {
     this.basicAuth = instanceSettings.basicAuth;
     this.withCredentials = instanceSettings.withCredentials;
     this.interval = (instanceSettings.jsonData || {}).timeInterval;
+    this.tagAggregationChecks = _.reduce(instanceSettings.jsonData.tagAggregationChecks, (obj, value) => {
+      const kv = value.split(":");
+      if (obj[kv[0]] === undefined) {
+        obj[kv[0]] = [];
+      }
+      obj[kv[0]].push(kv[1]);
+      return obj;
+    }, {});
+    this.tagCollapseChecks = instanceSettings.jsonData.tagCollapseChecks || [];
     this.supportAnnotations = true;
     this.supportMetrics = true;
     this.annotationModels = [[{ type: "average", categoryName: "For Each", params: [] }]];
@@ -78,8 +89,8 @@ export default class HeroicDatasource {
       true
     );
 
-
   }
+
   public query(options) {
     const timeFilter = this.getTimeFilter(options);
     const scopedVars = options.scopedVars;
