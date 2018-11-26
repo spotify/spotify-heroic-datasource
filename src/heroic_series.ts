@@ -90,6 +90,9 @@ export default class HeroicSeries {
   public getTimeSeries() {
     const min = this.getMinFromResults(this.series.result);
     const max = this.getMaxFromResults(this.series.result);
+    if (this.series.result.length === 0) {
+        return [{ target: name, datapoints: [], scoped: {}, limits: this.series.limits, errors: this.series.errors }];
+    }
     return this.series.result.map((series) => {
       if (this.queryResolution) {
         this.fillTimeSeries(series, min, max, this.queryResolution*1000);

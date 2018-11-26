@@ -14,5 +14,38 @@
       </info-popover>
 		</div>
 	</div>
+	<div class="gf-form-inline">
+		<div class="gf-form">
+			<span class="gf-form-label">Should Not Aggregate</span>
+			<bootstrap-tagsinput
+				ng-model="ctrl.current.jsonData.tagAggregationChecks"
+				tagclass="label label-tag"
+				placeholder="Add TagKey:TagValue"
+				class="ng-pristine ng-untouched ng-valid ng-isolate-scope ng-not-empty">
+			</bootstrap-tagsinput>
+			<info-popover mode="right-absolute">
+			A list of tag-key:tag-value pairs which should not be aggregated and should be warned about.
+			For example, if 'stat:p99' is entered, Grafana will display a warning message
+			near the query builder when data with that tag is aggregated.
+			</info-popover>
+		</div>
+	</div>
+
+	<div class="gf-form-inline">
+		<div class="gf-form">
+			<span class="gf-form-label">Should Not Collapse</span>
+			<bootstrap-tagsinput
+				ng-model="ctrl.current.jsonData.tagCollapseChecks"
+				tagclass="label label-tag"
+				placeholder="Add TagKey"
+				class="ng-pristine ng-untouched ng-valid ng-isolate-scope ng-not-empty">
+			</bootstrap-tagsinput>
+			<info-popover mode="right-absolute">
+			A list of tag keys which should not be collapsed and should be warned about.
+			For example, if 'stat' is entered, Grafana will display a warning message when it receives
+			results which have multiple values for 'stat' collapsed into one series.
+			</info-popover>
+		</div>
+	</div>
 
 </div>
