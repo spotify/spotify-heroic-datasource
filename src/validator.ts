@@ -33,15 +33,16 @@ export class HeroicValidator {
   }
 
   public findUnsafeCollapses(data) {
-     const collapsedKeys =
+    const collapsedKeys =_.uniq(
       _.flatMap(this.tagCollapseChecks, (value) => {
         return data.filter(series => {
           const valueCount = series.scoped[`tag_${value}_count`];
           return valueCount
           && valueCount.text !== "<0>"
           && valueCount.text !== "<1>";
-        });
-      });
+        }).map(item => value);
+      })
+    );
     return collapsedKeys;
   }
 
