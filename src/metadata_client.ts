@@ -25,7 +25,7 @@ import { LruCache } from "./lru_cache";
 
 export class MetadataClient {
   public static templateUrl = "partials/query.editor.html";
-  public static DEBOUNCE_MS = 500; // milliseconds to wait between keystrokes before sending queries for metadata
+  public static DEBOUNCE_MS = 1000; // milliseconds to wait between keystrokes before sending queries for metadata
 
   public queryModel: HeroicQuery;
   public lruTag: any;
@@ -310,7 +310,7 @@ export class MetadataClient {
     this.controller.refresh();
   }
 
-  public validateCustomQuery = (segment, index, query, includeRemove) => {
+  public validateCustomQuery = _.debounce((segment, index, query, includeRemove) => {
     segment.style= {color: "red"};
     const headers =  { "Content-Type": "text/plain;charset=UTF-8" };
     return this.datasource
@@ -334,7 +334,8 @@ export class MetadataClient {
         return result;
       });
 
-  }
+  }, MetadataClient.DEBOUNCE_MS, {leading: false});
+
   public createCustomQuery = () => {
     this.customTagSegments.push(this.controller.uiSegmentSrv.newSegment({value: "--custom--", valid: false, expandable: false}));
 
