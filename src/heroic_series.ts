@@ -93,11 +93,24 @@ export default class HeroicSeries {
     if (this.series.result.length === 0) {
         return [{ target: name, datapoints: [], scoped: {}, limits: this.series.limits, errors: this.series.errors }];
     }
+    const commonCounts = {}
+    this.series.result.forEach(series => {
+      _.forEach(series.tags, (value, key) => {
+        if (commonCounts[key] === undefined) {
+          commonCounts[key] = {};
+        }
+        if (commonCounts[key][value] === undefined) {
+          commonCounts[key][value] = 0;
+        }
+        commonCounts[key][value] += 1;
+      });
+    });
+
     return this.series.result.map((series) => {
       if (this.queryResolution) {
         this.fillTimeSeries(series, min, max, this.queryResolution*1000);
       }
-      const scoped = this.buildScoped(series);
+      const scoped = this.buildScoped(series, commonCounts, this.series.result.length);
       const name = this.templateSrv.replaceWithText(this.alias || "$tags", scoped);
       return { target: name, datapoints: series.values.map(this._convertData), scoped: scoped };
     });
@@ -190,15 +203,6 @@ export default class HeroicSeries {
     );
 
     _.each(this.series.result, (series, seriesIndex) => {
-      // if (seriesIndex === 0) {
-      //   j = 0;
-      //   // Check that the first column is indeed 'time'
-      //   table.columns.push({ text: 'Time', type: 'time' });
-      //
-      //   _.each(_.keys(series.tags), function(key) {
-      //     table.columns.push({ text: key });
-      //   });
-      // }
       if (series.values) {
         for (let k = 0; k < series.values.length; k++) {
           let values = series.values[k];
@@ -237,16 +241,26 @@ export default class HeroicSeries {
 
   }
 
-  public buildScoped(group) {
-    const scoped = {tags: {text: ""}};
+  public buildScoped(group, counts, total) {
+    const scoped = {tags: {text: ""}, fullTags: {text: ""}};
     this.buildScopedHelper(scoped, group.tagCounts, group.tags, this.series.commonTags);
     this.buildScopedHelper(scoped, group.resourceCounts, group.resource, this.series.commonResource);
+    const reducedTags = {};
+    _.forEach(group.tags, (value, key) => {
+      if (counts[key][value] < total) {
+        reducedTags[key] = value;
+      }
+    });
+    const reducedTagsString = this.buildTags(reducedTags, group.tagCounts);
     const tagsString = this.buildTags(group.tags, group.tagCounts);
     const resourceString = this.buildTags(group.resource, group.resourceCounts);
     if (resourceString) {
-      scoped.tags.text = [tagsString, resourceString].join(",");
+      scoped.fullTags.text = [tagsString, resourceString].join(",");
+      scoped.tags.text = [reducedTagsString, resourceString].join(",");
     } else {
-      scoped.tags.text = tagsString;
+      scoped.fullTags.text = tagsString;
+      scoped.tags.text = reducedTagsString;
+
     }
     return scoped;
   }
