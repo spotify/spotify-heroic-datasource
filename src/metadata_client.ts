@@ -50,6 +50,25 @@ export class MetadataClient {
   ) {
     this.tagSegments = [];
     this.customTagSegments = [];
+    this.createTagSegments();
+    this.lruTag = new LruCache();
+    this.lruTagValue = new LruCache();
+    this.keyLru = new LruCache();
+    this.queryModel = new HeroicQuery(this.target, this.controller.templateSrv, this.scopedVars);
+    this.includeVariables = includeVariables;
+    this.includeScopes = includeScopes;
+    this.addCustomQuery = this.controller.uiSegmentSrv.newPlusButton();
+    this.removeTagFilterSegment = this.controller.uiSegmentSrv.newSegment({
+      fake: true,
+      value: "-- remove --",
+    });
+
+  }
+
+  public createTagSegments() {
+    this.tagSegments = [];
+    this.customTagSegments = [];
+
     if (!this.controller.fakeController) {
       for (const tag of this.controller.getTags()) {
         if (tag.type && tag.type === "custom") {
@@ -72,19 +91,6 @@ export class MetadataClient {
       }
       this.fixTagSegments();
     }
-
-    this.lruTag = new LruCache();
-    this.lruTagValue = new LruCache();
-    this.keyLru = new LruCache();
-    this.queryModel = new HeroicQuery(this.target, this.controller.templateSrv, this.scopedVars);
-    this.includeVariables = includeVariables;
-    this.includeScopes = includeScopes;
-    this.addCustomQuery = this.controller.uiSegmentSrv.newPlusButton();
-    this.removeTagFilterSegment = this.controller.uiSegmentSrv.newSegment({
-      fake: true,
-      value: "-- remove --",
-    });
-
   }
 
   public fixTagSegments() {

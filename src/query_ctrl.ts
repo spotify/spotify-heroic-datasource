@@ -23,6 +23,7 @@ import _ from "lodash";
 import HeroicQuery from "./heroic_query";
 import { MetadataClient } from "./metadata_client";
 import { HeroicValidator } from './validator';
+import { QueryParser } from './query_parser';
 import queryPart from "./query_part";
 
 
@@ -40,6 +41,7 @@ export class HeroicQueryCtrl extends QueryCtrl {
   public previousQuery: any;
   public warningMessage: string;
   public validator: HeroicValidator;
+  public queryParser: QueryParser;
   /** @ngInject **/
   constructor($scope, $injector, private templateSrv, private $q, private uiSegmentSrv) {
     super($scope, $injector);
@@ -64,7 +66,7 @@ export class HeroicQueryCtrl extends QueryCtrl {
     this.validator = new HeroicValidator(this.target,
       this.datasource.tagAggregationChecks,
       this.datasource.tagCollapseChecks);
-
+    this.queryParser = new QueryParser();
     this.metadataClient = new MetadataClient(
       this,
       this.datasource,
@@ -76,6 +78,12 @@ export class HeroicQueryCtrl extends QueryCtrl {
 
   }
 
+  public toggleEditorMode() {
+    this.target.rawQuery = !this.target.rawQuery;
+    if (this.target.rawQuery) {
+      this.target.queryRaw = JSON.stringify(JSON.parse(this.target.query), null, 2);
+    }
+  }
   public buildSelectMenu() {
     const categories = queryPart.getCategories();
     this.selectMenu = _.reduce(
@@ -154,6 +162,13 @@ export class HeroicQueryCtrl extends QueryCtrl {
       this.panelCtrl.refresh();
     }
     this.previousQuery = this.target.query;
+  }
+
+  public refreshRaw() {
+    this.queryParser.parseInto(this.target.queryRaw, this.target);
+    this.queryModel.updateProjection();
+    this.metadataClient.createTagSegments();
+    this.refresh();
   }
 
   public clearWarnings() {

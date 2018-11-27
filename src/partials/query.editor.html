@@ -1,8 +1,13 @@
-<query-editor-row query-ctrl="ctrl" can-collapse="true" has-text-edit-mode="false">
+<query-editor-row query-ctrl="ctrl" can-collapse="true" has-text-edit-mode="true">
 
 	<div ng-if="ctrl.target.rawQuery">
 		<div class="gf-form">
-			<textarea rows="3" class="gf-form-input" ng-model="ctrl.target.query" spellcheck="false" placeholder="InfuxDB Query" ng-model-onblur ng-change="ctrl.refresh()"></textarea>
+			<label class="gf-form-label text-warning">
+				<i>Beta: No syntax checking is performed here. By using this, you may lose work already done in builder mode.</i>
+			</label>
+		</div>
+		<div class="gf-form">
+			<textarea rows="10" class="gf-form-input" ng-model="ctrl.target.queryRaw" spellcheck="false" placeholder="JSON Query" ng-model-onblur ng-change="ctrl.refreshRaw()"></textarea>
 		</div>
 		<div class="gf-form-inline">
 			<div class="gf-form">
