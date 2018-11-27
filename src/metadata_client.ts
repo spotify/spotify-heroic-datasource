@@ -30,7 +30,7 @@ export class MetadataClient {
   public queryModel: HeroicQuery;
   public lruTag: any;
   public lruTagValue: any;
-  public keyLru: any;
+  public lruKey: any;
   public error: any;
   public complexError: any;
   public addCustomQuery: any;
@@ -53,7 +53,7 @@ export class MetadataClient {
     this.createTagSegments();
     this.lruTag = new LruCache();
     this.lruTagValue = new LruCache();
-    this.keyLru = new LruCache();
+    this.lruKey = new LruCache();
     this.queryModel = new HeroicQuery(this.target, this.controller.templateSrv, this.scopedVars);
     this.includeVariables = includeVariables;
     this.includeScopes = includeScopes;
@@ -110,8 +110,8 @@ export class MetadataClient {
       limit: 10,
     };
     const cacheKey = JSON.stringify(filter);
-    if (this.keyLru.has(cacheKey)) {
-      return Promise.resolve(this.keyLru.get(cacheKey));
+    if (this.lruKey.has(cacheKey)) {
+      return Promise.resolve(this.lruKey.get(cacheKey));
     }
     return this.datasource
       .doRequest("/metadata/key-suggest", { method: "POST", data: filter })
@@ -119,7 +119,7 @@ export class MetadataClient {
         return this.transformToSegments(true, "key")(result.data.suggestions);
       })
       .then((result) => {
-        this.keyLru.put(cacheKey, result);
+        this.lruKey.put(cacheKey, result);
         return result;
       });
   }
