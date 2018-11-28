@@ -151,12 +151,6 @@ export default class HeroicDatasource {
           const query = data.config.data.queries[resultKey];
           if (alias) {
             alias = this.templateSrv.replaceWithText(alias, options.scopedVars);
-          } else if (query.aggregators.length) {
-            const aggr = query.aggregators;
-            const last = aggr[aggr.length - 1];
-            if (last.of !== null && last.of.length) {
-              alias = last.of.map(of => `[[tag_${of}]]`).join(" ");
-            }
           }
           const heroicSeries = new HeroicSeries({ series: resultValue, alias, templateSrv: this.templateSrv, resolution: target.queryResolution });
           switch (targetsByRef[resultKey].resultFormat) {
