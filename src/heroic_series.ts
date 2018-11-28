@@ -105,13 +105,13 @@ export default class HeroicSeries {
         commonCounts[key][value] += 1;
       });
     });
-
+    const defaultAlias = this.series.result.length > 1 ? "$tags" : "$fullTags";
     return this.series.result.map((series) => {
       if (this.queryResolution) {
         this.fillTimeSeries(series, min, max, this.queryResolution*1000);
       }
       const scoped = this.buildScoped(series, commonCounts, this.series.result.length);
-      const name = this.templateSrv.replaceWithText(this.alias || "$tags", scoped);
+      const name = this.templateSrv.replaceWithText(this.alias || defaultAlias, scoped);
       return { target: name, datapoints: series.values.map(this._convertData), scoped: scoped };
     });
   }
