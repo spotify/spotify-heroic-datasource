@@ -109,10 +109,17 @@ export default class HeroicDatasource {
 
       queryModel = new HeroicQuery(target, this.templateSrv, scopedVars);
       const query = queryModel.render();
-      if (query.aggregators.length && query.aggregators[0].each[0].sampling !== undefined) {
-        target.queryResolution = query.aggregators[0].each[0].sampling.value;
+      if (query.aggregators.length) {
+        const samplers = query.aggregators.map(a => a.each[0])
+          .filter(each => each.sampling !== undefined)
+          .map(each => each.sampling.value);
+        if (samplers.length > 0) {
+          target.queryResolution = samplers[0];
+        } else {
+          target.queryResolution = null;
+        }
       } else {
-        target.queryResolution = null
+        target.queryResolution = null;
       }
       return {query: query, refId: target.refId};
     }).filter((queryWrapper) => {
