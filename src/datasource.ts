@@ -110,7 +110,8 @@ export default class HeroicDatasource {
       queryModel = new HeroicQuery(target, this.templateSrv, scopedVars);
       const query = queryModel.render();
       if (query.aggregators.length) {
-        const samplers = query.aggregators.map(a => a.each[0])
+        const samplers = query.aggregators.filter(a => a.each !== undefined)
+          .map(a => a.each[0])
           .filter(each => each.sampling !== undefined)
           .map(each => each.sampling.value);
         if (samplers.length > 0) {
