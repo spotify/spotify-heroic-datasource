@@ -66,15 +66,33 @@ export class MetadataClient {
   }
 
   public createTagSegments() {
-    this.tagSegments = [];
-    this.customTagSegments = [];
+    const tagSegments = [];
+    const customTagSegments = [];
 
     if (!this.controller.fakeController) {
-      for (const tag of this.controller.getTags()) {
+      const controllerTags = this.controller.getTags();
+      controllerTags.sort((a, b) => {
+        if (a.key === "$key" && b.key === "$key") {
+          return 0;
+        } else if (a.key === "$key") {
+          return -1;
+        } else if (b.key === "$key") {
+          return 1;
+        }
+        return 0;
+      });
+      controllerTags.forEach((tag, index) => {
+        if (index > 0) {
+          tag.condition = "AND";
+        } else {
+          delete tag.condition;
+        }
+      });
+      for (const tag of controllerTags) {
         if (tag.type && tag.type === "custom") {
           const newSeg = this.controller.uiSegmentSrv.newSegment({value: tag.key, expandable: false});
           newSeg.valid = true;
-          this.customTagSegments.push(newSeg);
+          customTagSegments.push(newSeg);
           continue;
         }
         if (!tag.operator) {
@@ -82,13 +100,15 @@ export class MetadataClient {
         }
 
         if (tag.condition) {
-          this.tagSegments.push(this.controller.uiSegmentSrv.newCondition(tag.condition));
+          tagSegments.push(this.controller.uiSegmentSrv.newCondition(tag.condition));
         }
 
-        this.tagSegments.push(this.controller.uiSegmentSrv.newKey(tag.key));
-        this.tagSegments.push(this.newLockedOperator(tag.operator));
-        this.tagSegments.push(this.controller.uiSegmentSrv.newKeyValue(tag.value));
+        tagSegments.push(this.controller.uiSegmentSrv.newKey(tag.key));
+        tagSegments.push(this.newLockedOperator(tag.operator));
+        tagSegments.push(this.controller.uiSegmentSrv.newKeyValue(tag.value));
       }
+      this.tagSegments = tagSegments;
+      this.customTagSegments = customTagSegments;
       this.fixTagSegments();
     }
   }
@@ -219,8 +239,9 @@ export class MetadataClient {
         });
     } else if (segment.type === "value") {
       const key = this.tagSegments[index - 2].value;
-      if (key === "$key") return this.getMeasurements(query);
-
+      if (key === "$key") {
+        return this.getMeasurements(query);
+      }
       data.key = key
       data["value"] = query;
       return this.queryTagsAndValues(data, "value", this.lruTagValue)
@@ -305,7 +326,6 @@ export class MetadataClient {
         tags.push({operator: "q", type: "custom", key: segment.value});
       }
     });
-
     this.controller.setTags(tags);
     this.controller.refresh();
   }
