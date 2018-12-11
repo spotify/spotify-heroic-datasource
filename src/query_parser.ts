@@ -32,7 +32,13 @@ export class  QueryParser {
   public parseFiltersFromRaw(jsonRaw, target) {
     const tags = [];
     let seen = 0;
-    jsonRaw.filter.forEach((entry, index) => {
+    const keyFilter = jsonRaw.filter.filter(entry => entry[0] === "key");
+    if (keyFilter.length > 0) {
+      tags.push({key: "$key", operator: "=", value: keyFilter[0][1]});
+    }
+    jsonRaw.filter
+    .filter(entry => entry[0] !== "key")
+    .forEach((entry, index) => {
       if (entry === "and") {
         return;
       }
@@ -47,7 +53,7 @@ export class  QueryParser {
           break
         default:
           const item = {key: entry[1], operator: entry[0], value: entry[2]};
-          if (seen > 0) {
+          if (seen > 0 || keyFilter.length > 0) {
             item["condition"] = "AND";
           }
           seen += 1;
