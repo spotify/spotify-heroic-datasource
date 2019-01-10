@@ -5,12 +5,12 @@
 		</div>
 
 		<div class="gf-form" ng-repeat="segment in ctrl.metadataClient.tagSegments">
-			<metric-segment
+			<metric-segment-wrapper
 				segment="segment"
 				get-options="ctrl.metadataClient.getTagsOrValues(segment, $index, $query, true)"
 				on-change="ctrl.metadataClient.tagSegmentUpdated(segment, $index)"
 				debounce="true">
-			</metric-segment>
+			</metric-segment-wrapper>
 		</div>
 
 		<div class="gf-form gf-form--grow">
@@ -38,7 +38,7 @@
 				</a>
 			</label>
 		</div>
-		
+
 		<div class="gf-form">
 			<label class="gf-form-label text-error" ng-if="ctrl.metadataClient.complexError"> {{ ctrl.metadataClient.complexError }}</label>
 		</div>

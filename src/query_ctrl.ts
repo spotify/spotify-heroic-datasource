@@ -42,6 +42,7 @@ export class HeroicQueryCtrl extends QueryCtrl {
   public warningMessage: string;
   public validator: HeroicValidator;
   public queryParser: QueryParser;
+  public currentSuggestions: any[];
   /** @ngInject **/
   constructor($scope, $injector, private templateSrv, private $q, private uiSegmentSrv) {
     super($scope, $injector);
@@ -67,6 +68,7 @@ export class HeroicQueryCtrl extends QueryCtrl {
       this.datasource.tagAggregationChecks,
       this.datasource.tagCollapseChecks);
     this.queryParser = new QueryParser();
+    this.currentSuggestions = [];
     this.metadataClient = new MetadataClient(
       this,
       this.datasource,
@@ -157,7 +159,9 @@ export class HeroicQueryCtrl extends QueryCtrl {
   public refresh() {
     this.queryModel.scopedVars["interval"] = {value: this.panelCtrl.interval};
     this.queryModel.scopedVars["__interval"] = {value: this.panelCtrl.interval};
-    this.target.query = JSON.stringify(this.queryModel.render());
+    this.checkSuggestions();
+    const query = this.queryModel.render();
+    this.target.query = JSON.stringify(query);
     if (this.target.query !== this.previousQuery) {
       this.panelCtrl.refresh();
     }
@@ -169,6 +173,39 @@ export class HeroicQueryCtrl extends QueryCtrl {
     this.queryModel.updateProjection();
     this.metadataClient.createTagSegments();
     this.refresh();
+  }
+
+  public appendSuggestion(suggestion) {
+    this.currentSuggestions = [];
+    const queryRaw = JSON.parse(this.target.query);
+    queryRaw.filter = queryRaw.filter.concat(suggestion.filter);
+    if (suggestion.aggregation !== undefined && suggestion.aggregation !== null && queryRaw.aggregators.length === 0){
+      queryRaw.aggregators = queryRaw.aggregators.concat(suggestion.aggregation);
+    }
+    this.target.queryRaw = JSON.stringify(queryRaw, null, 2);
+    this.refreshRaw();
+  }
+
+  public checkSuggestions() {
+    const suggestions = [];
+    const query = this.queryModel.render();
+    this.datasource.suggestionRules.forEach(rule => {
+      const rule2 = _.cloneDeep(rule);
+      rule2.triggerFilter = rule2.triggerFilter.map(item => {
+        if (_.isArray(item) && item[item.length - 1] === "*") {
+          const key = item[item.length - 2];
+          const value = _.first(query.filter
+            .filter(item => _.isArray(item) && item[item.length -2] === key)
+            .map(item => item[item.length - 1]));
+          item[item.length - 1] = value;
+        }
+        return item;
+      });
+      if (_.isEqual(_.sortBy(rule2.triggerFilter), _.sortBy(query.filter))) {
+        suggestions.push(rule2);
+      }
+    });
+    this.currentSuggestions = suggestions;
   }
 
   public clearWarnings() {

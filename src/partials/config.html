@@ -47,5 +47,76 @@
 			</info-popover>
 		</div>
 	</div>
+	</div>
 
-</div>
+
+	<h3 class="page-heading">Query Suggestions Rules</h3>
+	<div class="gf-form-group">
+		<div class="gf-form-inline">
+			<div class="gf-form">
+				<button
+					class="btn btn-inverse"
+					ng-click="ctrl.addRule()">
+						<i class="fa fa-plus"></i>
+				</button>
+			</div>
+		</div>
+
+		<div class="gf-form-group" ng-repeat="rule in ctrl.current.jsonData.suggestionRules">
+			<div class="gf-form max-width-120">
+				<span class="gf-form-label width-7">Description</span>
+				<input type="text" class="gf-form-input" ng-model='rule.description' placeholder="" required></input>
+				<div class="gf-form">
+		          <label class="gf-form-label">
+		            <a class="pointer" tabindex="1" ng-click="ctrl.removeRule($index)">
+		              <i class="fa fa-trash"></i>
+		            </a>
+		          </label>
+		      </div>
+			</div>
+			<div class="gf-form gf-form--v-stretch max-width-120">
+				<span class="gf-form-label width-7">Trigger Filter</span>
+				<textarea
+					rows="5"
+					class="gf-form-input"
+					spellcheck="false"
+					type="text"
+					ng-model='rule.triggerFilter'
+					placeholder="Trigger on this filter"
+					required/>
+				<info-popover mode="right-absolute">
+					A Heroic JSON formatted query filter to trigger this suggestion
+				</info-popover>
+			</div>
+			<div class="gf-form gf-form--v-stretch max-width-120">
+				<span class="gf-form-label width-7">Suggested Filter</span>
+				<textarea
+					rows="5"
+					class="gf-form-input"
+					spellcheck="false"
+					type="text"
+					placeholder="Filter to Add"
+					required
+					ng-model='rule.filter'
+				/>
+				<info-popover mode="right-absolute">
+					A Heroic JSON formatted query filter to append to the current filter when this rule is triggered.
+				</info-popover>
+			</div>
+			<div class="gf-form gf-form--v-stretch max-width-120">
+				<span class="gf-form-label width-7">Suggested Aggregation</span>
+				<textarea
+					rows="5"
+					class="gf-form-input"
+					spellcheck="false"
+					type="text"
+					placeholder="Aggregation to Add"
+					ng-model-onblur
+					ng-model='rule.aggregation'
+				/>
+				<info-popover mode="right-absolute">
+					A Heroic JSON formatted query aggregation to append to the current aggregation when this rule is triggered.
+				</info-popover>
+			</div>
+			</div>
+	</div>
