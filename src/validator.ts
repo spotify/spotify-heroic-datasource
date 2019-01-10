@@ -68,7 +68,6 @@ export class HeroicValidator {
     const badTags = this.findUnsafeAggregations(data);
     if (badTags.length > 0) {
       let message;
-      console.log(badTags);
       if (badTags.length === 1) {
         message = `'${badTags[0]}'`
       } else {

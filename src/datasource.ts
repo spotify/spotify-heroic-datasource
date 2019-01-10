@@ -47,6 +47,7 @@ export default class HeroicDatasource {
   public fakeController: any;
   public tagAggregationChecks: any;
   public tagCollapseChecks: any;
+  public suggestionRules: any;
 
   /** @ngInject */
   constructor(instanceSettings, private $q, private backendSrv, templateSrv, private uiSegmentSrv) {
@@ -73,6 +74,16 @@ export default class HeroicDatasource {
       return obj;
     }, {});
     this.tagCollapseChecks = instanceSettings.jsonData.tagCollapseChecks || [];
+
+    this.suggestionRules = (instanceSettings.jsonData.suggestionRules || []).map(helper => {
+      return {
+        triggerFilter: JSON.parse(helper.triggerFilter),
+        filter: JSON.parse(helper.filter),
+        description: helper.description,
+        aggregation: helper.aggregation ? JSON.parse(helper.aggregation) : null
+      };
+    });
+
     this.supportAnnotations = true;
     this.supportMetrics = true;
     this.annotationModels = [[{ type: "average", categoryName: "For Each", params: [] }]];

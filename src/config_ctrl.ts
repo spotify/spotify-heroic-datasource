@@ -19,10 +19,18 @@
 */
 ///<reference path="../node_modules/grafana-sdk-mocks/app/headers/common.d.ts" />
 
-export class ChangeMyNameConfigCtrl {
+export class HeroicConfigCtrl {
   public static templateUrl = "partials/config.html";
   public current: any;
 
   constructor($scope) {
+    this.current.jsonData.suggestionRules = this.current.jsonData.suggestionRules || [];
+  }
+  addRule() {
+    this.current.jsonData.suggestionRules.push({ triggerFilter: null, filter: null, description: null, aggregation: null});
+  }
+
+  removeRule(index) {
+    this.current.jsonData.suggestionRules.splice(index, 1);
   }
 }

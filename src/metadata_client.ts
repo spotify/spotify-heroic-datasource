@@ -284,12 +284,15 @@ export class MetadataClient {
         }
         this.tagSegments.push(this.newLockedOperator("="));
         this.tagSegments.push(this.controller.uiSegmentSrv.newFake("select tag value", "value", "query-segment-value"));
+        this.tagSegments[this.tagSegments.length - 1].focus = true;
         segment.type = "key";
         segment.cssClass = "query-segment-key";
       }
 
       if (index + 1 === this.tagSegments.length) {
         this.tagSegments.push(this.controller.uiSegmentSrv.newPlusButton());
+        this.tagSegments[this.tagSegments.length - 1].focus = true;
+
       }
     }
 

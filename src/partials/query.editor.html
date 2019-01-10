@@ -7,7 +7,15 @@
 			</label>
 		</div>
 		<div class="gf-form">
-			<textarea rows="10" class="gf-form-input" ng-model="ctrl.target.queryRaw" spellcheck="false" placeholder="JSON Query" ng-model-onblur ng-change="ctrl.refreshRaw()"></textarea>
+			<textarea
+				rows="10"
+				class="gf-form-input"
+				ng-model="ctrl.target.queryRaw"
+				spellcheck="false"
+				placeholder="JSON Query"
+				ng-model-onblur
+				ng-change="ctrl.refreshRaw()">
+			</textarea>
 		</div>
 		<div class="gf-form-inline">
 			<div class="gf-form">
@@ -27,6 +35,32 @@
 	</div>
 
 	<div ng-if="!ctrl.target.rawQuery">
+		
+		<div class="gf-form-inline">
+			<div class="gf-form">
+				<label class="gf-form-label query-keyword">FILTER SUGGESTIONS</label>
+			</div>
+			<div class="gf-form-inline" ng-repeat="suggest in ctrl.currentSuggestions">
+				<div
+					class="css-0 gf-form-select-box__option"
+					id="react-select-2-option-3"
+					role="option"
+					tabindex="-1">
+						<div
+						class="tag-filter-option btn btn-link "
+						ng-click="ctrl.appendSuggestion(suggest)">
+							<span
+								class="label label-tag"
+								style="background-color: rgb(80, 134, 66); border-color: rgb(118, 172, 104);">
+									{{suggest.description}}
+								</span>
+							</div>
+					</div>
+			</div>
+			<div class="gf-form gf-form--grow">
+				<div class="gf-form-label gf-form-label--grow"></div>
+			</div>
+		</div>
 
 		<div class="gf-form-inline">
 			<div class="gf-form">
@@ -41,13 +75,12 @@
 				</div>
 
 				<div ng-if="segment.type != 'condition'">
-					<metric-segment
+					<metric-segment-wrapper
 						segment="segment"
 						get-options="ctrl.metadataClient.getTagsOrValues(segment, $index, $query, true)"
-						options="ctrl.metadataClient.options"
 						on-change="ctrl.metadataClient.tagSegmentUpdated(segment, $index)"
 						debounce="true">
-					</metric-segment>
+					</metric-segment-wrapper>
 				</div>
 			</div>
 
