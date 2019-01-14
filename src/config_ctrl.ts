@@ -27,7 +27,7 @@ export class HeroicConfigCtrl {
     this.current.jsonData.suggestionRules = this.current.jsonData.suggestionRules || [];
   }
   addRule() {
-    this.current.jsonData.suggestionRules.push({ triggerFilter: null, filter: null, description: null, aggregation: null});
+    this.current.jsonData.suggestionRules.unshift({ triggerFilter: null, filter: null, description: null, aggregation: null});
   }
 
   removeRule(index) {

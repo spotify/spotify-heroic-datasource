@@ -124,9 +124,9 @@ export default class HeroicQuery {
     this.updatePersistedParts();
   }
 
-  public addSelectPart(selectParts, categoryName, type) {
+  public addSelectPart(selectParts, categoryName, type, position) {
     let partModel = queryPart.create({ type, categoryName });
-    partModel.def.addStrategy(selectParts, partModel, this);
+    partModel.def.addStrategy(selectParts, partModel, position);
     this.updatePersistedParts();
   }
 
