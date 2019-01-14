@@ -10,6 +10,7 @@ export function metricSegmentWrapper($compile, $sce, templateSrv) {
         'on-change="onChange()"' +
         'debounce="debounce">' +
       '</metric-segment>';
+
     return {
       scope: {
         segment: '=',
@@ -19,18 +20,32 @@ export function metricSegmentWrapper($compile, $sce, templateSrv) {
       },
 
     link: ($scope, elem) => {
-      // const $baseElem = $(metricSegmentTemplate);
       const $baseElem = $(metricSegmentTemplate);
       $baseElem.appendTo(elem);
       $compile(elem.contents())($scope);
-      if ($scope.segment.focus === true) {
-        $baseElem[0].childNodes.forEach(child => {
-          if (child.tagName === "A") {
-            setTimeout(function() { child.click(); }, 50);
-          }
-        });
-      }
+      const input = $($baseElem[0].childNodes[0]);
 
+      const typeahead = input.data("typeahead");
+      const oldSource = typeahead.source;
+
+      $scope.source = (query, callback) => {
+        if ($scope.segment.type === "key") {
+          callback(["-- remove --"]);
+        }
+        oldSource(query, callback);
+      };
+
+      typeahead.source = $scope.source;
+
+      $scope.$$postDigest(() => {
+        if ($scope.segment.focus === true) {
+          $baseElem[0].childNodes.forEach(child => {
+            if (child.tagName === "A") {
+              child.click();
+            }
+          });
+        }
+      });
     }
   };
 }

@@ -105,8 +105,8 @@ export class HeroicQueryCtrl extends QueryCtrl {
   }
 
 
-  public addSelectPart(selectParts, cat, subitem) {
-    this.queryModel.addSelectPart(selectParts, cat.text, subitem.value);
+  public addSelectPart(selectParts, cat, subitem, position) {
+    this.queryModel.addSelectPart(selectParts, cat.text, subitem.value, position);
     this.refresh();
   }
 
@@ -146,12 +146,32 @@ export class HeroicQueryCtrl extends QueryCtrl {
         break;
       }
       case "action": {
-        this.queryModel.removeSelectPart(selectParts, part);
-        this.refresh();
+        if (evt.action.value === "remove-part") {
+          this.queryModel.removeSelectPart(selectParts, part);
+          this.refresh();
+        } else {
+          const category = _.find(this.selectMenu, menu => menu.text === evt.action.value);
+          const newPart = _.find(category.submenu, item => item.value === part.part.type);
+          const position = selectParts.indexOf(part);
+          this.queryModel.removeSelectPart(selectParts, part);
+          this.addSelectPart(selectParts, category, newPart, position);
+          this.refresh();
+        }
         break;
       }
       case "get-part-actions": {
-        return this.$q.when([{ text: "Remove", value: "remove-part" }]);
+        if (part.part.categoryName === "Filters") {
+          return this.$q.when([
+            { text: "Remove", value: "remove-part" }
+          ]);
+        } else {
+          return this.$q.when([
+            { text: "Remove", value: "remove-part" },
+            { text: "Convert To Collapse", value: "Collapse" },
+            { text: "Convert To For Each", value: "For Each" },
+            { text: "Convert To Group By", value: "Group By" }
+        ]);
+        }
       }
     }
   }
@@ -162,9 +182,6 @@ export class HeroicQueryCtrl extends QueryCtrl {
     this.checkSuggestions();
     const query = this.queryModel.render();
     this.target.query = JSON.stringify(query);
-    if (this.target.query !== this.previousQuery) {
-      this.panelCtrl.refresh();
-    }
     this.previousQuery = this.target.query;
   }
 
@@ -221,7 +238,6 @@ export class HeroicQueryCtrl extends QueryCtrl {
       // Some third party panel
       this.queryModel.scopedVars["interval"] = {value: this.panelCtrl.interval};
       this.queryModel.scopedVars["__interval"] = {value: this.panelCtrl.interval};
-      this.panelCtrl.refresh();
       return;
     }
     this.panelCtrl.dataList.forEach(data => {

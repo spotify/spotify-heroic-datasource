@@ -216,8 +216,24 @@ export class MetadataClient {
       return this.controller.$q.when(operators);
     }
     let tagsCopy = [... this.queryModel.target.tags];
-    if (segment.type === "value") {
-      tagsCopy = tagsCopy.splice(0, tagsCopy.length - 1);
+    if (segment.type === "value" || (segment.type === "key")) {
+      let key;
+      let operator;
+      let value;
+      if (segment.type === "key") {
+        key = segment.value;
+        operator = this.tagSegments[index + 1].value;
+        value = this.tagSegments[index + 2].value;
+      } else {
+        key = this.tagSegments[index - 2].value;
+        operator = this.tagSegments[index - 1].value;
+        value = segment.value;
+      }
+
+      const item = _.findIndex(this.queryModel.target.tags, tag => {
+        return tag.operator === operator && tag.key === key && tag.value === value;
+      });
+      tagsCopy.splice(item, 1);
     }
     const filter = this.queryModel.buildFilter(tagsCopy, this.includeVariables, this.includeScopes); // do not include scoped variables
 

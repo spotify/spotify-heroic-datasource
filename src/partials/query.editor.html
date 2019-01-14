@@ -1,5 +1,13 @@
 <query-editor-row query-ctrl="ctrl" can-collapse="true" has-text-edit-mode="true">
-
+	<div class="gf-form" ng-if="ctrl.warningMessage != ''">
+		<label class="gf-form-label text-error">
+			<a ng-click="ctrl.clearWarnings()">
+				<i class="fa fa-close"></i>
+			</a>
+			<ng-bind-html ng-bind-html="ctrl.warningMessage">
+			</ng-bind-html>
+		</label>
+	</div>
 	<div ng-if="ctrl.target.rawQuery">
 		<div class="gf-form">
 			<label class="gf-form-label text-warning">
@@ -35,7 +43,7 @@
 	</div>
 
 	<div ng-if="!ctrl.target.rawQuery">
-		
+
 		<div class="gf-form-inline">
 			<div class="gf-form">
 				<label class="gf-form-label query-keyword">FILTER SUGGESTIONS</label>
@@ -118,7 +126,6 @@
 				<div class="gf-form-label gf-form-label--grow"></div>
 			</div>
 		</div>
-
 		<div class="gf-form-inline" ng-repeat="selectParts in ctrl.queryModel.selectModels">
 			<div class="gf-form">
 				<label class="gf-form-label query-keyword width-7">
@@ -132,7 +139,7 @@
 			</div>
 
 			<div class="gf-form">
-				<label class="dropdown" dropdown-typeahead="ctrl.selectMenu" dropdown-typeahead-on-select="ctrl.addSelectPart(selectParts, $item, $subItem)">
+				<label class="dropdown" dropdown-typeahead="ctrl.selectMenu" dropdown-typeahead-on-select="ctrl.addSelectPart(selectParts, $item, $subItem, selectParts.length)">
 				</label>
 			</div>
 
@@ -195,14 +202,5 @@
 			on-change="ctrl.refresh()">
 		</gf-form-switch>
 	</div>
-		<div class="gf-form" ng-if="ctrl.warningMessage != ''">
-			<label class="gf-form-label text-warning">
-				<a ng-click="ctrl.clearWarnings()">
-					<i class="fa fa-close"></i>
-				</a>
-				<ng-bind-html ng-bind-html="ctrl.warningMessage">
-				</ng-bind-html>
-			</label>
-		</div>
 
 </query-editor-row>

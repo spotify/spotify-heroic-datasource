@@ -68,17 +68,8 @@ function register(options: any) {
 
 let groupByTimeFunctions = [];
 
-function replaceAggregationAddStrategy(selectParts, partModel) {
-  // look for existing aggregation
-  if (partModel.def.categoryName !== "Group By") {
-    for (let i = 0; i < selectParts.length; i++) {
-      var part = selectParts[i];
-      if (part.def === partModel.def) {
-        return;
-      }
-    }
-  }
-  selectParts.push(partModel);
+function replaceAggregationAddStrategy(selectParts, partModel, position) {
+  selectParts.splice(position, 0, partModel);
 }
 
 function buildAggregateRenderer(ctype, of) {
