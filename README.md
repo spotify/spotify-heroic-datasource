@@ -4,7 +4,7 @@ This is intended to be an improvement on the [existing Heroic datasource](https:
 
 # Development Status
 
-Pre-Alpha
+Alpha
 
 # Requirements
 
@@ -19,7 +19,7 @@ To develop locally:
 
 Add the following to your `grafana.ini` to deploy to your local Grafana instance:
 ```
-[plugin.heroic-influx-fork]
+[plugin.heroic-grafana-datasource]
 path = /{path-to-heroic-grafana-datasource}
 ```
 
@@ -29,7 +29,7 @@ If using Docker, you can mount this repo into the Grafana plugin directory:
 docker run -it -p 3000:3000 --name=grafana -v `pwd`:/var/lib/grafana/plugins/heroic-grafana-datasource grafana/grafana
 ```
 
-TODO: start versioning releases
+Can also be installed with grafana-cli
 
 `grafana-cli --pluginUrl https://github.com/spotify/heroic-grafana-datasource/archive/master.zip plugins install heroic-grafana-datasource`
 
