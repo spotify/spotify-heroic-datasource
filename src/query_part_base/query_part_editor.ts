@@ -27,7 +27,6 @@ const template = `
 <a ng-click="showActionsMenu()" class="query-part-name pointer dropdown-toggle" data-toggle="dropdown">{{part.def.type}}</a>
 
 <span>(</span><span class="query-part-parameters"></span><span>)</span>
-<br/>
 <sub>{{part.def.categoryName}}</sub>
 <ul class="dropdown-menu">
   <li ng-repeat="action in partActions">
