@@ -43,6 +43,9 @@ export class HeroicQueryCtrl extends QueryCtrl {
   public validator: HeroicValidator;
   public queryParser: QueryParser;
   public currentSuggestions: any[];
+  public aliasCompleterCache: string[];
+  public dataList: any;
+
   /** @ngInject **/
   constructor($scope, $injector, private templateSrv, private $q, private uiSegmentSrv) {
     super($scope, $injector);
@@ -77,6 +80,7 @@ export class HeroicQueryCtrl extends QueryCtrl {
       true,
       false
     );
+    this.aliasCompleterCache = [];
 
   }
 
@@ -111,29 +115,11 @@ export class HeroicQueryCtrl extends QueryCtrl {
   }
 
   public getAliasCompleter() {
-
     return {
         getCompletions: (editor, session, pos, prefix, callback) => {
-          let thisScoped;
-          if (this.panelCtrl.dataList === undefined) {
-            // Some third party panel
-            thisScoped = [];
-          } else {
-            thisScoped = _.uniq(
-                _.flatMap(this.panelCtrl.dataList
-                            .filter(data => data.refId === this.target.refId),
-                          data => Object.keys(data.scoped))
-            );
-          }
-
-          const predictions = thisScoped.map(scope => {
-            return {name: scope, value: `[[${scope}]]`};
-          });
-
-          callback(null, predictions);
+          callback(null, this.aliasCompleterCache);
       }
     }
-
   }
 
   public handleSelectPartEvent(selectParts, part, evt) {
@@ -231,22 +217,31 @@ export class HeroicQueryCtrl extends QueryCtrl {
 
   public onDataReceived(dataList){
     this.warningMessage = this.validator.checkForWarnings(dataList.filter(data => data.refId === this.target.refId));
+    this.dataList = dataList;
+    const scoped = _.uniq(
+               _.flatMap(dataList
+                           .filter(data => data.refId === this.target.refId),
+                         data => Object.keys(data.scoped))
+           );
+    this.aliasCompleterCache = scoped.map(scope => {
+           return {name: scope, value: `[[${scope}]]`};
+         });
   }
 
   public refreshAlias() {
-    if (this.panelCtrl.dataList === undefined) {
+    if (this.dataList === undefined) {
       // Some third party panel
       this.queryModel.scopedVars["interval"] = {value: this.panelCtrl.interval};
       this.queryModel.scopedVars["__interval"] = {value: this.panelCtrl.interval};
       return;
     }
-    this.panelCtrl.dataList.forEach(data => {
+    this.dataList.forEach(data => {
       if (data.refId === this.target.refId) {
         const alias = this.templateSrv.replaceWithText(this.target.alias || "$tags", {});
         data.target = this.templateSrv.replaceWithText(alias, data.scoped);
       }
     });
-    this.panelCtrl.events.emit('data-received', this.panelCtrl.dataList);
+    this.panelCtrl.events.emit('data-received', this.dataList);
   }
 
   public handleGroupByPartEvent(part, index, evt) {
