@@ -169,6 +169,7 @@ export class HeroicQueryCtrl extends QueryCtrl {
     const query = this.queryModel.render();
     this.target.query = JSON.stringify(query);
     this.previousQuery = this.target.query;
+    this.panelCtrl.onQueryChange();
   }
 
   public refreshRaw() {
@@ -216,16 +217,20 @@ export class HeroicQueryCtrl extends QueryCtrl {
   }
 
   public onDataReceived(dataList){
-    this.warningMessage = this.validator.checkForWarnings(dataList.filter(data => data.refId === this.target.refId));
+    if (this.target.resultFormat === "time_series") {
+      this.warningMessage = this.validator.checkForWarnings(dataList.filter(data => data.refId === this.target.refId));
+    }
     this.dataList = dataList;
-    const scoped = _.uniq(
-               _.flatMap(dataList
-                           .filter(data => data.refId === this.target.refId),
-                         data => Object.keys(data.scoped))
-           );
-    this.aliasCompleterCache = scoped.map(scope => {
-           return {name: scope, value: `[[${scope}]]`};
-         });
+    if (this.target.resultFormat === "time_series") {
+      const scoped = _.uniq(
+                 _.flatMap(dataList
+                             .filter(data => data.refId === this.target.refId),
+                           data => Object.keys(data.scoped))
+             );
+      this.aliasCompleterCache = scoped.map(scope => {
+             return {name: scope, value: `[[${scope}]]`};
+           });
+    }
   }
 
   public refreshAlias() {

@@ -32,12 +32,13 @@
   },
 
   "dependencies": {
-    "grafanaVersion": "5.x.x",
+    "grafanaVersion": "6.0.1",
     "plugins": []
   },
 
   "metrics": true,
   "annotations": true,
+  "tables": true,
   "alerting": true,
   "hasQueryHelp": true
 }

@@ -186,7 +186,7 @@ register({
       "6h", "12h", "1d", "7d", "30d"],
     },
   ],
-  defaultParams: ["$__interval"],
+  defaultParams: ["1h"],
   renderer: functionRenderer,
 });
 
