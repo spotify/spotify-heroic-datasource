@@ -125,7 +125,7 @@ export class HeroicQueryCtrl extends QueryCtrl {
   public handleSelectPartEvent(selectParts, part, evt) {
     switch (evt.name) {
       case "get-param-options": {
-        return this.metadataClient.getTagsOrValues({type: "key"}, 0, null, true);
+        return this.metadataClient.tagKeyCount({type: "key"}, 0, null, true);
       }
       case "part-param-changed": {
         this.refresh();
@@ -169,7 +169,9 @@ export class HeroicQueryCtrl extends QueryCtrl {
     const query = this.queryModel.render();
     this.target.query = JSON.stringify(query);
     this.previousQuery = this.target.query;
-    this.panelCtrl.onQueryChange();
+    if (this.panelCtrl.onQueryChange) {
+      this.panelCtrl.onQueryChange();
+    }
   }
 
   public refreshRaw() {
