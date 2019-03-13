@@ -207,10 +207,14 @@ export class MetadataClient {
       custom: 'false'
     });
   }
-  public tagKeyCount = (segment, index, query, includeRemove) => {
+  public tagKeyCount = (segment, index, $query, includeRemove) => {
     // this is separate from getTagsOrValues because since this does not take in
     // a user input prefix to search for, it can return every tag for a series
     // under a specific filter
+
+    // this is not ideal -- how can we pass query from metric-segment-wrapper to the child getOptions
+    const query = $query || segment.query;
+
     let tagsCopy = [... this.queryModel.target.tags];
     let key;
     let operator;
@@ -221,7 +225,6 @@ export class MetadataClient {
     const item = _.findIndex(this.queryModel.target.tags, tag => {
       return tag.operator === operator && tag.key === key && tag.value === value;
     });
-    tagsCopy.splice(item, 1);
     const filter = this.queryModel.buildFilter(tagsCopy, this.includeVariables, this.includeScopes); // do not include scoped variables
 
     const data = {
@@ -250,7 +253,9 @@ export class MetadataClient {
   }
 
 
-  public getTagsOrValues = (segment, index, query, includeRemove) => {
+  public getTagsOrValues = (segment, index, $query, includeRemove) => {
+    // this is not ideal -- how can we pass query from metric-segment-wrapper to the child getOptions
+    const query = $query || segment.query;
     if (segment.type === "condition") {
       return this.controller.$q.when([this.controller.uiSegmentSrv.newCondition("AND")]);
     }
