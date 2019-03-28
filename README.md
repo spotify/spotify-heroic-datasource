@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/spotify/heroic-grafana-datasource.svg?branch=master)](https://travis-ci.org/spotify/heroic-grafana-datasource)
+
 This is a "fork" of the [Grafana InfluxDB plugin](https://github.com/grafana/grafana/tree/master/public/app/plugins/datasource/influxdb) with changes applied to function with the Heroic time-series database.
 
 This is intended to be an improvement on the [existing Heroic datasource](https://github.com/udoprog/udoprog-heroic-datasource) that includes a query builder, table support, variable support, and annotation support.
