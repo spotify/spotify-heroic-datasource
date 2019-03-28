@@ -31,6 +31,7 @@ export class MetadataClient {
   public lruTag: any;
   public lruTagValue: any;
   public lruKey: any;
+  public lruTagKeyCount: any;
   public error: any;
   public complexError: any;
   public addCustomQuery: any;
@@ -54,6 +55,7 @@ export class MetadataClient {
     this.lruTag = new LruCache();
     this.lruTagValue = new LruCache();
     this.lruKey = new LruCache();
+    this.lruTagKeyCount = new LruCache();
     this.queryModel = new HeroicQuery(this.target, this.controller.templateSrv, this.scopedVars);
     this.includeVariables = includeVariables;
     this.includeScopes = includeScopes;
@@ -127,7 +129,7 @@ export class MetadataClient {
     const filter = {
       key: measurementFilter,
       filter: this.queryModel.buildCurrentFilter(this.includeVariables, this.includeScopes),
-      limit: 10,
+      limit: 100,
     };
     const cacheKey = JSON.stringify(filter);
     if (this.lruKey.has(cacheKey)) {
@@ -205,8 +207,55 @@ export class MetadataClient {
       custom: 'false'
     });
   }
+  public tagKeyCount = (segment, index, $query, includeRemove) => {
+    // this is separate from getTagsOrValues because since this does not take in
+    // a user input prefix to search for, it can return every tag for a series
+    // under a specific filter
 
-  public getTagsOrValues = (segment, index, query, includeRemove) => {
+    // this is not ideal -- how can we pass query from metric-segment-wrapper to the child getOptions
+    const query = $query || segment.query;
+
+    let tagsCopy = [... this.queryModel.target.tags];
+    let key;
+    let operator;
+    let value;
+    key = segment.value;
+    operator = this.tagSegments[index + 1].value;
+    value = this.tagSegments[index + 2].value;
+    const item = _.findIndex(this.queryModel.target.tags, tag => {
+      return tag.operator === operator && tag.key === key && tag.value === value;
+    });
+    const filter = this.queryModel.buildFilter(tagsCopy, this.includeVariables, this.includeScopes); // do not include scoped variables
+
+    const data = {
+      filter: filter,
+      limit: 100,
+    };
+    const cache = this.lruTagKeyCount;
+    const cacheKey = JSON.stringify(data);
+    if (cache.has(cacheKey)) {
+      return Promise.resolve(cache.get(cacheKey));
+    }
+    // TODO: would be nice to display counts with tagkeys here, but label vs value not supported by metric-segment yet
+    return this.datasource
+      .doRequest("/metadata/tagkey-count", { method: "POST", data: data })
+      .then((result) => {
+        const seen = new Set();
+        return result.data.suggestions;
+      }).then(this.transformToSegments(true, "key"))
+        .then((results) => {
+          if (segment.type === "key" && includeRemove) {
+            results.splice(0, 0, angular.copy(this.removeTagFilterSegment));
+          }
+          cache.put(cacheKey, results);
+          return results;
+        });
+  }
+
+
+  public getTagsOrValues = (segment, index, $query, includeRemove) => {
+    // this is not ideal -- how can we pass query from metric-segment-wrapper to the child getOptions
+    const query = $query || segment.query;
     if (segment.type === "condition") {
       return this.controller.$q.when([this.controller.uiSegmentSrv.newCondition("AND")]);
     }
@@ -239,7 +288,7 @@ export class MetadataClient {
 
     const data = {
       filter: filter,
-      limit: 25,
+      limit: 100,
       key: null
     };
     if (segment.type === "key" || segment.type === "plus-button") {

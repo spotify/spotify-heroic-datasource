@@ -24,11 +24,11 @@ export function metricSegmentWrapper($compile, $sce, templateSrv) {
       $baseElem.appendTo(elem);
       $compile(elem.contents())($scope);
       const input = $($baseElem[0].childNodes[0]);
-
       const typeahead = input.data("typeahead");
       const oldSource = typeahead.source;
-
       $scope.source = (query, callback) => {
+        // this is not ideal -- how can we pass query to the child getOptions
+        $scope.segment.query = query;
         if ($scope.segment.type === "key") {
           callback(["-- remove --"]);
         }
