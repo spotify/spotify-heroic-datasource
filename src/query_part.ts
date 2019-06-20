@@ -186,7 +186,7 @@ register({
       "6h", "12h", "1d", "7d", "30d"],
     },
   ],
-  defaultParams: ["1h"],
+  defaultParams: ["1m"],
   renderer: functionRenderer,
 });
 
