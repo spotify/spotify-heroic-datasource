@@ -38,7 +38,7 @@ export default class HeroicQuery {
     target.resultFormat = target.resultFormat || "time_series";
     target.orderByTime = target.orderByTime || "ASC";
     target.tags = target.tags || [];
-    target.groupBy = target.groupBy || [{ type: "time", params: ["1h"] }];
+    target.groupBy = target.groupBy || [{ type: "time", params: ["1m"] }];
     target.select = target.select || [[]];
 
     this.updateProjection();
