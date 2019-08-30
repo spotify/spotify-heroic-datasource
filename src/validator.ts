@@ -19,12 +19,15 @@
 */
 
 import _ from "lodash";
+import {
+  Target,
+} from "./types";
 
 export class HeroicValidator {
 
-  public target: any;
+  public target: Target;
   public tagAggregationChecks: any;
-  public tagCollapseChecks: any;
+  public tagCollapseChecks: any[];
 
   constructor(target, tagAggregationChecks, tagCollapseChecks) {
     this.target = target;
@@ -120,6 +123,8 @@ export class HeroicValidator {
             break;
           case 'AGGREGATION':
             if (this.target.select.length === 0) {
+              // TODO: I think this is impossible, target.select is
+              // supposed to be an array of size 1
               warnings.push(
                 'Query would aggregate too many metrics. Try add a sampling aggregation, like Average, Min, Max, or Sum'
               );

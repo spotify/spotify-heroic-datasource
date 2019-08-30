@@ -21,15 +21,12 @@
 import kbn from "app/core/utils/kbn";
 import _ from "lodash";
 import queryPart from "./query_part";
-
-export interface RenderedQuery {
-  filter: Filter;
-  aggregators: string[];
-  features: string[];
-  range: string;
-}
-
-export type Filter = (string | string[])[];
+import {
+  RenderedQuery,
+  Filter,
+  Target,
+  Tag,
+} from "./types";
 
 export default class HeroicQuery {
   public target: any;
@@ -39,7 +36,7 @@ export default class HeroicQuery {
   public scopedVars: any;
 
   /** @ngInject */
-  constructor(target, templateSrv?, scopedVars?) {
+  constructor(target: any, templateSrv?, scopedVars?) {
     this.target = target;
     this.templateSrv = templateSrv;
     this.scopedVars = scopedVars;
@@ -180,7 +177,7 @@ export default class HeroicQuery {
   }
 
   public render(): RenderedQuery {
-    let target = this.target;
+    let target: Target = this.target;
     const currentFilter = this.buildCurrentFilter(true, true);
     let currentIntervalUnit = null;
     let currentIntervalValue = null;

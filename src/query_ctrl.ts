@@ -20,12 +20,16 @@
 
 import { QueryCtrl } from "app/plugins/sdk";
 import _ from "lodash";
-import HeroicQuery, { RenderedQuery } from "./heroic_query";
+import HeroicQuery from "./heroic_query";
 import { MetadataClient } from "./metadata_client";
 import { HeroicValidator } from './validator';
 import { QueryParser } from './query_parser';
 import queryPart from "./query_part";
-
+import {
+  RenderedQuery,
+  Target,
+  Tag,
+} from "./types";
 
 export class HeroicQueryCtrl extends QueryCtrl {
   public static templateUrl = "partials/query.editor.html";
@@ -33,10 +37,9 @@ export class HeroicQueryCtrl extends QueryCtrl {
   public queryModel: HeroicQuery;
   public groupBySegment: any;
   public resultFormats: any[];
-  public orderByTime: any[];
   public panelCtrl: any;
   public selectMenu: any;
-  public target: any;
+  public target: Target;
   public metadataClient: MetadataClient;
   public previousQuery: any;
   public warningMessage: string;
@@ -280,11 +283,11 @@ export class HeroicQueryCtrl extends QueryCtrl {
     return this.target.query;
   }
 
-  public getTags() {
+  public getTags(): Tag[] {
     return this.target.tags;
   }
 
-  public setTags(tags) {
+  public setTags(tags: Tag[]) {
     this.target.tags = tags;
   }
 
