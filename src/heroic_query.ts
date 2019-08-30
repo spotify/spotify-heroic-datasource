@@ -22,6 +22,15 @@ import kbn from "app/core/utils/kbn";
 import _ from "lodash";
 import queryPart from "./query_part";
 
+export interface RenderedQuery {
+  filter: Filter;
+  aggregators: string[];
+  features: string[];
+  range: string;
+}
+
+export type Filter = (string | string[])[];
+
 export default class HeroicQuery {
   public target: any;
   public selectModels: any[];
@@ -147,7 +156,7 @@ export default class HeroicQuery {
     }
   }
 
-  public buildFilter(filterChoices, includeVariables, includeScopedFilter) {
+  public buildFilter(filterChoices, includeVariables, includeScopedFilter): Filter {
     let base;
     const keyTag = _.find(filterChoices, tag => tag.key === "$key" && tag.value !== "select tag value");
     const filteredTags = filterChoices.filter(tag => tag.value !== "select tag value" && tag.key !== "$key");
@@ -170,7 +179,7 @@ export default class HeroicQuery {
     return this.buildFilter(this.target.tags, includeVariables, includeScopedFilter);
   }
 
-  public render() {
+  public render(): RenderedQuery {
     let target = this.target;
     const currentFilter = this.buildCurrentFilter(true, true);
     let currentIntervalUnit = null;

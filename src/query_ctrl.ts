@@ -20,7 +20,7 @@
 
 import { QueryCtrl } from "app/plugins/sdk";
 import _ from "lodash";
-import HeroicQuery from "./heroic_query";
+import HeroicQuery, { RenderedQuery } from "./heroic_query";
 import { MetadataClient } from "./metadata_client";
 import { HeroicValidator } from './validator';
 import { QueryParser } from './query_parser';
@@ -67,7 +67,8 @@ export class HeroicQueryCtrl extends QueryCtrl {
     this.buildSelectMenu();
 
     this.warningMessage = "";
-    this.validator = new HeroicValidator(this.target,
+    this.validator = new HeroicValidator(
+      this.target,
       this.datasource.tagAggregationChecks,
       this.datasource.tagCollapseChecks);
     this.queryParser = new QueryParser();
@@ -166,7 +167,7 @@ export class HeroicQueryCtrl extends QueryCtrl {
     this.queryModel.scopedVars["interval"] = {value: this.panelCtrl.interval};
     this.queryModel.scopedVars["__interval"] = {value: this.panelCtrl.interval};
     this.checkSuggestions();
-    const query = this.queryModel.render();
+    const query: RenderedQuery = this.queryModel.render();
     this.target.query = JSON.stringify(query);
     this.previousQuery = this.target.query;
     if (this.panelCtrl.onQueryChange) {
@@ -194,7 +195,7 @@ export class HeroicQueryCtrl extends QueryCtrl {
 
   public checkSuggestions() {
     const suggestions = [];
-    const query = this.queryModel.render();
+    const query: RenderedQuery = this.queryModel.render();
     this.datasource.suggestionRules.forEach(rule => {
       const rule2 = _.cloneDeep(rule);
       rule2.triggerFilter = rule2.triggerFilter.map(item => {

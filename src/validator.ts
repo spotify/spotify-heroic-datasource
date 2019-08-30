@@ -89,6 +89,7 @@ export class HeroicValidator {
     }
 
     data.forEach(dataset => {
+      console.log(dataset.limits);
       if (!dataset.limits) {
         return;
       }
