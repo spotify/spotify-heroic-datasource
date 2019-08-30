@@ -1,15 +1,20 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-      "target": "ES5",
-      "module": "system",
-      "sourceMap": true,
-      "declaration": true,
-      "emitDecoratorMetadata": true,
-      "experimentalDecorators": true,
-      "noImplicitAny": false
+    "target": "ES5",
+    "module": "system",
+    "sourceMap": true,
+    "declaration": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "noImplicitAny": false,
+    "skipLibCheck": true
   },
+  "include": [
+    "dist/**/*.ts"
+  ],
   "exclude": [
-      "node_modules"
+    "node_modules",
+    "dist/**/*.d.ts"
   ]
 }
