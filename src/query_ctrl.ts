@@ -26,28 +26,29 @@ import { HeroicValidator } from './validator';
 import { QueryParser } from './query_parser';
 import queryPart from "./query_part";
 import {
+  DataSeries,
   RenderedQuery,
   Target,
   Tag,
 } from "./types";
 
 export class HeroicQueryCtrl extends QueryCtrl {
-  public static templateUrl = "partials/query.editor.html";
+  static templateUrl = "partials/query.editor.html";
 
-  public queryModel: HeroicQuery;
-  public groupBySegment: any;
-  public resultFormats: any[];
-  public panelCtrl: any;
-  public selectMenu: any;
-  public target: Target;
-  public metadataClient: MetadataClient;
-  public previousQuery: any;
-  public warningMessage: string;
-  public validator: HeroicValidator;
-  public queryParser: QueryParser;
-  public currentSuggestions: any[];
-  public aliasCompleterCache: string[];
-  public dataList: any;
+  queryModel: HeroicQuery;
+  groupBySegment: any;
+  resultFormats: any[];
+  panelCtrl: any;
+  selectMenu: any;
+  target: Target;
+  metadataClient: MetadataClient;
+  previousQuery: any;
+  warningMessage: string;
+  validator: HeroicValidator;
+  queryParser: QueryParser;
+  currentSuggestions: any[];
+  aliasCompleterCache: string[];
+  dataList: DataSeries[];
 
   /** @ngInject **/
   constructor($scope, $injector, private templateSrv, private $q, private uiSegmentSrv) {
@@ -222,20 +223,16 @@ export class HeroicQueryCtrl extends QueryCtrl {
     this.warningMessage = "";
   }
 
-  public onDataReceived(dataList){
-    if (this.target.resultFormat === "time_series") {
-      this.warningMessage = this.validator.checkForWarnings(dataList.filter(data => data.refId === this.target.refId));
-    }
+  public onDataReceived(dataList: DataSeries[]){
     this.dataList = dataList;
     if (this.target.resultFormat === "time_series") {
-      const scoped = _.uniq(
-                 _.flatMap(dataList
-                             .filter(data => data.refId === this.target.refId),
-                           data => Object.keys(data.scoped))
-             );
+      const filtered: DataSeries[] = dataList.filter(data => data.refId === this.target.refId);
+
+      this.warningMessage = this.validator.checkForWarnings(filtered);
+      const scoped = _.uniq(_.flatMap(filtered, data => Object.keys(data.scoped)));
       this.aliasCompleterCache = scoped.map(scope => {
-             return {name: scope, value: `[[${scope}]]`};
-           });
+        return {name: scope, value: `[[${scope}]]`};
+      });
     }
   }
 
@@ -252,6 +249,7 @@ export class HeroicQueryCtrl extends QueryCtrl {
         data.target = this.templateSrv.replaceWithText(alias, data.scoped);
       }
     });
+    // The only receiver of this seems to be onDataReceived - which copies this.dataList into this.dataList?
     this.panelCtrl.events.emit('data-received', this.dataList);
   }
 

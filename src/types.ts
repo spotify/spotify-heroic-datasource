@@ -35,3 +35,15 @@ export interface Tag {
   operator: string,
   value: string,
 }
+
+export type Datapoint = [number, number];
+
+export interface DataSeries {
+  refId: string;
+  datapoints: Datapoint[];
+  target: string;
+  scoped: any;
+
+  // TODO: improve type, ensure this is actually being set
+  limits: any;
+}

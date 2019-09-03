@@ -20,6 +20,7 @@
 
 import _ from "lodash";
 import {
+  DataSeries,
   Target,
 } from "./types";
 
@@ -65,8 +66,7 @@ export class HeroicValidator {
     return badTags;
   }
 
-  public checkForWarnings(data) {
-
+  public checkForWarnings(data: DataSeries[]): string {
     const warnings = [];
     const badTags = this.findUnsafeAggregations(data);
     if (badTags.length > 0) {
@@ -92,7 +92,6 @@ export class HeroicValidator {
     }
 
     data.forEach(dataset => {
-      console.log(dataset.limits);
       if (!dataset.limits) {
         return;
       }
