@@ -44,6 +44,32 @@ export interface DataSeries {
   target: string;
   scoped: any;
 
-  // TODO: improve type, ensure this is actually being set
-  limits: any;
+  errors: any[];
+  limits: string[];
+}
+
+export interface HeroicBatchResult {
+  status: number;
+  xhrStatus: string;
+  statusText: string;
+  config: any;
+  data: {
+    results: {
+      [key: string]: HeroicBatchData;
+    }
+  };
+}
+
+export interface HeroicBatchData {
+  cache: any;
+  cached: boolean;
+  commonResource: any;
+  commonTags: any;
+  errors: any[];
+  limits: string[];
+  preAggregationSampleSize: number;
+  queryId: string;
+  range: any;
+  result: any[];
+  trace: any;
 }

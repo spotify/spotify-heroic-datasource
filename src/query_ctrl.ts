@@ -86,7 +86,6 @@ export class HeroicQueryCtrl extends QueryCtrl {
       false
     );
     this.aliasCompleterCache = [];
-
   }
 
   public toggleEditorMode() {
@@ -223,12 +222,13 @@ export class HeroicQueryCtrl extends QueryCtrl {
     this.warningMessage = "";
   }
 
-  public onDataReceived(dataList: DataSeries[]){
+  public onDataReceived(dataList: DataSeries[]) {
     this.dataList = dataList;
-    if (this.target.resultFormat === "time_series") {
-      const filtered: DataSeries[] = dataList.filter(data => data.refId === this.target.refId);
 
-      this.warningMessage = this.validator.checkForWarnings(filtered);
+    if (this.target.resultFormat === "time_series") {
+      this.warningMessage = this.validator.checkForWarnings(dataList);
+
+      const filtered: DataSeries[] = dataList.filter(data => data.refId === this.target.refId);
       const scoped = _.uniq(_.flatMap(filtered, data => Object.keys(data.scoped)));
       this.aliasCompleterCache = scoped.map(scope => {
         return {name: scope, value: `[[${scope}]]`};
@@ -249,7 +249,7 @@ export class HeroicQueryCtrl extends QueryCtrl {
         data.target = this.templateSrv.replaceWithText(alias, data.scoped);
       }
     });
-    // The only receiver of this seems to be onDataReceived - which copies this.dataList into this.dataList?
+    // Shortcut to re-render the existing data
     this.panelCtrl.events.emit('data-received', this.dataList);
   }
 
