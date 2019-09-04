@@ -4,7 +4,7 @@ node_js:
 - stable
 
 script:
-- npm run-script build
+- yarn build
 
 before_deploy:
 - zip heroic-grafana-datasource -r dist/
