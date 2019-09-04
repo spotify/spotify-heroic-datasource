@@ -11,8 +11,8 @@ Beta
 # How to install
 
 To develop locally:
- - `npm install`
- - `npm run watch`
+- `yarn install`
+- `yarn watch`
 
 Add the following to your `grafana.ini` to deploy to your local Grafana instance:
 ```
