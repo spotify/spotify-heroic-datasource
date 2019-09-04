@@ -25,26 +25,30 @@ import { MetadataClient } from "./metadata_client";
 import { HeroicValidator } from './validator';
 import { QueryParser } from './query_parser';
 import queryPart from "./query_part";
-
+import {
+  DataSeries,
+  RenderedQuery,
+  Target,
+  Tag,
+} from "./types";
 
 export class HeroicQueryCtrl extends QueryCtrl {
-  public static templateUrl = "partials/query.editor.html";
+  static templateUrl = "partials/query.editor.html";
 
-  public queryModel: HeroicQuery;
-  public groupBySegment: any;
-  public resultFormats: any[];
-  public orderByTime: any[];
-  public panelCtrl: any;
-  public selectMenu: any;
-  public target: any;
-  public metadataClient: MetadataClient;
-  public previousQuery: any;
-  public warningMessage: string;
-  public validator: HeroicValidator;
-  public queryParser: QueryParser;
-  public currentSuggestions: any[];
-  public aliasCompleterCache: string[];
-  public dataList: any;
+  queryModel: HeroicQuery;
+  groupBySegment: any;
+  resultFormats: any[];
+  panelCtrl: any;
+  selectMenu: any;
+  target: Target;
+  metadataClient: MetadataClient;
+  previousQuery: any;
+  warningMessage: string;
+  validator: HeroicValidator;
+  queryParser: QueryParser;
+  currentSuggestions: any[];
+  aliasCompleterCache: string[];
+  dataList: DataSeries[];
 
   /** @ngInject **/
   constructor($scope, $injector, private templateSrv, private $q, private uiSegmentSrv) {
@@ -67,7 +71,8 @@ export class HeroicQueryCtrl extends QueryCtrl {
     this.buildSelectMenu();
 
     this.warningMessage = "";
-    this.validator = new HeroicValidator(this.target,
+    this.validator = new HeroicValidator(
+      this.target,
       this.datasource.tagAggregationChecks,
       this.datasource.tagCollapseChecks);
     this.queryParser = new QueryParser();
@@ -81,7 +86,6 @@ export class HeroicQueryCtrl extends QueryCtrl {
       false
     );
     this.aliasCompleterCache = [];
-
   }
 
   public toggleEditorMode() {
@@ -166,7 +170,7 @@ export class HeroicQueryCtrl extends QueryCtrl {
     this.queryModel.scopedVars["interval"] = {value: this.panelCtrl.interval};
     this.queryModel.scopedVars["__interval"] = {value: this.panelCtrl.interval};
     this.checkSuggestions();
-    const query = this.queryModel.render();
+    const query: RenderedQuery = this.queryModel.render();
     this.target.query = JSON.stringify(query);
     this.previousQuery = this.target.query;
     if (this.panelCtrl.onQueryChange) {
@@ -194,7 +198,7 @@ export class HeroicQueryCtrl extends QueryCtrl {
 
   public checkSuggestions() {
     const suggestions = [];
-    const query = this.queryModel.render();
+    const query: RenderedQuery = this.queryModel.render();
     this.datasource.suggestionRules.forEach(rule => {
       const rule2 = _.cloneDeep(rule);
       rule2.triggerFilter = rule2.triggerFilter.map(item => {
@@ -218,20 +222,17 @@ export class HeroicQueryCtrl extends QueryCtrl {
     this.warningMessage = "";
   }
 
-  public onDataReceived(dataList){
-    if (this.target.resultFormat === "time_series") {
-      this.warningMessage = this.validator.checkForWarnings(dataList.filter(data => data.refId === this.target.refId));
-    }
+  public onDataReceived(dataList: DataSeries[]) {
     this.dataList = dataList;
+
     if (this.target.resultFormat === "time_series") {
-      const scoped = _.uniq(
-                 _.flatMap(dataList
-                             .filter(data => data.refId === this.target.refId),
-                           data => Object.keys(data.scoped))
-             );
+      this.warningMessage = this.validator.checkForWarnings(dataList);
+
+      const filtered: DataSeries[] = dataList.filter(data => data.refId === this.target.refId);
+      const scoped = _.uniq(_.flatMap(filtered, data => Object.keys(data.scoped)));
       this.aliasCompleterCache = scoped.map(scope => {
-             return {name: scope, value: `[[${scope}]]`};
-           });
+        return {name: scope, value: `[[${scope}]]`};
+      });
     }
   }
 
@@ -248,6 +249,7 @@ export class HeroicQueryCtrl extends QueryCtrl {
         data.target = this.templateSrv.replaceWithText(alias, data.scoped);
       }
     });
+    // Shortcut to re-render the existing data
     this.panelCtrl.events.emit('data-received', this.dataList);
   }
 
@@ -279,11 +281,11 @@ export class HeroicQueryCtrl extends QueryCtrl {
     return this.target.query;
   }
 
-  public getTags() {
+  public getTags(): Tag[] {
     return this.target.tags;
   }
 
-  public setTags(tags) {
+  public setTags(tags: Tag[]) {
     this.target.tags = tags;
   }
 

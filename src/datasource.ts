@@ -26,45 +26,60 @@ import HeroicSeries from "./heroic_series";
 import queryPart from "./query_part";
 import TimeRange from "./time_range";
 import { MetadataClient } from "./metadata_client";
+import {
+  Target,
+  DataSeries,
+  HeroicBatchResult,
+  HeroicBatchData,
+} from "./types";
 
+
+declare namespace datasource {
+  interface InstanceSettings {
+    url: string;
+    username: string;
+    password: string;
+    name: string;
+    jsonData: JSONSettings;
+
+    // unused
+    basicAuth: any;
+    database: any;
+  }
+
+  interface JSONSettings {
+    tagCollapseChecks?: any[];
+    tagAggregationChecks: string[];
+    suggestionRules: any[];
+  }
+}
 
 export default class HeroicDatasource {
   public type: string;
-  public urls: any;
-  public url: string;
-  public username: string;
-  public password: string;
-  public name: string;
-  public database: any;
-  public basicAuth: any;
-  public withCredentials: any;
-  public interval: any;
+  public settings: datasource.InstanceSettings;
+
   public supportAnnotations: boolean;
   public supportMetrics: boolean;
   public templateSrv: any;
   public annotationModels: any;
   public queryBuilder: any;
   public fakeController: any;
+
   public tagAggregationChecks: any;
-  public tagCollapseChecks: any;
+  public tagCollapseChecks: any[];
   public suggestionRules: any;
 
   /** @ngInject */
-  constructor(instanceSettings, private $q, private backendSrv, templateSrv, private uiSegmentSrv) {
+  constructor(instanceSettings: datasource.InstanceSettings,
+              private $q,
+              private backendSrv,
+              templateSrv,
+              private uiSegmentSrv) {
     this.type = "heroic";
-    this.url = instanceSettings.url;
-    this.templateSrv = templateSrv;
-    this.urls = _.map(instanceSettings.url.split(","), function(url) {
-      return url.trim();
-    });
+    this.settings = instanceSettings;
 
-    this.username = instanceSettings.username;
-    this.password = instanceSettings.password;
-    this.name = instanceSettings.name;
-    this.database = instanceSettings.database;
-    this.basicAuth = instanceSettings.basicAuth;
-    this.withCredentials = instanceSettings.withCredentials;
-    this.interval = (instanceSettings.jsonData || {}).timeInterval;
+    this.templateSrv = templateSrv;
+
     this.tagAggregationChecks = _.reduce(instanceSettings.jsonData.tagAggregationChecks, (obj, value) => {
       const kv = value.split(":");
       if (obj[kv[0]] === undefined) {
@@ -99,14 +114,13 @@ export default class HeroicDatasource {
       true,
       true
     );
-
   }
 
   public query(options) {
     const timeFilter = this.getTimeFilter(options);
     const scopedVars = options.scopedVars;
-    const targets = _.cloneDeep(options.targets);
-    const targetsByRef = {};
+    const targets: Target[] = _.cloneDeep(options.targets);
+    const targetsByRef: Record<string, Target> = {};
     targets.forEach(target => {
       targetsByRef[target.refId] = target;
     });
@@ -121,7 +135,7 @@ export default class HeroicDatasource {
       queryModel = new HeroicQuery(target, this.templateSrv, scopedVars);
       const query = queryModel.render();
       if (query.aggregators.length) {
-        const samplers = query.aggregators.filter(a => a.each !== undefined)
+        const samplers: string[] = query.aggregators.filter(a => a.each !== undefined)
           .map(a => a.each[0])
           .filter(each => each.sampling !== undefined)
           .map(each => each.sampling.value);
@@ -142,48 +156,45 @@ export default class HeroicDatasource {
       return this.$q.when({ data: [] });
     }
 
-    allQueries.forEach((queryWrapper) => {
-      const query = queryWrapper.query;
+    allQueries.forEach(({ query }) => {
       query.range = timeFilter;
-      const adhocFilters = this.templateSrv.getAdhocFilters(this.name);
+      const adhocFilters = this.templateSrv.getAdhocFilters(this.settings.name);
       if (adhocFilters.length > 0) {
         query.filter.push(queryModel.renderAdhocFilters(adhocFilters));
       }
     });
 
-    const output = [];
     const batchQuery = { queries: {} };
-    allQueries.forEach((queryWrapper, index) => {
-      const query = queryWrapper.query;
-      batchQuery.queries[queryWrapper.refId] = query;
+    allQueries.forEach(({ query, refId }, index) => {
+      batchQuery.queries[refId] = query;
     });
 
     return this.doRequest("/query/batch", { method: "POST", data: batchQuery })
-      .then((data) => {
+      .then((data: HeroicBatchResult) => {
+        let output;
+        const limits = {};
+        const errors = {};
         const results = data.data.results;
 
-        // results.forEach((currentResult, resultIndex) => {})
-
-        _.forEach(results, (resultValue, resultKey) => {
-          const target = targetsByRef[resultKey];
-          let alias = target.alias;
-          const query = data.config.data.queries[resultKey];
+        _.forEach(results, (resultValue: HeroicBatchData, refId: string) => {
+          limits[refId] = resultValue.limits;
+          errors[refId] = resultValue.errors;
+          const target: Target = targetsByRef[refId];
+          let alias: string = target.alias;
+          const query = data.config.data.queries[refId];
           if (alias) {
             alias = this.templateSrv.replaceWithText(alias, options.scopedVars);
           }
           const heroicSeries = new HeroicSeries({ series: resultValue, alias, templateSrv: this.templateSrv, resolution: target.queryResolution });
-          switch (targetsByRef[resultKey].resultFormat) {
+          switch (targetsByRef[refId].resultFormat) {
             case "table": {
               const tableData = heroicSeries.getTable();
               tableData.refId = target.refId;
-              output.push(tableData);
+              output = [tableData];
               break;
             }
             default: {
-              heroicSeries.getTimeSeries().forEach((timeSeries) => {
-                timeSeries.refId = target.refId;
-                output.push(timeSeries);
-              });
+              output = heroicSeries.getTimeSeries(target.refId);
             }
           }
         });
@@ -249,7 +260,7 @@ export default class HeroicDatasource {
   public doRequestWithHeaders(path, options, headers) {
     options = options || {};
     options.headers = headers;
-    options.url = this.url + path;
+    options.url = this.settings.url + path;
     options.inspect = { type: "heroic" };
     return this.backendSrv.datasourceRequest(options);
   }

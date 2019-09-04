@@ -6,18 +6,13 @@ This is intended to be an improvement on the [existing Heroic datasource](https:
 
 # Development Status
 
-Alpha
-
-# Requirements
-
- - Grafana
- - grunt
+Beta
 
 # How to install
 
 To develop locally:
  - `npm install`
- - `grunt watch`
+ - `npm run watch`
 
 Add the following to your `grafana.ini` to deploy to your local Grafana instance:
 ```

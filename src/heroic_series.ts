@@ -20,24 +20,29 @@
 
 import TableModel from "app/core/table_model";
 import _ from "lodash";
+import {
+  HeroicBatchData,
+  DataSeries,
+  Datapoint,
+} from "./types";
 
 export default class HeroicSeries {
-  public series: any;
-  public alias: any;
-  public annotation: any;
-  public templateSrv: any;
-  public queryResolution: any;
+  resultData: HeroicBatchData;
+  alias: string;
+  annotation: any;
+  templateSrv: any;
+  queryResolution: any;
 
 
   constructor(options) {
-    this.series = options.series;
+    this.resultData = options.series;
     this.alias = options.alias;
     this.annotation = options.annotation;
     this.templateSrv = options.templateSrv;
     this.queryResolution = options.resolution;
   }
 
-  public _convertData(dataPoint) {
+  public _convertData(dataPoint): Datapoint[] {
     return [dataPoint[1], dataPoint[0]];
   }
 
@@ -87,14 +92,23 @@ export default class HeroicSeries {
     series.values = withAfter;
   }
 
-  public getTimeSeries() {
-    const min = this.getMinFromResults(this.series.result);
-    const max = this.getMaxFromResults(this.series.result);
-    if (this.series.result.length === 0) {
-        return [{ target: name, datapoints: [], scoped: {}, limits: this.series.limits, errors: this.series.errors }];
+  public getTimeSeries(refId: string): DataSeries[] {
+    const min = this.getMinFromResults(this.resultData.result);
+    const max = this.getMaxFromResults(this.resultData.result);
+    const { limits, errors } = this.resultData;
+
+    if (this.resultData.result.length === 0) {
+      return [{
+        refId,
+        target: undefined,
+        datapoints: [],
+        scoped: {},
+        limits,
+        errors
+      }];
     }
     const commonCounts = {}
-    this.series.result.forEach(series => {
+    this.resultData.result.forEach(series => {
       _.forEach(series.tags, (value, key) => {
         if (commonCounts[key] === undefined) {
           commonCounts[key] = {};
@@ -105,21 +119,23 @@ export default class HeroicSeries {
         commonCounts[key][value] += 1;
       });
     });
-    const defaultAlias = this.series.result.length > 1 ? "$tags" : "$fullTags";
-    return this.series.result.map((series) => {
+    const defaultAlias = this.resultData.result.length > 1 ? "$tags" : "$fullTags";
+
+    return this.resultData.result.map((series) => {
       if (this.queryResolution) {
         this.fillTimeSeries(series, min, max, this.queryResolution*1000);
       }
-      const scoped = this.buildScoped(series, commonCounts, this.series.result.length);
-      const name = this.templateSrv.replaceWithText(this.alias || defaultAlias, scoped);
-      return { target: name, datapoints: series.values.map(this._convertData), scoped: scoped };
+      const scoped = this.buildScoped(series, commonCounts, this.resultData.result.length);
+      const target: string = this.templateSrv.replaceWithText(this.alias || defaultAlias, scoped);
+      const datapoints: Datapoint[] = series.values.map(this._convertData);
+      return { refId, target, datapoints, scoped, limits, errors };
     });
   }
 
   public getAnnotations() {
     let list = [];
     const tagsColumnList = (this.annotation.tagsColumn || "").replace(/\s/g, "").split(",");
-    _.each(this.series, (series) => {
+    _.each(this.resultData, (series) => {
       let titleCol = null;
       let tagsCol = [];
       let textCol = null;
@@ -193,16 +209,16 @@ export default class HeroicSeries {
 
   public getTable() {
     let table = new TableModel();
-    if (this.series.result.length === 0) {
+    if (this.resultData.result.length === 0) {
       return table;
     }
     table.columns = [{ text: "Time", type: "time" }, { text: "Value", type: "value" }].concat(
-      Object.keys(this.series.commonTags).map((key) => {
+      Object.keys(this.resultData.commonTags).map((key) => {
         return { text: key, type: key };
       })
     );
 
-    _.each(this.series.result, (series, seriesIndex) => {
+    _.each(this.resultData.result, (series, seriesIndex) => {
       if (series.values) {
         for (let k = 0; k < series.values.length; k++) {
           let values = series.values[k];
@@ -243,8 +259,8 @@ export default class HeroicSeries {
 
   public buildScoped(group, counts, total) {
     const scoped = {tags: {text: ""}, fullTags: {text: ""}};
-    this.buildScopedHelper(scoped, group.tagCounts, group.tags, this.series.commonTags);
-    this.buildScopedHelper(scoped, group.resourceCounts, group.resource, this.series.commonResource);
+    this.buildScopedHelper(scoped, group.tagCounts, group.tags, this.resultData.commonTags);
+    this.buildScopedHelper(scoped, group.resourceCounts, group.resource, this.resultData.commonResource);
     const reducedTags = {};
     _.forEach(group.tags, (value, key) => {
       if (counts[key][value] < total) {

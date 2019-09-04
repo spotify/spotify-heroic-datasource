@@ -21,6 +21,12 @@
 import kbn from "app/core/utils/kbn";
 import _ from "lodash";
 import queryPart from "./query_part";
+import {
+  RenderedQuery,
+  Filter,
+  Target,
+  Tag,
+} from "./types";
 
 export default class HeroicQuery {
   public target: any;
@@ -30,7 +36,7 @@ export default class HeroicQuery {
   public scopedVars: any;
 
   /** @ngInject */
-  constructor(target, templateSrv?, scopedVars?) {
+  constructor(target: any, templateSrv?, scopedVars?) {
     this.target = target;
     this.templateSrv = templateSrv;
     this.scopedVars = scopedVars;
@@ -147,7 +153,7 @@ export default class HeroicQuery {
     }
   }
 
-  public buildFilter(filterChoices, includeVariables, includeScopedFilter) {
+  public buildFilter(filterChoices, includeVariables, includeScopedFilter): Filter {
     let base;
     const keyTag = _.find(filterChoices, tag => tag.key === "$key" && tag.value !== "select tag value");
     const filteredTags = filterChoices.filter(tag => tag.value !== "select tag value" && tag.key !== "$key");
@@ -170,8 +176,8 @@ export default class HeroicQuery {
     return this.buildFilter(this.target.tags, includeVariables, includeScopedFilter);
   }
 
-  public render() {
-    let target = this.target;
+  public render(): RenderedQuery {
+    let target: Target = this.target;
     const currentFilter = this.buildCurrentFilter(true, true);
     let currentIntervalUnit = null;
     let currentIntervalValue = null;

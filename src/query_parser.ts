@@ -18,9 +18,11 @@
 * -/-/-
 */
 
-export class  QueryParser {
+import { Target } from "./types";
 
-  public parseInto(queryRaw, target) {
+export class QueryParser {
+
+  public parseInto(queryRaw: string, target: Target) {
     const jsonRaw = JSON.parse(queryRaw);
     this.parseFiltersFromRaw(jsonRaw, target);
     this.parseAggregationsFromRaw(jsonRaw, target);
@@ -29,7 +31,7 @@ export class  QueryParser {
       && jsonRaw.features[0] === "com.spotify.heroic.distributed_aggregations";
   }
 
-  public parseFiltersFromRaw(jsonRaw, target) {
+  private parseFiltersFromRaw(jsonRaw, target: Target) {
     const tags = [];
     let seen = 0;
     const keyFilter = jsonRaw.filter.filter(entry => entry[0] === "key");
@@ -64,17 +66,16 @@ export class  QueryParser {
     target.tags = tags;
   }
 
-  public parseAggregationsFromRaw(jsonRaw, target) {
+  private parseAggregationsFromRaw(jsonRaw, target: Target) {
     const selects = [];
     jsonRaw.aggregators.forEach(aggr => {
-      const of = aggr.of;
       if (aggr.type === "group") {
-        if (of === null) {
+        if (aggr.of === null) {
           selects.push({categoryName: "For Each", params: [], type: aggr.each[0].type});
-        } else if (of.length === 0) {
+        } else if (aggr.of.length === 0) {
           selects.push({categoryName: "Collapse", params:[], type: aggr.each[0].type});
         } else {
-          selects.push({categoryName: "Group By", params: of, type: aggr.each[0].type});
+          selects.push({categoryName: "Group By", params: aggr.of, type: aggr.each[0].type});
         }
         if (aggr.each[0].sampling !== undefined && Object.keys(aggr.each[0].sampling).length > 0) {
           const param = this.samplingToParam(aggr.each[0].sampling);
@@ -92,7 +93,7 @@ export class  QueryParser {
     target.select = [selects];
   }
 
-  public samplingToParam(sampling) {
+  private samplingToParam(sampling) {
     switch (sampling.unit) {
       case "seconds":
         return `${sampling.value}s`;

@@ -19,12 +19,16 @@
 */
 
 import _ from "lodash";
+import {
+  DataSeries,
+  Target,
+} from "./types";
 
 export class HeroicValidator {
 
-  public target: any;
+  public target: Target;
   public tagAggregationChecks: any;
-  public tagCollapseChecks: any;
+  public tagCollapseChecks: any[];
 
   constructor(target, tagAggregationChecks, tagCollapseChecks) {
     this.target = target;
@@ -32,7 +36,7 @@ export class HeroicValidator {
     this.tagCollapseChecks = tagCollapseChecks;
   }
 
-  public findUnsafeCollapses(data) {
+  public findUnsafeCollapses(data: DataSeries[]) {
     const collapsedKeys =_.uniq(
       _.flatMap(this.tagCollapseChecks, (value) => {
         return data.filter(series => {
@@ -46,7 +50,7 @@ export class HeroicValidator {
     return collapsedKeys;
   }
 
-  public findUnsafeAggregations(data) {
+  public findUnsafeAggregations(data: DataSeries[]) {
     const hasAggregations = this.target.select[0].filter(select => select.type !== "min" && select.type !== "max").length > 0;
     if (!hasAggregations) {
       return false;
@@ -62,8 +66,7 @@ export class HeroicValidator {
     return badTags;
   }
 
-  public checkForWarnings(data) {
-
+  public checkForWarnings(data: DataSeries[]): string {
     const warnings = [];
     const badTags = this.findUnsafeAggregations(data);
     if (badTags.length > 0) {
@@ -88,11 +91,11 @@ export class HeroicValidator {
      warnings.push(message);
     }
 
-    data.forEach(dataset => {
-      if (!dataset.limits) {
-        return;
-      }
-      dataset.limits.forEach(limit => {
+    // Errors/limits are set per query, not per series, but are included
+    // on every series due to how the data list gets emitted from
+    // Grafana.
+    _.uniqBy(data, s => s.refId).forEach((series: DataSeries, refId: string) => {
+      series.limits.forEach(limit => {
         switch (limit) {
           case 'SERIES':
             warnings.push('Query would fetch too many time series. Try to add more filters.');
@@ -119,6 +122,8 @@ export class HeroicValidator {
             break;
           case 'AGGREGATION':
             if (this.target.select.length === 0) {
+              // TODO: I think this is impossible, target.select is
+              // supposed to be an array of size 1
               warnings.push(
                 'Query would aggregate too many metrics. Try add a sampling aggregation, like Average, Min, Max, or Sum'
               );
