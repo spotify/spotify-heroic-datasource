@@ -171,12 +171,11 @@ export default class HeroicDatasource {
 
     return this.doRequest("/query/batch", { method: "POST", data: batchQuery })
       .then((data: HeroicBatchResult) => {
-        let output;
         const limits = {};
         const errors = {};
         const results = data.data.results;
 
-        _.forEach(results, (resultValue: HeroicBatchData, refId: string) => {
+        const output = _.flatMap(results, (resultValue: HeroicBatchData, refId: string) => {
           limits[refId] = resultValue.limits;
           errors[refId] = resultValue.errors;
           const target: Target = targetsByRef[refId];
@@ -190,11 +189,10 @@ export default class HeroicDatasource {
             case "table": {
               const tableData = heroicSeries.getTable();
               tableData.refId = target.refId;
-              output = [tableData];
-              break;
+              return tableData;
             }
             default: {
-              output = heroicSeries.getTimeSeries(target.refId);
+              return heroicSeries.getTimeSeries(target.refId);
             }
           }
         });
@@ -227,7 +225,7 @@ export default class HeroicDatasource {
       });
   }
 
-  public targetContainsTemplate(target) {
+  public targetContainsTemplate(target): boolean {
     for (const group of target.groupBy) {
       for (const param of group.params) {
         if (this.templateSrv.variableExists(param)) {
@@ -269,7 +267,7 @@ export default class HeroicDatasource {
     return this.doRequestWithHeaders(path, options, headers);
   }
 
-  public parseRelativeUnit(unit) {
+  public parseRelativeUnit(unit: string): string {
     switch (unit) {
       case "s":
         return "SECONDS";
@@ -308,8 +306,8 @@ export default class HeroicDatasource {
     return timeObject;
   }
 
-  public convertRawTime(date, roundUp) {
-    if (_.isString(date)) {
+  public convertRawTime(date: string|number, roundUp: boolean): string {
+    if (typeof date === "string") {
       if (date === "now") {
         return "now()";
       }
