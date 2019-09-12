@@ -30,6 +30,10 @@ import {
   RenderedQuery,
   Target,
   Tag,
+  Category,
+  CategoryItem,
+  QueryPart,
+  Part,
 } from "./types";
 
 export class HeroicQueryCtrl extends QueryCtrl {
@@ -113,8 +117,11 @@ export class HeroicQueryCtrl extends QueryCtrl {
   }
 
 
-  public addSelectPart(selectParts, cat, subitem, position) {
+  public addSelectPart(selectParts, cat: Category, subitem: CategoryItem, position) {
     this.queryModel.addSelectPart(selectParts, cat.text, subitem.value, position);
+    if (cat.text === "Filters") {
+      this.target.globalAggregation = false;
+    }
     this.refresh();
   }
 
@@ -170,6 +177,7 @@ export class HeroicQueryCtrl extends QueryCtrl {
     this.queryModel.scopedVars["interval"] = {value: this.panelCtrl.interval};
     this.queryModel.scopedVars["__interval"] = {value: this.panelCtrl.interval};
     this.checkSuggestions();
+    this.checkGlobalAggregation();
     const query: RenderedQuery = this.queryModel.render();
     this.target.query = JSON.stringify(query);
     this.previousQuery = this.target.query;
@@ -216,6 +224,16 @@ export class HeroicQueryCtrl extends QueryCtrl {
       }
     });
     this.currentSuggestions = suggestions;
+  }
+
+  public checkGlobalAggregation(): void {
+    this.queryModel.selectModels.forEach((model: QueryPart[]) => {
+      model.forEach((queryPart: QueryPart) => {
+        if (this.target.globalAggregation && queryPart.part.categoryName === "Filters") {
+          this.warningMessage = "Filters are not compatible with Global Aggregations.";
+	}
+      });
+    });
   }
 
   public clearWarnings() {
