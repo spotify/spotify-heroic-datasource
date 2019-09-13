@@ -7,6 +7,31 @@ export interface RenderedQuery {
 
 export type Filter = (string | string[])[];
 
+export interface Category {
+  text: string;
+  submenu: CategoryItem[];
+}
+
+export interface CategoryItem {
+  click: string;
+  text: string;
+  value: string;
+}
+
+export interface QueryPart {
+  $$hashkey: string;
+  def: any[];
+  params: string[];
+  part: Part;
+  text: string;
+}
+
+export interface Part {
+  categoryName: string;
+  type: string;
+  params: string[];
+}
+
 export interface Target {
   alias: string;
   globalAggregation?: boolean;
