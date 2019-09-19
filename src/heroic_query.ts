@@ -32,7 +32,7 @@ import {
 
 export default class HeroicQuery {
   public target: any;
-  public selectModels: QueryPart[][];
+  public selectModels: any[];
   public groupByParts: any;
   public templateSrv: any;
   public scopedVars: any;
@@ -189,9 +189,9 @@ export default class HeroicQuery {
       currentIntervalValue = kbn.interval_to_seconds(newGroupBy[0].params[0]);
     }
 
-    const aggregatorsRendered = _.map(this.selectModels, modelParts => {
-      return _.map(modelParts, function(part: any) {
-	return { categoryName: part.def.categoryName, type: part.def.type, params: part.params };
+    const aggregatorsRendered = this.selectModels.map((modelParts) => {
+      return modelParts.map((modelPart) => {
+        return modelPart.def.renderer(modelPart, undefined, currentIntervalValue);
       });
     });
 

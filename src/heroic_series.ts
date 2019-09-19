@@ -46,12 +46,24 @@ export default class HeroicSeries {
     return [dataPoint[1], dataPoint[0]];
   }
 
-  public getMinFromResults(results) {
-    return _.min(results.map(series => series.values[0][0]));
+  public getMinFromResults(results): number {
+    return _.min(results.map(series => {
+	if (series.values.length > 0) {
+	  return series.values[0][0];
+	} else {
+	  return null;
+	}
+    }));
   }
 
-  public getMaxFromResults(results) {
-    return _.max(results.map(series => series.values[series.values.length -1][0]))
+  public getMaxFromResults(results): number {
+    return _.max(results.map(series => {
+	if (series.values.length > 0) {
+	  return series.values[series.values.length -1][0];
+	} else {
+	  return null;
+	}
+    }));
   }
 
   public fillTimeSeries(series, min, max, step) {
