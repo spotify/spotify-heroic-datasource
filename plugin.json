@@ -1,0 +1,19 @@
+{
+  "id": "heroic-grafana-datasource",
+  "type": "datasource",
+  "name": "Heroic",
+  "info": {
+    "description": "Heroic Timeseries Database Data Source for Grafana.",
+    "author" { 
+      "name": "Spotify",
+      "url": "http://github.com/spotify/"
+    },
+    "keywords":  ["heroic", "spotify"],
+    "version": "0.0.1",
+    "updated": "2019-10-23"
+  },
+  "dependencies": {
+    "grafanaVersion": "6.x.x",
+    "plugins": []
+  }
+}
