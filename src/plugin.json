@@ -9,10 +9,10 @@
       "name": "Spotify",
       "url": "https://github.com/spotify/heroic-grafana-datasource"
     },
-    "keywords": ["searchable", "key", "words"],
+    "keywords": ["heroic", "spotify", "tsdb", "semantic"],
     "logos": {
-      "small": "img/heroic_logo.png",
-      "large": "img/heroic_logo.png"
+      "small": "src/img/heroic_logo.png",
+      "large": "src/img/heroic_logo.png"
     },
     "links": [{
         "name": "Project site",
@@ -27,8 +27,8 @@
         "url": "https://github.com/spotify/heroic-grafana-datasource/blob/master/LICENSE"
       }
     ],
-    "version": "%VERSION%",
-    "updated": "%TODAY%"
+    "version": "0.0.1",
+    "updated": "10-23-19"
   },
 
   "dependencies": {
