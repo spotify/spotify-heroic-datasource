@@ -135,7 +135,9 @@ export default class HeroicSeries {
 
     return this.resultData.result.map((series) => {
       if (this.queryResolution) {
-        this.fillTimeSeries(series, min, max, this.queryResolution*1000);
+        if (series.values.length > 0) {
+          this.fillTimeSeries(series, min, max, this.queryResolution*1000);
+        }
       }
       const scoped = this.buildScoped(series, commonCounts, this.resultData.result.length);
       const target: string = this.templateSrv.replaceWithText(this.alias || defaultAlias, scoped);
