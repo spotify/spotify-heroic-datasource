@@ -11,8 +11,8 @@
     },
     "keywords": ["heroic", "spotify", "tsdb", "semantic"],
     "logos": {
-      "small": "src/img/heroic_logo.png",
-      "large": "src/img/heroic_logo.png"
+      "small": "img/heroic_logo.png",
+      "large": "img/heroic_logo.png"
     },
     "links": [{
         "name": "Project site",
