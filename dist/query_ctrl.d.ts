@@ -1,0 +1,46 @@
+import { QueryCtrl } from "app/plugins/sdk";
+import HeroicQuery from "./heroic_query";
+import { MetadataClient } from "./metadata_client";
+import { HeroicValidator } from './validator';
+import { QueryParser } from './query_parser';
+import { DataSeries, Target, Tag, Category, CategoryItem } from "./types";
+export declare class HeroicQueryCtrl extends QueryCtrl {
+    private templateSrv;
+    private $q;
+    private uiSegmentSrv;
+    static templateUrl: string;
+    queryModel: HeroicQuery;
+    groupBySegment: any;
+    resultFormats: any[];
+    panelCtrl: any;
+    selectMenu: any;
+    target: Target;
+    metadataClient: MetadataClient;
+    previousQuery: any;
+    warningMessage: string;
+    validator: HeroicValidator;
+    queryParser: QueryParser;
+    currentSuggestions: any[];
+    aliasCompleterCache: string[];
+    dataList: DataSeries[];
+    constructor($scope: any, $injector: any, templateSrv: any, $q: any, uiSegmentSrv: any);
+    toggleEditorMode(): void;
+    buildSelectMenu(): void;
+    addSelectPart(selectParts: any, cat: Category, subitem: CategoryItem, position: any): void;
+    getAliasCompleter(): {
+        getCompletions: (editor: any, session: any, pos: any, prefix: any, callback: any) => void;
+    };
+    handleSelectPartEvent(selectParts: any, part: any, evt: any): any;
+    refresh(): void;
+    refreshRaw(): void;
+    appendSuggestion(suggestion: any): void;
+    checkSuggestions(): void;
+    checkGlobalAggregation(): void;
+    clearWarnings(): void;
+    onDataReceived(dataList: DataSeries[]): void;
+    refreshAlias(): void;
+    handleGroupByPartEvent(part: any, index: any, evt: any): any;
+    getCollapsedText(): string;
+    getTags(): Tag[];
+    setTags(tags: Tag[]): void;
+}

@@ -1,0 +1,38 @@
+import HeroicQuery from "./heroic_query";
+export declare class MetadataClient {
+    private controller;
+    private datasource;
+    private scopedVars;
+    private target;
+    private includeVariables;
+    private includeScopes;
+    static templateUrl: string;
+    static DEBOUNCE_MS: number;
+    queryModel: HeroicQuery;
+    lruTag: any;
+    lruTagValue: any;
+    lruKey: any;
+    lruTagKeyCount: any;
+    error: any;
+    complexError: any;
+    addCustomQuery: any;
+    removeTagFilterSegment: any;
+    tagSegments: any[];
+    customTagSegments: any[];
+    constructor(controller: any, datasource: any, scopedVars: any, target: any, includeVariables: any, includeScopes: any);
+    createTagSegments(): void;
+    fixTagSegments(): void;
+    getMeasurements: (measurementFilter: any) => any;
+    handleQueryError(err: any): any[];
+    transformToSegments(addTemplateVars: any, segmentKey: any): (results: any) => any;
+    queryTagsAndValues(data: any, dedupe: any, cache: any): any;
+    newLockedOperator: (operator: any) => any;
+    tagKeyCount: (segment: any, index: any, $query: any, includeRemove: any) => any;
+    getTagsOrValues: (segment: any, index: any, $query: any, includeRemove: any) => any;
+    getTagValueOperator(tagValue: any, tagOperator: any): string;
+    tagSegmentUpdated(segment: any, index: any): void;
+    rebuildTargetTagConditions(): void;
+    validateCustomQuery: any;
+    createCustomQuery: () => void;
+    customFilterChanged: (segment: any, index: any) => void;
+}
