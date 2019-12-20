@@ -1,7 +1,7 @@
 {
   "type": "datasource",
   "name": "Heroic",
-  "id": "heroic-grafana-datasource",
+  "id": "spotify-heroic-datasource",
 
   "info": {
     "description": "Datasource for the Heroic TSDB.",
