@@ -90,9 +90,14 @@ System.register(["app/core/table_model", "lodash"], function (exports_1, context
                                 refId: refId,
                                 target: undefined,
                                 datapoints: [],
-                                scoped: {},
-                                limits: limits,
-                                errors: errors
+                                meta: {
+                                    scoped: {
+                                        tags: { text: '' },
+                                        fullTags: { text: '' }
+                                    },
+                                    limits: limits,
+                                    errors: errors
+                                }
                             }];
                     }
                     var commonCounts = {};
@@ -110,12 +115,15 @@ System.register(["app/core/table_model", "lodash"], function (exports_1, context
                     var defaultAlias = this.resultData.result.length > 1 ? "$tags" : "$fullTags";
                     return this.resultData.result.map(function (series) {
                         if (_this.queryResolution) {
-                            _this.fillTimeSeries(series, min, max, _this.queryResolution * 1000);
+                            if (series.values.length > 0) {
+                                _this.fillTimeSeries(series, min, max, _this.queryResolution * 1000);
+                            }
                         }
                         var scoped = _this.buildScoped(series, commonCounts, _this.resultData.result.length);
                         var target = _this.templateSrv.replaceWithText(_this.alias || defaultAlias, scoped);
                         var datapoints = series.values.map(_this._convertData);
-                        return { refId: refId, target: target, datapoints: datapoints, scoped: scoped, limits: limits, errors: errors };
+                        var meta = { scoped: scoped, errors: errors, limits: limits };
+                        return { refId: refId, target: target, datapoints: datapoints, meta: meta };
                     });
                 };
                 HeroicSeries.prototype.getAnnotations = function () {

@@ -211,7 +211,7 @@ System.register(["app/plugins/sdk", "lodash", "./heroic_query", "./metadata_clie
                     if (this.target.resultFormat === "time_series") {
                         this.warningMessage = this.validator.checkForWarnings(dataList);
                         var filtered = dataList.filter(function (data) { return data.refId === _this.target.refId; });
-                        var scoped = lodash_1.default.uniq(lodash_1.default.flatMap(filtered, function (data) { return Object.keys(data.scoped); }));
+                        var scoped = lodash_1.default.uniq(lodash_1.default.flatMap(filtered, function (data) { return Object.keys(data.meta.scoped); }));
                         this.aliasCompleterCache = scoped.map(function (scope) {
                             return { name: scope, value: "[[" + scope + "]]" };
                         });
@@ -227,7 +227,7 @@ System.register(["app/plugins/sdk", "lodash", "./heroic_query", "./metadata_clie
                     this.dataList.forEach(function (data) {
                         if (data.refId === _this.target.refId) {
                             var alias = _this.templateSrv.replaceWithText(_this.target.alias || "$tags", {});
-                            data.target = _this.templateSrv.replaceWithText(alias, data.scoped);
+                            data.target = _this.templateSrv.replaceWithText(alias, data.meta.scoped);
                         }
                     });
                     this.panelCtrl.events.emit('data-received', this.dataList);
