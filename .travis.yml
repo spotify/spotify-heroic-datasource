@@ -4,6 +4,8 @@ node_js:
 - stable
 
 script:
+- yarn test
+- yarn lint
 - yarn build
 
 before_deploy:
