@@ -17,8 +17,9 @@ System.register(["lodash"], function (exports_1, context_1) {
                 }
                 HeroicValidator.prototype.findUnsafeCollapses = function (data) {
                     var collapsedKeys = lodash_1.default.uniq(lodash_1.default.flatMap(this.tagCollapseChecks, function (value) {
-                        return data.filter(function (series) {
-                            var valueCount = series.scoped["tag_" + value + "_count"];
+                        return data.filter(function (_a) {
+                            var meta = _a.meta;
+                            var valueCount = meta.scoped["tag_" + value + "_count"];
                             return valueCount
                                 && valueCount.text !== "<0>"
                                 && valueCount.text !== "<1>";
@@ -32,10 +33,14 @@ System.register(["lodash"], function (exports_1, context_1) {
                         return false;
                     }
                     var badTags = lodash_1.default.uniq(lodash_1.default.flatMap(this.tagAggregationChecks, function (value, key) {
-                        return data.filter(function (series) {
-                            return series.scoped["tag_" + key] !== undefined
-                                && lodash_1.default.includes(value, series.scoped["tag_" + key].text);
-                        }).map(function (series) { return key + ":" + series.scoped["tag_" + key].text; });
+                        return data.filter(function (_a) {
+                            var meta = _a.meta;
+                            return meta.scoped["tag_" + key] !== undefined
+                                && lodash_1.default.includes(value, meta.scoped["tag_" + key].text);
+                        }).map(function (_a) {
+                            var meta = _a.meta;
+                            return key + ":" + meta.scoped["tag_" + key].text;
+                        });
                     }));
                     return badTags;
                 };
@@ -66,7 +71,7 @@ System.register(["lodash"], function (exports_1, context_1) {
                         warnings.push(message);
                     }
                     lodash_1.default.uniqBy(data, function (s) { return s.refId; }).forEach(function (series, refId) {
-                        series.limits.forEach(function (limit) {
+                        series.meta.limits.forEach(function (limit) {
                             switch (limit) {
                                 case 'SERIES':
                                     warnings.push('Query would fetch too many time series. Try to add more filters.');
