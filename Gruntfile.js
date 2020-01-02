@@ -36,7 +36,7 @@ module.exports = function(grunt) {
       dist_js: {
         expand: true,
         cwd: 'src',
-        src: ['**/*.ts', '**/*.d.ts'],
+        src: ['**/!(*.test|*.spec).ts', '**/*.d.ts'],
         dest: 'dist'
       },
       dist_html: {
@@ -104,8 +104,8 @@ module.exports = function(grunt) {
     },
 
     watch: {
-      files: ['src/**/*.ts', 'src/**/*.html', 'src/**/*.css', 'src/img/*.*', 'src/plugin.json', 'README.md', 'src/query_help.md'],
-      tasks: ['default'],
+      files: ['src/**/!(*.test|*.spec).ts', 'src/**/*.html', 'src/**/*.css', 'src/img/*.*', 'src/plugin.json', 'README.md', 'src/query_help.md'],
+      tasks: ['default'], 
       options: {
         debounceDelay: 250,
       },
