@@ -39,8 +39,8 @@ export class HeroicValidator {
   public findUnsafeCollapses(data: DataSeries[]) {
     const collapsedKeys =_.uniq(
       _.flatMap(this.tagCollapseChecks, (value) => {
-        return data.filter(series => {
-          const valueCount = series.scoped[`tag_${value}_count`];
+        return data.filter(({ meta }) => {
+          const valueCount = meta.scoped[`tag_${value}_count`];
           return valueCount
           && valueCount.text !== "<0>"
           && valueCount.text !== "<1>";
@@ -57,10 +57,10 @@ export class HeroicValidator {
     }
     const badTags = _.uniq(
         _.flatMap(this.tagAggregationChecks, (value, key) => {
-        return data.filter(series => {
-          return series.scoped[`tag_${key}`] !== undefined
-            && _.includes(value, series.scoped[`tag_${key}`].text);
-        }).map(series => `${key}:${series.scoped[`tag_${key}`].text}`);
+        return data.filter(({ meta }) => {
+          return meta.scoped[`tag_${key}`] !== undefined
+            && _.includes(value, meta.scoped[`tag_${key}`].text);
+        }).map(({ meta }) => `${key}:${meta.scoped[`tag_${key}`].text}`);
       })
     );
     return badTags;
@@ -95,7 +95,7 @@ export class HeroicValidator {
     // on every series due to how the data list gets emitted from
     // Grafana.
     _.uniqBy(data, s => s.refId).forEach((series: DataSeries, refId: string) => {
-      series.limits.forEach(limit => {
+      series.meta.limits.forEach(limit => {
         switch (limit) {
           case 'SERIES':
             warnings.push('Query would fetch too many time series. Try to add more filters.');

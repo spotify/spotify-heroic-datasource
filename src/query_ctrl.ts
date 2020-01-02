@@ -247,7 +247,7 @@ export class HeroicQueryCtrl extends QueryCtrl {
       this.warningMessage = this.validator.checkForWarnings(dataList);
 
       const filtered: DataSeries[] = dataList.filter(data => data.refId === this.target.refId);
-      const scoped = _.uniq(_.flatMap(filtered, data => Object.keys(data.scoped)));
+      const scoped = _.uniq(_.flatMap(filtered, data => Object.keys(data.meta.scoped)));
       this.aliasCompleterCache = scoped.map(scope => {
         return {name: scope, value: `[[${scope}]]`};
       });
@@ -264,7 +264,7 @@ export class HeroicQueryCtrl extends QueryCtrl {
     this.dataList.forEach(data => {
       if (data.refId === this.target.refId) {
         const alias = this.templateSrv.replaceWithText(this.target.alias || "$tags", {});
-        data.target = this.templateSrv.replaceWithText(alias, data.scoped);
+        data.target = this.templateSrv.replaceWithText(alias, data.meta.scoped);
       }
     });
     // Shortcut to re-render the existing data

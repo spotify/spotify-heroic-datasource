@@ -55,9 +55,18 @@ export interface DataSeries {
     refId: string;
     datapoints: Datapoint[];
     target: string;
-    scoped: any;
-    errors: any[];
-    limits: string[];
+    meta: {
+        scoped: {
+            tags: {
+                text: string;
+            };
+            fullTags: {
+                text: string;
+            };
+        };
+        errors: any[];
+        limits: string[];
+    };
 }
 export interface HeroicBatchResult {
     status: number;
