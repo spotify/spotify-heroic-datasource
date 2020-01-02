@@ -73,6 +73,15 @@ module.exports = function(grunt) {
       }
     },
 
+    tslint: {
+      options: {
+        configuration: './tslint.json',
+      },
+      files: {
+        src: ['src/**/**.ts'],
+      },
+    },
+
     'string-replace': {
       dist: {
         files: [{
