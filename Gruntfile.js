@@ -23,6 +23,7 @@ module.exports = function(grunt) {
 
   var pkgJson = require('./package.json');
 
+  grunt.loadNpmTasks('grunt-tslint');
   grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-ts');
   grunt.loadNpmTasks('grunt-contrib-watch');
