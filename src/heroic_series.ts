@@ -114,9 +114,14 @@ export default class HeroicSeries {
         refId,
         target: undefined,
         datapoints: [],
-        scoped: {},
-        limits,
-        errors
+        meta: {
+          scoped: { 
+            tags: { text: '' },
+            fullTags: { text: '' }
+          },
+          limits,
+          errors
+        }
       }];
     }
     const commonCounts = {}
@@ -142,7 +147,8 @@ export default class HeroicSeries {
       const scoped = this.buildScoped(series, commonCounts, this.resultData.result.length);
       const target: string = this.templateSrv.replaceWithText(this.alias || defaultAlias, scoped);
       const datapoints: Datapoint[] = series.values.map(this._convertData);
-      return { refId, target, datapoints, scoped, limits, errors };
+      const meta = { scoped, errors, limits };
+      return { refId, target, datapoints, meta };
     });
   }
 
