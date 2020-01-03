@@ -1,30 +1,30 @@
 /*
-* -\-\-
-* Spotify Heroic Grafana Datasource
-* --
-* Copyright (C) 2018 Spotify AB
-* --
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-* -/-/-
-*/
+ * -\-\-
+ * Spotify Heroic Grafana Datasource
+ * --
+ * Copyright (C) 2018 Spotify AB
+ * --
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * -/-/-
+ */
 
-import angular from "angular";
-import _ from "lodash";
-import HeroicQuery from "./heroic_query";
-import { LruCache } from "./lru_cache";
+import angular from 'angular';
+import _ from 'lodash';
+import HeroicQuery from './heroic_query';
+import { LruCache } from './lru_cache';
 
 export class MetadataClient {
-  public static templateUrl = "partials/query.editor.html";
+  public static templateUrl = 'partials/query.editor.html';
   public static DEBOUNCE_MS = 1000; // milliseconds to wait between keystrokes before sending queries for metadata
 
   public queryModel: HeroicQuery;
@@ -39,16 +39,8 @@ export class MetadataClient {
   public tagSegments: any[];
   public customTagSegments: any[];
 
-
   /** @ngInject **/
-  constructor(
-    private controller,
-    private datasource,
-    private scopedVars,
-    private target,
-    private includeVariables,
-    private includeScopes
-  ) {
+  constructor(private controller, private datasource, private scopedVars, private target, private includeVariables, private includeScopes) {
     this.tagSegments = [];
     this.customTagSegments = [];
     this.createTagSegments();
@@ -62,9 +54,8 @@ export class MetadataClient {
     this.addCustomQuery = this.controller.uiSegmentSrv.newPlusButton();
     this.removeTagFilterSegment = this.controller.uiSegmentSrv.newSegment({
       fake: true,
-      value: "-- remove --",
+      value: '-- remove --',
     });
-
   }
 
   public createTagSegments() {
@@ -74,31 +65,31 @@ export class MetadataClient {
     if (!this.controller.fakeController) {
       const controllerTags = this.controller.getTags();
       controllerTags.sort((a, b) => {
-        if (a.key === "$key" && b.key === "$key") {
+        if (a.key === '$key' && b.key === '$key') {
           return 0;
-        } else if (a.key === "$key") {
+        } else if (a.key === '$key') {
           return -1;
-        } else if (b.key === "$key") {
+        } else if (b.key === '$key') {
           return 1;
         }
         return 0;
       });
       controllerTags.forEach((tag, index) => {
         if (index > 0) {
-          tag.condition = "AND";
+          tag.condition = 'AND';
         } else {
           delete tag.condition;
         }
       });
       for (const tag of controllerTags) {
-        if (tag.type && tag.type === "custom") {
-          const newSeg = this.controller.uiSegmentSrv.newSegment({value: tag.key, expandable: false});
+        if (tag.type && tag.type === 'custom') {
+          const newSeg = this.controller.uiSegmentSrv.newSegment({ value: tag.key, expandable: false });
           newSeg.valid = true;
           customTagSegments.push(newSeg);
           continue;
         }
         if (!tag.operator) {
-          tag.operator = "=";
+          tag.operator = '=';
         }
 
         if (tag.condition) {
@@ -119,13 +110,12 @@ export class MetadataClient {
     const count = this.tagSegments.length;
     const lastSegment = this.tagSegments[Math.max(count - 1, 0)];
 
-    if (!lastSegment || lastSegment.type !== "plus-button") {
+    if (!lastSegment || lastSegment.type !== 'plus-button') {
       this.tagSegments.push(this.controller.uiSegmentSrv.newPlusButton());
     }
   }
 
-
-  public getMeasurements = (measurementFilter) => {
+  public getMeasurements = measurementFilter => {
     const filter = {
       key: measurementFilter,
       filter: this.queryModel.buildCurrentFilter(this.includeVariables, this.includeScopes),
@@ -136,24 +126,24 @@ export class MetadataClient {
       return Promise.resolve(this.lruKey.get(cacheKey));
     }
     return this.datasource
-      .doRequest("/metadata/key-suggest", { method: "POST", data: filter })
-      .then((result) => {
-        return this.transformToSegments(true, "key")(result.data.suggestions);
+      .doRequest('/metadata/key-suggest', { method: 'POST', data: filter })
+      .then(result => {
+        return this.transformToSegments(true, 'key')(result.data.suggestions);
       })
-      .then((result) => {
+      .then(result => {
         this.lruKey.put(cacheKey, result);
         return result;
       });
-  }
+  };
 
   public handleQueryError(err) {
-    this.error = err.message || "Failed to issue metric query";
+    this.error = err.message || 'Failed to issue metric query';
     return [];
   }
 
   public transformToSegments(addTemplateVars, segmentKey) {
-    return (results) => {
-      const segments = _.map(results, (segment) => {
+    return results => {
+      const segments = _.map(results, segment => {
         return this.controller.uiSegmentSrv.newSegment({
           value: segment[segmentKey],
           expandable: false,
@@ -164,7 +154,7 @@ export class MetadataClient {
         for (const variable of this.controller.templateSrv.variables) {
           segments.unshift(
             this.controller.uiSegmentSrv.newSegment({
-              value: "$" + variable.name,
+              value: '$' + variable.name,
               expandable: false,
             })
           );
@@ -180,33 +170,32 @@ export class MetadataClient {
       return Promise.resolve(cache.get(cacheKey));
     }
     return this.datasource
-      .doRequest("/metadata/tag-suggest", { method: "POST", data: data })
-      .then((result) => {
+      .doRequest('/metadata/tag-suggest', { method: 'POST', data: data })
+      .then(result => {
         const seen = new Set();
-        return result.data.suggestions
-          .filter((suggestion) => {
-            if (seen.has(suggestion[dedupe])) {
-              return false;
-            }
-            seen.add(suggestion[dedupe]);
-            return true;
-          });
+        return result.data.suggestions.filter(suggestion => {
+          if (seen.has(suggestion[dedupe])) {
+            return false;
+          }
+          seen.add(suggestion[dedupe]);
+          return true;
+        });
       })
-      .then((result) => {
+      .then(result => {
         cache.put(cacheKey, result);
         return result;
       });
-
   }
 
-  public newLockedOperator = (operator) => {
+  public newLockedOperator = operator => {
     return this.controller.uiSegmentSrv.newSegment({
       value: operator,
       type: 'operator',
       cssClass: 'query-segment-operator',
-      custom: 'false'
+      custom: 'false',
     });
-  }
+  };
+
   public tagKeyCount = (segment, index, $query, includeRemove) => {
     // this is separate from getTagsOrValues because since this does not take in
     // a user input prefix to search for, it can return every tag for a series
@@ -215,7 +204,7 @@ export class MetadataClient {
     // this is not ideal -- how can we pass query from metric-segment-wrapper to the child getOptions
     const query = $query || segment.query;
 
-    let tagsCopy = [... this.queryModel.target.tags];
+    let tagsCopy = [...this.queryModel.target.tags];
     let key;
     let operator;
     let value;
@@ -238,38 +227,38 @@ export class MetadataClient {
     }
     // TODO: would be nice to display counts with tagkeys here, but label vs value not supported by metric-segment yet
     return this.datasource
-      .doRequest("/metadata/tagkey-count", { method: "POST", data: data })
-      .then((result) => {
+      .doRequest('/metadata/tagkey-count', { method: 'POST', data: data })
+      .then(result => {
         const seen = new Set();
         return result.data.suggestions;
-      }).then(this.transformToSegments(true, "key"))
-        .then((results) => {
-          if (segment.type === "key" && includeRemove) {
-            results.splice(0, 0, angular.copy(this.removeTagFilterSegment));
-          }
-          cache.put(cacheKey, results);
-          return results;
-        });
-  }
-
+      })
+      .then(this.transformToSegments(true, 'key'))
+      .then(results => {
+        if (segment.type === 'key' && includeRemove) {
+          results.splice(0, 0, angular.copy(this.removeTagFilterSegment));
+        }
+        cache.put(cacheKey, results);
+        return results;
+      });
+  };
 
   public getTagsOrValues = (segment, index, $query, includeRemove) => {
     // this is not ideal -- how can we pass query from metric-segment-wrapper to the child getOptions
     const query = $query || segment.query;
-    if (segment.type === "condition") {
-      return this.controller.$q.when([this.controller.uiSegmentSrv.newCondition("AND")]);
+    if (segment.type === 'condition') {
+      return this.controller.$q.when([this.controller.uiSegmentSrv.newCondition('AND')]);
     }
-    if (segment.type === "operator") {
+    if (segment.type === 'operator') {
       const nextValue = this.tagSegments[index + 1].value;
-      const operators = ["=", "!=", "^", "!^"].map(this.newLockedOperator);
+      const operators = ['=', '!=', '^', '!^'].map(this.newLockedOperator);
       return this.controller.$q.when(operators);
     }
-    let tagsCopy = [... this.queryModel.target.tags];
-    if (segment.type === "value" || (segment.type === "key")) {
+    let tagsCopy = [...this.queryModel.target.tags];
+    if (segment.type === 'value' || segment.type === 'key') {
       let key;
       let operator;
       let value;
-      if (segment.type === "key") {
+      if (segment.type === 'key') {
         key = segment.value;
         operator = this.tagSegments[index + 1].value;
         value = this.tagSegments[index + 2].value;
@@ -289,42 +278,38 @@ export class MetadataClient {
     const data = {
       filter: filter,
       limit: 100,
-      key: null
+      key: null,
     };
-    if (segment.type === "key" || segment.type === "plus-button") {
+    if (segment.type === 'key' || segment.type === 'plus-button') {
       data.key = query;
 
-      return this.queryTagsAndValues(data, "key", this.lruTag)
-        .then(this.transformToSegments(true, "key"))
-        .then((results) => {
-          if (segment.type === "key" && includeRemove) {
+      return this.queryTagsAndValues(data, 'key', this.lruTag)
+        .then(this.transformToSegments(true, 'key'))
+        .then(results => {
+          if (segment.type === 'key' && includeRemove) {
             results.splice(0, 0, angular.copy(this.removeTagFilterSegment));
           }
           return results;
         });
-    } else if (segment.type === "value") {
+    } else if (segment.type === 'value') {
       const key = this.tagSegments[index - 2].value;
-      if (key === "$key") {
+      if (key === '$key') {
         return this.getMeasurements(query);
       }
-      data.key = key
-      data["value"] = query;
-      return this.queryTagsAndValues(data, "value", this.lruTagValue)
-        .then(this.transformToSegments(true, "value"));
+      data.key = key;
+      data['value'] = query;
+      return this.queryTagsAndValues(data, 'value', this.lruTagValue).then(this.transformToSegments(true, 'value'));
     }
-
-  }
+  };
 
   public getTagValueOperator(tagValue, tagOperator): string {
-    if (tagOperator !== "=~" && tagOperator !== "!~" && /^\/.*\/$/.test(tagValue)) {
-      return "=~";
-    } else if ((tagOperator === "=~" || tagOperator === "!~") && /^(?!\/.*\/$)/.test(tagValue)) {
-      return "=";
+    if (tagOperator !== '=~' && tagOperator !== '!~' && /^\/.*\/$/.test(tagValue)) {
+      return '=~';
+    } else if ((tagOperator === '=~' || tagOperator === '!~') && /^(?!\/.*\/$)/.test(tagValue)) {
+      return '=';
     }
     return null;
   }
-
-
 
   public tagSegmentUpdated(segment, index) {
     this.tagSegments[index] = segment;
@@ -338,26 +323,25 @@ export class MetadataClient {
         this.tagSegments.push(this.controller.uiSegmentSrv.newPlusButton());
       } else if (this.tagSegments.length > 2) {
         this.tagSegments.splice(Math.max(index - 1, 0), 1);
-        if (this.tagSegments[this.tagSegments.length - 1].type !== "plus-button") {
+        if (this.tagSegments[this.tagSegments.length - 1].type !== 'plus-button') {
           this.tagSegments.push(this.controller.uiSegmentSrv.newPlusButton());
         }
       }
     } else {
-      if (segment.type === "plus-button") {
+      if (segment.type === 'plus-button') {
         if (index > 2) {
-          this.tagSegments.splice(index, 0, this.controller.uiSegmentSrv.newCondition("AND"));
+          this.tagSegments.splice(index, 0, this.controller.uiSegmentSrv.newCondition('AND'));
         }
-        this.tagSegments.push(this.newLockedOperator("="));
-        this.tagSegments.push(this.controller.uiSegmentSrv.newFake("select tag value", "value", "query-segment-value"));
+        this.tagSegments.push(this.newLockedOperator('='));
+        this.tagSegments.push(this.controller.uiSegmentSrv.newFake('select tag value', 'value', 'query-segment-value'));
         this.tagSegments[this.tagSegments.length - 1].focus = true;
-        segment.type = "key";
-        segment.cssClass = "query-segment-key";
+        segment.type = 'key';
+        segment.cssClass = 'query-segment-key';
       }
 
       if (index + 1 === this.tagSegments.length) {
         this.tagSegments.push(this.controller.uiSegmentSrv.newPlusButton());
         this.tagSegments[this.tagSegments.length - 1].focus = true;
-
       }
     }
 
@@ -367,71 +351,73 @@ export class MetadataClient {
   public rebuildTargetTagConditions() {
     const tags = [];
     let tagIndex = 0;
-    let tagOperator = "";
+    let tagOperator = '';
 
     _.each(this.tagSegments, (segment2, index) => {
-      if (segment2.type === "key") {
+      if (segment2.type === 'key') {
         if (tags.length === 0) {
           tags.push({});
         }
         tags[tagIndex].key = segment2.value;
-      } else if (segment2.type === "value") {
+      } else if (segment2.type === 'value') {
         tagOperator = this.getTagValueOperator(segment2.value, tags[tagIndex].operator);
         if (tagOperator) {
           this.tagSegments[index - 1] = this.controller.uiSegmentSrv.newOperator(tagOperator);
           tags[tagIndex].operator = tagOperator;
         }
         tags[tagIndex].value = segment2.value;
-      } else if (segment2.type === "condition") {
+      } else if (segment2.type === 'condition') {
         tags.push({ condition: segment2.value });
         tagIndex += 1;
-      } else if (segment2.type === "operator") {
+      } else if (segment2.type === 'operator') {
         tags[tagIndex].operator = segment2.value;
       }
     });
     _.each(this.customTagSegments, (segment, index) => {
       if (segment.valid) {
-        tags.push({operator: "q", type: "custom", key: segment.value});
+        tags.push({ operator: 'q', type: 'custom', key: segment.value });
       }
     });
     this.controller.setTags(tags);
     this.controller.refresh();
   }
 
-  public validateCustomQuery = _.debounce((segment, index, query, includeRemove) => {
-    segment.style= {color: "red"};
-    const headers =  { "Content-Type": "text/plain;charset=UTF-8" };
-    return this.datasource
-      .doRequestWithHeaders("/parser/parse-filter", { method: "POST", data: query }, headers)
-      .then(
-        (result) => {
-          segment.valid = true;
-          segment.cssClass = "";
-          this.complexError = null;
-          return [];
-        },
-        (error) => {
-          segment.valid = false;
-          segment.cssClass = "text-error";
-          this.complexError = "Complex filter contains invalid syntax. See help dropdown.";
-          return [];
-        }
-      )
-      .then(result => {
-        result.splice(0, 0, angular.copy(this.removeTagFilterSegment));
-        return result;
-      });
-
-  }, MetadataClient.DEBOUNCE_MS, {leading: false});
+  public validateCustomQuery = _.debounce(
+    (segment, index, query, includeRemove) => {
+      segment.style = { color: 'red' };
+      const headers = { 'Content-Type': 'text/plain;charset=UTF-8' };
+      return this.datasource
+        .doRequestWithHeaders('/parser/parse-filter', { method: 'POST', data: query }, headers)
+        .then(
+          result => {
+            segment.valid = true;
+            segment.cssClass = '';
+            this.complexError = null;
+            return [];
+          },
+          error => {
+            segment.valid = false;
+            segment.cssClass = 'text-error';
+            this.complexError = 'Complex filter contains invalid syntax. See help dropdown.';
+            return [];
+          }
+        )
+        .then(result => {
+          result.splice(0, 0, angular.copy(this.removeTagFilterSegment));
+          return result;
+        });
+    },
+    MetadataClient.DEBOUNCE_MS,
+    { leading: false }
+  );
 
   public createCustomQuery = () => {
-    this.customTagSegments.push(this.controller.uiSegmentSrv.newSegment({value: "--custom--", valid: false, expandable: false}));
-
-  }
+    this.customTagSegments.push(this.controller.uiSegmentSrv.newSegment({ value: '--custom--', valid: false, expandable: false }));
+  };
   public customFilterChanged = (segment, index) => {
     if (segment.value === this.removeTagFilterSegment.value) {
       this.customTagSegments.splice(index, 1);
     }
     this.rebuildTargetTagConditions();
-  }
+  };
 }

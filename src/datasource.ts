@@ -180,7 +180,12 @@ export default class HeroicDatasource {
           if (alias) {
             alias = this.templateSrv.replaceWithText(alias, options.scopedVars);
           }
-          const heroicSeries = new HeroicSeries({ series: resultValue, alias, templateSrv: this.templateSrv, resolution: target.queryResolution });
+          const heroicSeries = new HeroicSeries({
+            series: resultValue,
+            alias,
+            templateSrv: this.templateSrv,
+            resolution: target.queryResolution
+          });
           switch (targetsByRef[refId].resultFormat) {
             case "table": {
               const tableData = heroicSeries.getTable();
@@ -370,7 +375,7 @@ export default class HeroicDatasource {
       lookupKey = splitquery[1];
       rawRealQuery = splitquery[2];
     }
-    const cache = this.queryBuilder[`lru`]
+    const cache = this.queryBuilder[`lru`];
     const realQuery = variableSrv.replace(rawRealQuery, variableSrv.variables);
     const data = {
       filter: ["and", ["q", realQuery]],

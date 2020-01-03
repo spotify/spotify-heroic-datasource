@@ -1,34 +1,27 @@
 /*
-* -\-\-
-* Spotify Heroic Grafana Datasource
-* --
-* Copyright (C) 2018 Spotify AB
-* --
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-* -/-/-
-*/
+ * -\-\-
+ * Spotify Heroic Grafana Datasource
+ * --
+ * Copyright (C) 2018 Spotify AB
+ * --
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * -/-/-
+ */
 
-import kbn from "app/core/utils/kbn";
-import _ from "lodash";
-import queryPart from "./query_part";
-import {
-  RenderedQuery,
-  Filter,
-  Target,
-  Tag,
-  QueryPart,
-  Part,
-} from "./types";
+import kbn from 'app/core/utils/kbn';
+import _ from 'lodash';
+import queryPart from './query_part';
+import { RenderedQuery, Filter, Target, Tag, QueryPart, Part } from './types';
 
 export default class HeroicQuery {
   public target: any;
@@ -43,10 +36,10 @@ export default class HeroicQuery {
     this.templateSrv = templateSrv;
     this.scopedVars = scopedVars;
 
-    target.resultFormat = target.resultFormat || "time_series";
-    target.orderByTime = target.orderByTime || "ASC";
+    target.resultFormat = target.resultFormat || 'time_series';
+    target.orderByTime = target.orderByTime || 'ASC';
     target.tags = target.tags || [];
-    target.groupBy = target.groupBy || [{ type: "time", params: ["1m"] }];
+    target.groupBy = target.groupBy || [{ type: 'time', params: ['1m'] }];
     target.select = target.select || [[]];
 
     this.updateProjection();
@@ -76,10 +69,10 @@ export default class HeroicQuery {
 
     if (partCount === 0) {
       this.target.groupBy.push(partModel.part);
-    } else if (typePart === "time") {
+    } else if (typePart === 'time') {
       this.target.groupBy.splice(0, 0, partModel.part);
-    } else if (typePart === "tag") {
-      if (this.target.groupBy[partCount - 1].type === "fill") {
+    } else if (typePart === 'tag') {
+      if (this.target.groupBy[partCount - 1].type === 'fill') {
         this.target.groupBy.splice(partCount - 1, 0, partModel.part);
       } else {
         this.target.groupBy.push(partModel.part);
@@ -94,14 +87,14 @@ export default class HeroicQuery {
   public removeGroupByPart(part, index) {
     let categories = queryPart.getCategories();
 
-    if (part.def.type === "time") {
+    if (part.def.type === 'time') {
       // remove fill
-      this.target.groupBy = _.filter(this.target.groupBy, (g: any) => g.type !== "fill");
+      this.target.groupBy = _.filter(this.target.groupBy, (g: any) => g.type !== 'fill');
       // remove aggregations
       this.target.select = _.map(this.target.select, (s: any) => {
         return _.filter(s, (part: any) => {
           let partModel = queryPart.create(part);
-          if (partModel.def.category === categories["For Each"]) {
+          if (partModel.def.category === categories['For Each']) {
             return false;
           }
           return true;
@@ -119,7 +112,7 @@ export default class HeroicQuery {
 
   public removeSelectPart(selectParts, part) {
     // if we remove the field remove the whole statement
-    if (part.def.type === "field") {
+    if (part.def.type === 'field') {
       if (this.selectModels.length > 1) {
         let modelsIndex = _.indexOf(this.selectModels, selectParts);
         this.selectModels.splice(modelsIndex, 1);
@@ -139,17 +132,17 @@ export default class HeroicQuery {
   }
 
   public getKey() {
-    const measurement = this.target.measurement || "measurement";
-    return this.templateSrv.replace(measurement, this.scopedVars, "regex");
+    const measurement = this.target.measurement || 'measurement';
+    return this.templateSrv.replace(measurement, this.scopedVars, 'regex');
   }
 
   public renderSubFilter(tag) {
     switch (tag.type) {
-      case ("custom"):
-        return ["q", tag.key];
+      case 'custom':
+        return ['q', tag.key];
       default:
-        if (tag.operator.startsWith("!")) {
-          return ["not", [tag.operator.split("!")[1], tag.key, tag.value]];
+        if (tag.operator.startsWith('!')) {
+          return ['not', [tag.operator.split('!')[1], tag.key, tag.value]];
         }
         return [tag.operator, tag.key, tag.value];
     }
@@ -157,17 +150,16 @@ export default class HeroicQuery {
 
   public buildFilter(filterChoices, includeVariables, includeScopedFilter): Filter {
     let base;
-    const keyTag = _.find(filterChoices, tag => tag.key === "$key" && tag.value !== "select tag value");
-    const filteredTags = filterChoices.filter(tag => tag.value !== "select tag value" && tag.key !== "$key");
+    const keyTag = _.find(filterChoices, tag => tag.key === '$key' && tag.value !== 'select tag value');
+    const filteredTags = filterChoices.filter(tag => tag.value !== 'select tag value' && tag.key !== '$key');
     if (keyTag) {
-      base = ["and", ["key", keyTag.value]];
+      base = ['and', ['key', keyTag.value]];
     } else if (filteredTags.length) {
-      base = ["and"];
+      base = ['and'];
     } else {
-      return ["true"];
+      return ['true'];
     }
-    const filter = base.concat(filteredTags
-      .map(this.renderSubFilter));
+    const filter = base.concat(filteredTags.map(this.renderSubFilter));
 
     if (includeVariables) {
       return JSON.parse(this.templateSrv.replace(JSON.stringify(filter), this.scopedVars));
@@ -184,13 +176,13 @@ export default class HeroicQuery {
     let currentIntervalUnit = null;
     let currentIntervalValue = null;
     if (target.groupBy.length) {
-      currentIntervalUnit = "seconds";
+      currentIntervalUnit = 'seconds';
       const newGroupBy = JSON.parse(this.templateSrv.replace(JSON.stringify(target.groupBy), this.scopedVars));
       currentIntervalValue = kbn.interval_to_seconds(newGroupBy[0].params[0]);
     }
 
-    const aggregatorsRendered = this.selectModels.map((modelParts) => {
-      return modelParts.map((modelPart) => {
+    const aggregatorsRendered = this.selectModels.map(modelParts => {
+      return modelParts.map(modelPart => {
         return modelPart.def.renderer(modelPart, undefined, currentIntervalValue);
       });
     });
@@ -201,17 +193,15 @@ export default class HeroicQuery {
     if (this.target.globalAggregation === false) {
       features = [];
     } else {
-      features = ["com.spotify.heroic.distributed_aggregations"];
+      features = ['com.spotify.heroic.distributed_aggregations'];
     }
 
     return {
       filter: currentFilter,
       aggregators: aggregators,
       features: features,
-      range: "$timeFilter",
+      range: '$timeFilter',
     };
-
-
   }
 
   public renderAdhocFilters(filters) {
