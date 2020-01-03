@@ -51,14 +51,14 @@ export interface Target {
 }
 
 export interface GroupBy {
-  type: string,
-  params: string[]
+  type: string;
+  params: string[];
 }
 
 export interface Tag {
-  key: string,
-  operator: string,
-  value: string,
+  key: string;
+  operator: string;
+  value: string;
 }
 
 export type Datapoint = [number, number];
@@ -71,14 +71,14 @@ export interface DataSeries {
     scoped: {
       tags: {
         text: string;
-      },
+      };
       fullTags: {
         text: string;
-      }
+      };
     };
     errors: any[];
     limits: string[];
-  }
+  };
 }
 
 export interface HeroicBatchResult {
@@ -89,7 +89,7 @@ export interface HeroicBatchResult {
   data: {
     results: {
       [key: string]: HeroicBatchData;
-    }
+    };
   };
 }
 
