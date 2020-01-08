@@ -1,5 +1,5 @@
 {
-  "name": "heroic-grafana-datasource",
+  "name": "spotify-heroic-datasource",
   "version": "0.0.1",
   "description": "Heroic Timeseries Database Data Source for Grafana.",
   "scripts": {
