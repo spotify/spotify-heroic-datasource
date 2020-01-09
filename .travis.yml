@@ -1,0 +1,13 @@
+language: node_js
+sudo: false
+node_js:
+- stable
+
+jobs:
+  include:
+    - stage: test
+      script: yarn test
+    - stage: lint
+      script: yarn lint
+    - stage: build
+      script: yarn build
