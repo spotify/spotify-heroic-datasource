@@ -21,7 +21,7 @@
 import { functionRenderer, QueryPart, QueryPartDef } from './query_part_base/query_part';
 
 const filterAggregations = ['abovek', 'belowk', 'topk', 'bottomk'];
-const rootAggregations = ['average', 'count', 'delta', 'deltaPerSecond', 'ratePerSecond', 'max', 'min', 'notNegative', 'stddev', 'sum', 'sum2'];
+const rootAggregations = ['average', 'count', 'delta', 'deltaPerSecond', 'max', 'min', 'notNegative', 'stddev', 'sum', 'sum2'];
 
 let index = {};
 let categories = {
