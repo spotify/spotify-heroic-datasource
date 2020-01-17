@@ -106,3 +106,10 @@ export interface HeroicBatchData {
   result: any[];
   trace: any;
 }
+
+export enum TagOperators {
+  MATCHES = '=',
+  DOES_NOT_MATCH = '!=',
+  PREFIXIED_WITH = '^',
+  NOT_PREFIXED_WITH = '!^'
+}
