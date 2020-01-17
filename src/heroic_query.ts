@@ -138,24 +138,24 @@ export default class HeroicQuery {
   }
 
   public renderFilter(tag, options = { isKey: false }) {
-    if (tag.type) return ['q', tag.key];
+    if (tag.type) { return ['q', tag.key]; }
     const { operator, key, value } = tag;
 
     switch (operator) {
       case TagOperators.MATCHES: {
-        return options.isKey ? ['key', value] : [TagOperators.MATCHES, key, value]
+        return options.isKey ? ['key', value] : [TagOperators.MATCHES, key, value];
       }
       case TagOperators.DOES_NOT_MATCH: {
-        return options.isKey ? ["not", ['key', value]] : ["not", [TagOperators.MATCHES, key, value]]
+        return options.isKey ? ["not", ['key', value]] : ["not", [TagOperators.MATCHES, key, value]];
       }
       case TagOperators.PREFIXIED_WITH: {
-        return options.isKey ? [TagOperators.PREFIXIED_WITH, 'key', value] : [TagOperators.PREFIXIED_WITH, key, value]
+        return options.isKey ? [TagOperators.PREFIXIED_WITH, 'key', value] : [TagOperators.PREFIXIED_WITH, key, value];
       }
       case TagOperators.NOT_PREFIXED_WITH: {
-        return options.isKey ? ["not", [TagOperators.PREFIXIED_WITH, 'key', value]] : ["not", [TagOperators.PREFIXIED_WITH, key, value]]
+        return options.isKey ? ["not", [TagOperators.PREFIXIED_WITH, 'key', value]] : ["not", [TagOperators.PREFIXIED_WITH, key, value]];
       }
       default: {
-        throw new TypeError(`Unrecognized operator. Received ${operator}`)
+        throw new TypeError(`Unrecognized operator. Received ${operator}`);
       }
     }
   }
