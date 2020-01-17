@@ -63,22 +63,25 @@ export interface Tag {
 
 export type Datapoint = [number, number];
 
+export interface HeroicMetaData {
+  isHeroicSeries: boolean;
+  scoped: {
+    tags: {
+      text: string;
+    };
+    fullTags: {
+      text: string;
+    };
+  };
+  errors: any[];
+  limits: string[];
+}
+
 export interface DataSeries {
   refId: string;
   datapoints: Datapoint[];
   target: string;
-  meta: {
-    scoped: {
-      tags: {
-        text: string;
-      };
-      fullTags: {
-        text: string;
-      };
-    };
-    errors: any[];
-    limits: string[];
-  };
+  meta: HeroicMetaData;
 }
 
 export interface HeroicBatchResult {
