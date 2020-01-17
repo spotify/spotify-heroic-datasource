@@ -3,7 +3,7 @@ module.exports = {
     "<rootDir>/src"
   ],
   "setupFiles": [
-    "<rootDir>src/specs/test-setup/jest-setup.ts"
+    "<rootDir>/test-setup/jest-setup.ts"
   ],
   "testMatch": [
     "**/?(*.)+(spec|test).+(ts|tsx|js)"

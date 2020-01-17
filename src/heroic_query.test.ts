@@ -1,4 +1,4 @@
-import HeroicQuery from '../heroic_query';
+import HeroicQuery from './heroic_query';
 
 describe('HeroicQuery', () => {
   let ctx = {} as any;
