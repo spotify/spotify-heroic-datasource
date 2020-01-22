@@ -5,12 +5,8 @@ node_js:
 
 jobs:
   include:
-    - stage: test
-      script: yarn test
-    - stage: lint
-      script: yarn lint
     - stage: build
-      script: yarn build
+      script: yarn lint && yarn build && yarn test
 
 before_deploy:
 - zip heroic-grafana-datasource -r dist/
