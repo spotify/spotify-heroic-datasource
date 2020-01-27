@@ -9,7 +9,7 @@ jobs:
       script: yarn lint && yarn build && yarn test
 
 before_deploy:
-- zip heroic-grafana-datasource -r dist/
+- zip spotify-heroic-datasource -r dist/
 - git config --local user.name "TravisCI"
 - git config --local user.email "no-reply@travis-ci.com"
 - git tag "build-${TRAVIS_BUILD_NUMBER}"
@@ -18,7 +18,7 @@ deploy:
   provider: releases
   api_key:
     secure: UDIDf1D65OWX3WjQaX7maJSeT1l4BK02rohwoNWQPitLboVeDqDQhzcPi0Jr+IisWzZq04Jv1QYj3gzeMeLkKBFbVi3QnalhHi9gVz1wt1Wr486uMqCpO5ZrU0umbtG9fA1mLwoV4x4iisjrjbHV/xnsQftJoOckmALyxLTMvpvBlk3527fKiJINYshsZ+auJtLHHDkZgQ7FFtR28naNBAZ9GvzBFZIEY67Vz0sF69D0zcLUbVBwjvpT1G0KW5loAfeyyZuvd2beMeo5XnQwu2Iel3k+q3I9dEnEz9YcntNVLGSmAAyfaT+udNvBQxl0mTBrXhxHmeMcswWpQhEhUOZ1R057e2k0Hvs7aGCo+kZZ637VrHS3NqArGYEyo0t3isTAtTZ9me5ep6Ktdx3kC/EhIMGhIGCQZxOBLRLCD9BdFpvlldJ34v2Z1WUwLT4I+c/M6KviMHMOayQquJHkauci4ZZxxnDdEkR5iO7epZ3gIvUmcJEAbcol4wEL0GnetMe0x/2qXWBie+DL4F4uwJgrMJx+tkqmv2m9XVMih8I4y00kgdRl1fM239+Hdhuq+L9R9HhcyVpNXAiSzCwLkNANJaDJgFjcbIvMkiapxNOtoEcCPnX+rObMnFYP5FrxQOMrqJ9tP/cWe4ObHPyKzSi7bt7/171M8b/GnKspG/k=
-  file: heroic-grafana-datasource.zip
+  file: spotify-heroic-datasource.zip
   skip_cleanup: true
   on:
-    repo: spotify/heroic-grafana-datasource
+    repo: spotify/spotify-heroic-datasource
