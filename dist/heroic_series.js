@@ -63,14 +63,14 @@ System.register(["app/core/table_model", "lodash"], function (exports_1, context
                         newValues.push(series.values[index]);
                         var currentValue = series.values[index][0];
                         var nextValue = series.values[index + 1][0];
-                        if ((nextValue - currentValue) === step) {
+                        if (nextValue - currentValue === step) {
                             index += 1;
                             continue;
                         }
                         else {
                             var iterations = (nextValue - currentValue) / step;
                             for (var i = 1; i < iterations; i += 1) {
-                                newValues.push([currentValue + (step * i), fillWith]);
+                                newValues.push([currentValue + step * i, fillWith]);
                             }
                             index += 1;
                         }
@@ -86,19 +86,22 @@ System.register(["app/core/table_model", "lodash"], function (exports_1, context
                     var max = this.getMaxFromResults(this.resultData.result);
                     var _a = this.resultData, limits = _a.limits, errors = _a.errors;
                     if (this.resultData.result.length === 0) {
-                        return [{
+                        return [
+                            {
                                 refId: refId,
                                 target: undefined,
                                 datapoints: [],
                                 meta: {
+                                    isHeroicSeries: true,
                                     scoped: {
                                         tags: { text: '' },
-                                        fullTags: { text: '' }
+                                        fullTags: { text: '' },
                                     },
                                     limits: limits,
-                                    errors: errors
-                                }
-                            }];
+                                    errors: errors,
+                                },
+                            },
+                        ];
                     }
                     var commonCounts = {};
                     this.resultData.result.forEach(function (series) {
@@ -112,7 +115,7 @@ System.register(["app/core/table_model", "lodash"], function (exports_1, context
                             commonCounts[key][value] += 1;
                         });
                     });
-                    var defaultAlias = this.resultData.result.length > 1 ? "$tags" : "$fullTags";
+                    var defaultAlias = this.resultData.result.length > 1 ? '$tags' : '$fullTags';
                     return this.resultData.result.map(function (series) {
                         if (_this.queryResolution) {
                             if (series.values.length > 0) {
@@ -122,20 +125,20 @@ System.register(["app/core/table_model", "lodash"], function (exports_1, context
                         var scoped = _this.buildScoped(series, commonCounts, _this.resultData.result.length);
                         var target = _this.templateSrv.replaceWithText(_this.alias || defaultAlias, scoped);
                         var datapoints = series.values.map(_this._convertData);
-                        var meta = { scoped: scoped, errors: errors, limits: limits };
+                        var meta = { scoped: scoped, errors: errors, limits: limits, isHeroicSeries: true };
                         return { refId: refId, target: target, datapoints: datapoints, meta: meta };
                     });
                 };
                 HeroicSeries.prototype.getAnnotations = function () {
                     var _this = this;
                     var list = [];
-                    var tagsColumnList = (this.annotation.tagsColumn || "").replace(/\s/g, "").split(",");
+                    var tagsColumnList = (this.annotation.tagsColumn || '').replace(/\s/g, '').split(',');
                     lodash_1.default.each(this.resultData, function (series) {
                         var titleCol = null;
                         var tagsCol = [];
                         var textCol = null;
                         lodash_1.default.each(series.tags, function (value, column) {
-                            if (column === "sequence_number") {
+                            if (column === 'sequence_number') {
                                 return;
                             }
                             if (column === _this.annotation.titleColumn) {
@@ -161,7 +164,7 @@ System.register(["app/core/table_model", "lodash"], function (exports_1, context
                                     return series.tags[t];
                                 })
                                     .map(function (t) {
-                                    return series.tags[t].split(",");
+                                    return series.tags[t].split(',');
                                 }))),
                                 text: series.tags[textCol],
                             };
@@ -169,16 +172,16 @@ System.register(["app/core/table_model", "lodash"], function (exports_1, context
                                 data['regionId'] = series.hash + "-" + index;
                                 var dataCopy = Object.assign({}, data);
                                 switch (_this.annotation.rangeType) {
-                                    case "endTimeSeconds":
+                                    case 'endTimeSeconds':
                                         dataCopy.time = +new Date(value[1] * 1000);
                                         break;
-                                    case "durationMs":
+                                    case 'durationMs':
                                         dataCopy.time = +new Date(value[0] + value[1]);
                                         break;
-                                    case "durationSeconds":
-                                        dataCopy.time = +new Date(value[0] + (value[1] * 1000));
+                                    case 'durationSeconds':
+                                        dataCopy.time = +new Date(value[0] + value[1] * 1000);
                                         break;
-                                    case "endTimeMs":
+                                    case 'endTimeMs':
                                     default:
                                         dataCopy.time = +new Date(value[1]);
                                 }
@@ -197,7 +200,10 @@ System.register(["app/core/table_model", "lodash"], function (exports_1, context
                     if (this.resultData.result.length === 0) {
                         return table;
                     }
-                    table.columns = [{ text: "Time", type: "time" }, { text: "Value", type: "value" }].concat(Object.keys(this.resultData.commonTags).map(function (key) {
+                    table.columns = [
+                        { text: 'Time', type: 'time' },
+                        { text: 'Value', type: 'value' },
+                    ].concat(Object.keys(this.resultData.commonTags).map(function (key) {
                         return { text: key, type: key };
                     }));
                     lodash_1.default.each(this.resultData.result, function (series, seriesIndex) {
@@ -206,9 +212,7 @@ System.register(["app/core/table_model", "lodash"], function (exports_1, context
                                 var values = series.values[k];
                                 var reordered = [values[0], values[1]];
                                 if (series.tags) {
-                                    reordered.push.apply(reordered, table.columns
-                                        .filter(function (column) { return column.type !== "time" && column.type !== "value"; })
-                                        .map(function (column) { return series.tags[column.type]; }));
+                                    reordered.push.apply(reordered, table.columns.filter(function (column) { return column.type !== 'time' && column.type !== 'value'; }).map(function (column) { return series.tags[column.type]; }));
                                 }
                                 table.rows.push(reordered);
                             }
@@ -218,23 +222,23 @@ System.register(["app/core/table_model", "lodash"], function (exports_1, context
                 };
                 HeroicSeries.prototype.buildScopedHelper = function (scoped, counts, tags, common) {
                     for (var tk in counts) {
-                        scoped["tag_" + tk] = { text: "<" + counts[tk] + ">" };
-                        scoped["{tag_" + tk + "_count"] = { text: "<" + counts[tk] + ">" };
+                        scoped["tag_" + tk] = { text: '<' + counts[tk] + '>' };
+                        scoped["{tag_" + tk + "_count"] = { text: '<' + counts[tk] + '>' };
                     }
                     for (var t in tags) {
                         scoped["tag_" + t] = { text: tags[t] };
-                        scoped["tag_" + t + "_count"] = { text: "<" + 1 + ">" };
+                        scoped["tag_" + t + "_count"] = { text: '<' + 1 + '>' };
                     }
                     for (var c in common) {
                         if (tags[c]) {
                             continue;
                         }
                         scoped["tag_" + c] = { text: common[c] };
-                        scoped["tag_" + c + "_count"] = { text: "<" + common[c].length + ">" };
+                        scoped["tag_" + c + "_count"] = { text: '<' + common[c].length + '>' };
                     }
                 };
                 HeroicSeries.prototype.buildScoped = function (group, counts, total) {
-                    var scoped = { tags: { text: "" }, fullTags: { text: "" } };
+                    var scoped = { tags: { text: '' }, fullTags: { text: '' } };
                     this.buildScopedHelper(scoped, group.tagCounts, group.tags, this.resultData.commonTags);
                     this.buildScopedHelper(scoped, group.resourceCounts, group.resource, this.resultData.commonResource);
                     var reducedTags = {};
@@ -247,8 +251,8 @@ System.register(["app/core/table_model", "lodash"], function (exports_1, context
                     var tagsString = this.buildTags(group.tags, group.tagCounts);
                     var resourceString = this.buildTags(group.resource, group.resourceCounts);
                     if (resourceString) {
-                        scoped.fullTags.text = [tagsString, resourceString].join(",");
-                        scoped.tags.text = [reducedTagsString, resourceString].join(",");
+                        scoped.fullTags.text = [tagsString, resourceString].join(',');
+                        scoped.tags.text = [reducedTagsString, resourceString].join(',');
                     }
                     else {
                         scoped.fullTags.text = tagsString;
@@ -259,47 +263,46 @@ System.register(["app/core/table_model", "lodash"], function (exports_1, context
                 HeroicSeries.prototype.buildTags = function (tags, tagCounts) {
                     var parts = [];
                     for (var k in tags) {
-                        parts.push(this.quoteString(k) + "=" + this.quoteString(tags[k]));
+                        parts.push(this.quoteString(k) + '=' + this.quoteString(tags[k]));
                     }
                     for (var tk in tagCounts) {
-                        parts.push(this.quoteString(tk) + "=" + ("<" + tagCounts[tk] + ">"));
+                        parts.push(this.quoteString(tk) + '=' + ("<" + tagCounts[tk] + ">"));
                     }
-                    return parts.join(", ");
+                    return parts.join(', ');
                 };
                 HeroicSeries.prototype.quoteString = function (s) {
                     var quoted = false;
                     var result = [];
                     for (var i = 0, l = s.length; i < l; i++) {
                         var c = s[i];
-                        if ((c >= "a" && c <= "z") || (c >= "A" && c <= "Z")
-                            || (c >= "0" && c <= "9") || c === "/" || c === ":" || c === "-") {
+                        if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c === '/' || c === ':' || c === '-') {
                             result.push(c);
                             continue;
                         }
                         switch (c) {
-                            case "\b":
-                                result.push("\\b");
+                            case '\b':
+                                result.push('\\b');
                                 break;
-                            case "\t":
-                                result.push("\\t");
+                            case '\t':
+                                result.push('\\t');
                                 break;
-                            case "\n":
-                                result.push("\\n");
+                            case '\n':
+                                result.push('\\n');
                                 break;
-                            case "\f":
-                                result.push("\\f");
+                            case '\f':
+                                result.push('\\f');
                                 break;
-                            case "\r":
-                                result.push("\\r");
+                            case '\r':
+                                result.push('\\r');
                                 break;
                             case "'":
                                 result.push("\\'");
                                 break;
-                            case "\\":
-                                result.push("\\\\");
+                            case '\\':
+                                result.push('\\\\');
                                 break;
-                            case "\"":
-                                result.push("\\\"");
+                            case '"':
+                                result.push('\\"');
                                 break;
                             default:
                                 result.push(c);
@@ -308,9 +311,9 @@ System.register(["app/core/table_model", "lodash"], function (exports_1, context
                         quoted = true;
                     }
                     if (quoted) {
-                        return "\"" + result.join("") + "\"";
+                        return '"' + result.join('') + '"';
                     }
-                    return result.join("");
+                    return result.join('');
                 };
                 return HeroicSeries;
             }());
