@@ -47,7 +47,7 @@ System.register(["app/plugins/sdk", "lodash", "./heroic_query", "./metadata_clie
                     _this.templateSrv = templateSrv;
                     _this.$q = $q;
                     _this.uiSegmentSrv = uiSegmentSrv;
-                    _this.target.alias = _this.target.alias || "";
+                    _this.target.alias = _this.target.alias || '';
                     if (_this.target.globalAggregation !== undefined) {
                         _this.target.globalAggregation = _this.target.globalAggregation;
                     }
@@ -57,10 +57,13 @@ System.register(["app/plugins/sdk", "lodash", "./heroic_query", "./metadata_clie
                     _this.panelCtrl.events.on('data-received', _this.onDataReceived.bind(_this), $scope);
                     _this.queryModel = new heroic_query_1.default(_this.target, templateSrv, _this.panel.scopedVars || {});
                     _this.groupBySegment = _this.uiSegmentSrv.newPlusButton();
-                    _this.resultFormats = [{ text: "Time series", value: "time_series" }, { text: "Table", value: "table" }];
+                    _this.resultFormats = [
+                        { text: 'Time series', value: 'time_series' },
+                        { text: 'Table', value: 'table' },
+                    ];
                     _this.previousQuery = _this.target.query;
                     _this.buildSelectMenu();
-                    _this.warningMessage = "";
+                    _this.warningMessage = '';
                     _this.validator = new validator_1.HeroicValidator(_this.target, _this.datasource.tagAggregationChecks, _this.datasource.tagCollapseChecks);
                     _this.queryParser = new query_parser_1.QueryParser();
                     _this.currentSuggestions = [];
@@ -89,7 +92,7 @@ System.register(["app/plugins/sdk", "lodash", "./heroic_query", "./metadata_clie
                 };
                 HeroicQueryCtrl.prototype.addSelectPart = function (selectParts, cat, subitem, position) {
                     this.queryModel.addSelectPart(selectParts, cat.text, subitem.value, position);
-                    if (cat.text === "Filters") {
+                    if (cat.text === 'Filters') {
                         this.target.globalAggregation = false;
                     }
                     this.refresh();
@@ -99,20 +102,20 @@ System.register(["app/plugins/sdk", "lodash", "./heroic_query", "./metadata_clie
                     return {
                         getCompletions: function (editor, session, pos, prefix, callback) {
                             callback(null, _this.aliasCompleterCache);
-                        }
+                        },
                     };
                 };
                 HeroicQueryCtrl.prototype.handleSelectPartEvent = function (selectParts, part, evt) {
                     switch (evt.name) {
-                        case "get-param-options": {
-                            return this.metadataClient.tagKeyCount({ type: "key" }, 0, null, true);
+                        case 'get-param-options': {
+                            return this.metadataClient.tagKeyCount({ type: 'key' }, 0, null, true);
                         }
-                        case "part-param-changed": {
+                        case 'part-param-changed': {
                             this.refresh();
                             break;
                         }
-                        case "action": {
-                            if (evt.action.value === "remove-part") {
+                        case 'action': {
+                            if (evt.action.value === 'remove-part') {
                                 this.queryModel.removeSelectPart(selectParts, part);
                                 this.refresh();
                             }
@@ -126,26 +129,24 @@ System.register(["app/plugins/sdk", "lodash", "./heroic_query", "./metadata_clie
                             }
                             break;
                         }
-                        case "get-part-actions": {
-                            if (part.part.categoryName === "Filters") {
-                                return this.$q.when([
-                                    { text: "Remove", value: "remove-part" }
-                                ]);
+                        case 'get-part-actions': {
+                            if (part.part.categoryName === 'Filters') {
+                                return this.$q.when([{ text: 'Remove', value: 'remove-part' }]);
                             }
                             else {
                                 return this.$q.when([
-                                    { text: "Remove", value: "remove-part" },
-                                    { text: "Convert To Collapse", value: "Collapse" },
-                                    { text: "Convert To For Each", value: "For Each" },
-                                    { text: "Convert To Group By", value: "Group By" }
+                                    { text: 'Remove', value: 'remove-part' },
+                                    { text: 'Convert To Collapse', value: 'Collapse' },
+                                    { text: 'Convert To For Each', value: 'For Each' },
+                                    { text: 'Convert To Group By', value: 'Group By' },
                                 ]);
                             }
                         }
                     }
                 };
                 HeroicQueryCtrl.prototype.refresh = function () {
-                    this.queryModel.scopedVars["interval"] = { value: this.panelCtrl.interval };
-                    this.queryModel.scopedVars["__interval"] = { value: this.panelCtrl.interval };
+                    this.queryModel.scopedVars['interval'] = { value: this.panelCtrl.interval };
+                    this.queryModel.scopedVars['__interval'] = { value: this.panelCtrl.interval };
                     this.checkSuggestions();
                     this.checkGlobalAggregation();
                     var query = this.queryModel.render();
@@ -177,11 +178,9 @@ System.register(["app/plugins/sdk", "lodash", "./heroic_query", "./metadata_clie
                     this.datasource.suggestionRules.forEach(function (rule) {
                         var rule2 = lodash_1.default.cloneDeep(rule);
                         rule2.triggerFilter = rule2.triggerFilter.map(function (item) {
-                            if (lodash_1.default.isArray(item) && item[item.length - 1] === "*") {
+                            if (lodash_1.default.isArray(item) && item[item.length - 1] === '*') {
                                 var key_1 = item[item.length - 2];
-                                var value = lodash_1.default.first(query.filter
-                                    .filter(function (item) { return lodash_1.default.isArray(item) && item[item.length - 2] === key_1; })
-                                    .map(function (item) { return item[item.length - 1]; }));
+                                var value = lodash_1.default.first(query.filter.filter(function (item) { return lodash_1.default.isArray(item) && item[item.length - 2] === key_1; }).map(function (item) { return item[item.length - 1]; }));
                                 item[item.length - 1] = value;
                             }
                             return item;
@@ -196,19 +195,20 @@ System.register(["app/plugins/sdk", "lodash", "./heroic_query", "./metadata_clie
                     var _this = this;
                     this.queryModel.selectModels.forEach(function (model) {
                         model.forEach(function (queryPart) {
-                            if (_this.target.globalAggregation && queryPart.part.categoryName === "Filters") {
-                                _this.warningMessage = "Filters are not compatible with Global Aggregations.";
+                            if (_this.target.globalAggregation && queryPart.part.categoryName === 'Filters') {
+                                _this.warningMessage = 'Filters are not compatible with Global Aggregations.';
                             }
                         });
                     });
                 };
                 HeroicQueryCtrl.prototype.clearWarnings = function () {
-                    this.warningMessage = "";
+                    this.warningMessage = '';
                 };
                 HeroicQueryCtrl.prototype.onDataReceived = function (dataList) {
                     var _this = this;
+                    dataList = dataList.filter(function (series) { return series.meta !== undefined && series.meta.isHeroicSeries; });
                     this.dataList = dataList;
-                    if (this.target.resultFormat === "time_series") {
+                    if (this.target.resultFormat === 'time_series') {
                         this.warningMessage = this.validator.checkForWarnings(dataList);
                         var filtered = dataList.filter(function (data) { return data.refId === _this.target.refId; });
                         var scoped = lodash_1.default.uniq(lodash_1.default.flatMap(filtered, function (data) { return Object.keys(data.meta.scoped); }));
@@ -220,13 +220,13 @@ System.register(["app/plugins/sdk", "lodash", "./heroic_query", "./metadata_clie
                 HeroicQueryCtrl.prototype.refreshAlias = function () {
                     var _this = this;
                     if (this.dataList === undefined) {
-                        this.queryModel.scopedVars["interval"] = { value: this.panelCtrl.interval };
-                        this.queryModel.scopedVars["__interval"] = { value: this.panelCtrl.interval };
+                        this.queryModel.scopedVars['interval'] = { value: this.panelCtrl.interval };
+                        this.queryModel.scopedVars['__interval'] = { value: this.panelCtrl.interval };
                         return;
                     }
                     this.dataList.forEach(function (data) {
                         if (data.refId === _this.target.refId) {
-                            var alias = _this.templateSrv.replaceWithText(_this.target.alias || "$tags", {});
+                            var alias = _this.templateSrv.replaceWithText(_this.target.alias || '$tags', {});
                             data.target = _this.templateSrv.replaceWithText(alias, data.meta.scoped);
                         }
                     });
@@ -234,23 +234,23 @@ System.register(["app/plugins/sdk", "lodash", "./heroic_query", "./metadata_clie
                 };
                 HeroicQueryCtrl.prototype.handleGroupByPartEvent = function (part, index, evt) {
                     switch (evt.name) {
-                        case "get-param-options": {
-                            return this.metadataClient.getTagsOrValues({ type: "key" }, 0, null, false);
+                        case 'get-param-options': {
+                            return this.metadataClient.getTagsOrValues({ type: 'key' }, 0, null, false);
                         }
-                        case "part-param-changed": {
+                        case 'part-param-changed': {
                             this.refresh();
                             break;
                         }
-                        case "action": {
+                        case 'action': {
                             this.queryModel.removeGroupByPart(part, index);
                             this.refresh();
                             break;
                         }
-                        case "get-part-actions": {
-                            if (part.def.type === "time") {
+                        case 'get-part-actions': {
+                            if (part.def.type === 'time') {
                                 return Promise.resolve([]);
                             }
-                            return this.$q.when([{ text: "Remove", value: "remove-part" }]);
+                            return this.$q.when([{ text: 'Remove', value: 'remove-part' }]);
                         }
                     }
                 };
@@ -263,7 +263,7 @@ System.register(["app/plugins/sdk", "lodash", "./heroic_query", "./metadata_clie
                 HeroicQueryCtrl.prototype.setTags = function (tags) {
                     this.target.tags = tags;
                 };
-                HeroicQueryCtrl.templateUrl = "partials/query.editor.html";
+                HeroicQueryCtrl.templateUrl = 'partials/query.editor.html';
                 return HeroicQueryCtrl;
             }(sdk_1.QueryCtrl));
             exports_1("HeroicQueryCtrl", HeroicQueryCtrl);

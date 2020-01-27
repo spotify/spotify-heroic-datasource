@@ -1,43 +1,35 @@
 /*
-* -\-\-
-* Spotify Heroic Grafana Datasource
-* --
-* Copyright (C) 2018 Spotify AB
-* --
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-* -/-/-
-*/
+ * -\-\-
+ * Spotify Heroic Grafana Datasource
+ * --
+ * Copyright (C) 2018 Spotify AB
+ * --
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * -/-/-
+ */
 
-import { QueryCtrl } from "app/plugins/sdk";
-import _ from "lodash";
-import HeroicQuery from "./heroic_query";
-import { MetadataClient } from "./metadata_client";
+import { QueryCtrl } from 'app/plugins/sdk';
+import _ from 'lodash';
+import HeroicQuery from './heroic_query';
+import { MetadataClient } from './metadata_client';
 import { HeroicValidator } from './validator';
 import { QueryParser } from './query_parser';
-import queryPart from "./query_part";
-import {
-  DataSeries,
-  RenderedQuery,
-  Target,
-  Tag,
-  Category,
-  CategoryItem,
-  QueryPart,
-  Part,
-} from "./types";
+import queryPart from './query_part';
+import { DataSeries, RenderedQuery, Target, Tag, Category, CategoryItem, QueryPart, Part } from './types';
+import HeroicSeries from './heroic_series';
 
 export class HeroicQueryCtrl extends QueryCtrl {
-  static templateUrl = "partials/query.editor.html";
+  static templateUrl = 'partials/query.editor.html';
 
   queryModel: HeroicQuery;
   groupBySegment: any;
@@ -57,7 +49,7 @@ export class HeroicQueryCtrl extends QueryCtrl {
   /** @ngInject **/
   constructor($scope, $injector, private templateSrv, private $q, private uiSegmentSrv) {
     super($scope, $injector);
-    this.target.alias = this.target.alias || "";
+    this.target.alias = this.target.alias || '';
     if (this.target.globalAggregation !== undefined) {
       this.target.globalAggregation = this.target.globalAggregation;
     } else {
@@ -66,29 +58,20 @@ export class HeroicQueryCtrl extends QueryCtrl {
 
     this.panelCtrl.events.on('data-received', this.onDataReceived.bind(this), $scope);
 
-    this.queryModel = new HeroicQuery(this.target,
-        templateSrv,
-        this.panel.scopedVars || {});
+    this.queryModel = new HeroicQuery(this.target, templateSrv, this.panel.scopedVars || {});
     this.groupBySegment = this.uiSegmentSrv.newPlusButton();
-    this.resultFormats = [{ text: "Time series", value: "time_series" }, { text: "Table", value: "table" }];
+    this.resultFormats = [
+      { text: 'Time series', value: 'time_series' },
+      { text: 'Table', value: 'table' },
+    ];
     this.previousQuery = this.target.query;
     this.buildSelectMenu();
 
-    this.warningMessage = "";
-    this.validator = new HeroicValidator(
-      this.target,
-      this.datasource.tagAggregationChecks,
-      this.datasource.tagCollapseChecks);
+    this.warningMessage = '';
+    this.validator = new HeroicValidator(this.target, this.datasource.tagAggregationChecks, this.datasource.tagCollapseChecks);
     this.queryParser = new QueryParser();
     this.currentSuggestions = [];
-    this.metadataClient = new MetadataClient(
-      this,
-      this.datasource,
-      this.panel.scopedVars,
-      this.target,
-      true,
-      false
-    );
+    this.metadataClient = new MetadataClient(this, this.datasource, this.panel.scopedVars, this.target, true, false);
     this.aliasCompleterCache = [];
   }
 
@@ -102,10 +85,10 @@ export class HeroicQueryCtrl extends QueryCtrl {
     const categories = queryPart.getCategories();
     this.selectMenu = _.reduce(
       categories,
-      function(memo, cat, key) {
+      function (memo, cat, key) {
         const menu = {
           text: key,
-          submenu: cat.map((item) => {
+          submenu: cat.map(item => {
             return { text: item.type, value: item.type };
           }),
         };
@@ -116,10 +99,9 @@ export class HeroicQueryCtrl extends QueryCtrl {
     );
   }
 
-
   public addSelectPart(selectParts, cat: Category, subitem: CategoryItem, position) {
     this.queryModel.addSelectPart(selectParts, cat.text, subitem.value, position);
-    if (cat.text === "Filters") {
+    if (cat.text === 'Filters') {
       this.target.globalAggregation = false;
     }
     this.refresh();
@@ -127,23 +109,23 @@ export class HeroicQueryCtrl extends QueryCtrl {
 
   public getAliasCompleter() {
     return {
-        getCompletions: (editor, session, pos, prefix, callback) => {
-          callback(null, this.aliasCompleterCache);
-      }
-    }
+      getCompletions: (editor, session, pos, prefix, callback) => {
+        callback(null, this.aliasCompleterCache);
+      },
+    };
   }
 
   public handleSelectPartEvent(selectParts, part, evt) {
     switch (evt.name) {
-      case "get-param-options": {
-        return this.metadataClient.tagKeyCount({type: "key"}, 0, null, true);
+      case 'get-param-options': {
+        return this.metadataClient.tagKeyCount({ type: 'key' }, 0, null, true);
       }
-      case "part-param-changed": {
+      case 'part-param-changed': {
         this.refresh();
         break;
       }
-      case "action": {
-        if (evt.action.value === "remove-part") {
+      case 'action': {
+        if (evt.action.value === 'remove-part') {
           this.queryModel.removeSelectPart(selectParts, part);
           this.refresh();
         } else {
@@ -156,26 +138,24 @@ export class HeroicQueryCtrl extends QueryCtrl {
         }
         break;
       }
-      case "get-part-actions": {
-        if (part.part.categoryName === "Filters") {
-          return this.$q.when([
-            { text: "Remove", value: "remove-part" }
-          ]);
+      case 'get-part-actions': {
+        if (part.part.categoryName === 'Filters') {
+          return this.$q.when([{ text: 'Remove', value: 'remove-part' }]);
         } else {
           return this.$q.when([
-            { text: "Remove", value: "remove-part" },
-            { text: "Convert To Collapse", value: "Collapse" },
-            { text: "Convert To For Each", value: "For Each" },
-            { text: "Convert To Group By", value: "Group By" }
-        ]);
+            { text: 'Remove', value: 'remove-part' },
+            { text: 'Convert To Collapse', value: 'Collapse' },
+            { text: 'Convert To For Each', value: 'For Each' },
+            { text: 'Convert To Group By', value: 'Group By' },
+          ]);
         }
       }
     }
   }
 
   public refresh() {
-    this.queryModel.scopedVars["interval"] = {value: this.panelCtrl.interval};
-    this.queryModel.scopedVars["__interval"] = {value: this.panelCtrl.interval};
+    this.queryModel.scopedVars['interval'] = { value: this.panelCtrl.interval };
+    this.queryModel.scopedVars['__interval'] = { value: this.panelCtrl.interval };
     this.checkSuggestions();
     this.checkGlobalAggregation();
     const query: RenderedQuery = this.queryModel.render();
@@ -197,7 +177,7 @@ export class HeroicQueryCtrl extends QueryCtrl {
     this.currentSuggestions = [];
     const queryRaw = JSON.parse(this.target.query);
     queryRaw.filter = queryRaw.filter.concat(suggestion.filter);
-    if (suggestion.aggregation !== undefined && suggestion.aggregation !== null && queryRaw.aggregators.length === 0){
+    if (suggestion.aggregation !== undefined && suggestion.aggregation !== null && queryRaw.aggregators.length === 0) {
       queryRaw.aggregators = queryRaw.aggregators.concat(suggestion.aggregation);
     }
     this.target.queryRaw = JSON.stringify(queryRaw, null, 2);
@@ -210,11 +190,11 @@ export class HeroicQueryCtrl extends QueryCtrl {
     this.datasource.suggestionRules.forEach(rule => {
       const rule2 = _.cloneDeep(rule);
       rule2.triggerFilter = rule2.triggerFilter.map(item => {
-        if (_.isArray(item) && item[item.length - 1] === "*") {
+        if (_.isArray(item) && item[item.length - 1] === '*') {
           const key = item[item.length - 2];
-          const value = _.first(query.filter
-            .filter(item => _.isArray(item) && item[item.length -2] === key)
-            .map(item => item[item.length - 1]));
+          const value = _.first(
+            query.filter.filter(item => _.isArray(item) && item[item.length - 2] === key).map(item => item[item.length - 1])
+          );
           item[item.length - 1] = value;
         }
         return item;
@@ -229,27 +209,28 @@ export class HeroicQueryCtrl extends QueryCtrl {
   public checkGlobalAggregation(): void {
     this.queryModel.selectModels.forEach((model: QueryPart[]) => {
       model.forEach((queryPart: QueryPart) => {
-        if (this.target.globalAggregation && queryPart.part.categoryName === "Filters") {
-          this.warningMessage = "Filters are not compatible with Global Aggregations.";
-	}
+        if (this.target.globalAggregation && queryPart.part.categoryName === 'Filters') {
+          this.warningMessage = 'Filters are not compatible with Global Aggregations.';
+        }
       });
     });
   }
 
   public clearWarnings() {
-    this.warningMessage = "";
+    this.warningMessage = '';
   }
 
   public onDataReceived(dataList: DataSeries[]) {
+    dataList = dataList.filter(series => series.meta !== undefined && series.meta.isHeroicSeries);
     this.dataList = dataList;
 
-    if (this.target.resultFormat === "time_series") {
+    if (this.target.resultFormat === 'time_series') {
       this.warningMessage = this.validator.checkForWarnings(dataList);
 
       const filtered: DataSeries[] = dataList.filter(data => data.refId === this.target.refId);
       const scoped = _.uniq(_.flatMap(filtered, data => Object.keys(data.meta.scoped)));
       this.aliasCompleterCache = scoped.map(scope => {
-        return {name: scope, value: `[[${scope}]]`};
+        return { name: scope, value: `[[${scope}]]` };
       });
     }
   }
@@ -257,13 +238,13 @@ export class HeroicQueryCtrl extends QueryCtrl {
   public refreshAlias() {
     if (this.dataList === undefined) {
       // Some third party panel
-      this.queryModel.scopedVars["interval"] = {value: this.panelCtrl.interval};
-      this.queryModel.scopedVars["__interval"] = {value: this.panelCtrl.interval};
+      this.queryModel.scopedVars['interval'] = { value: this.panelCtrl.interval };
+      this.queryModel.scopedVars['__interval'] = { value: this.panelCtrl.interval };
       return;
     }
     this.dataList.forEach(data => {
       if (data.refId === this.target.refId) {
-        const alias = this.templateSrv.replaceWithText(this.target.alias || "$tags", {});
+        const alias = this.templateSrv.replaceWithText(this.target.alias || '$tags', {});
         data.target = this.templateSrv.replaceWithText(alias, data.meta.scoped);
       }
     });
@@ -273,27 +254,26 @@ export class HeroicQueryCtrl extends QueryCtrl {
 
   public handleGroupByPartEvent(part, index, evt) {
     switch (evt.name) {
-      case "get-param-options": {
-        return this.metadataClient.getTagsOrValues({type: "key"}, 0, null, false);
+      case 'get-param-options': {
+        return this.metadataClient.getTagsOrValues({ type: 'key' }, 0, null, false);
       }
-      case "part-param-changed": {
+      case 'part-param-changed': {
         this.refresh();
         break;
       }
-      case "action": {
+      case 'action': {
         this.queryModel.removeGroupByPart(part, index);
         this.refresh();
         break;
       }
-      case "get-part-actions": {
-        if (part.def.type === "time") {
+      case 'get-part-actions': {
+        if (part.def.type === 'time') {
           return Promise.resolve([]);
         }
-        return this.$q.when([{ text: "Remove", value: "remove-part" }]);
+        return this.$q.when([{ text: 'Remove', value: 'remove-part' }]);
       }
     }
   }
-
 
   public getCollapsedText() {
     return this.target.query;
@@ -306,6 +286,4 @@ export class HeroicQueryCtrl extends QueryCtrl {
   public setTags(tags: Tag[]) {
     this.target.tags = tags;
   }
-
-
 }
