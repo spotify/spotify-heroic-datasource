@@ -110,8 +110,10 @@ export function parseDateMath(mathString, time, roundUp) {
     }
   }
   return dateTime;
-<<<<<<< HEAD
 }
+<<<<<<< HEAD
 =======
 } 
 >>>>>>> mock datemath module
+=======
+>>>>>>> resolve merge conflict
