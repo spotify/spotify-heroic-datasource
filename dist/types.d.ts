@@ -100,3 +100,19 @@ export declare enum TagOperators {
     PREFIXIED_WITH = "^",
     NOT_PREFIXED_WITH = "!^"
 }
+export declare namespace datasource {
+    interface InstanceSettings {
+        url: string;
+        username: string;
+        password: string;
+        name: string;
+        jsonData: JSONSettings;
+        basicAuth: any;
+        database: any;
+    }
+    interface JSONSettings {
+        tagCollapseChecks?: any[];
+        tagAggregationChecks: string[];
+        suggestionRules: any[];
+    }
+}
