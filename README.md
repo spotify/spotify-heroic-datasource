@@ -50,15 +50,10 @@ docker run -it -p 3000:3000 --name=grafana -v `pwd`/dist:/var/lib/grafana/plugin
 
 # Releasing
 
+Travis will automatically bump the patch version of the plugin, tag the commit and make a GitHub Release.
 
-1. In a terminal, navigate to the repo, ensure you are on the master branch and then run...
-1. git pull --rebase origin master
-1. git log (ensure you are on the latest version)
-1. git fetch --tags
-1. git tag -l (this lists the previous release tags. increment the tag for your release and use semantic versioning)
-1. git tag ${tag}
-1. git push origin ${tag}
-1. Take the commit hash made for the tag released and append it to [repo.json](https://github.com/grafana/grafana-plugin-repository/blob/master/repo.json).
+The commit hash then needs to be appened to [repo.json](https://github.com/grafana/grafana-plugin-repository/blob/master/repo.json) in for it to be installatbale
+via the `grafana-cli`.
 
 
 

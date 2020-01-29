@@ -9,10 +9,12 @@ jobs:
       script: yarn lint && yarn build && yarn test
 
 before_deploy:
-- zip spotify-heroic-datasource -r dist/
 - git config --local user.name "TravisCI"
 - git config --local user.email "no-reply@travis-ci.com"
-- git tag "build-${TRAVIS_BUILD_NUMBER}"
+- git add -A dist/
+- bumped release patch
+- zip heroic-grafana-datasource -r dist/
+
 
 deploy:
   provider: releases
