@@ -135,4 +135,8 @@ export declare namespace datasource {
     tagAggregationChecks: string[];
     suggestionRules: any[];
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> move type definitions to types file
