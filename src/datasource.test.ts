@@ -1,7 +1,7 @@
 import HeroicDatasource from './datasource';
 import TimeRange from './time_range';
-import { dateTime } from '@grafana/data';
 import $q from 'q';
+import moment from 'moment';
 import { HeroicBatchResult, datasource } from './types';
 import { templateSrvMock, uiSegmentSrvMock, backendSrvMock } from '../test-setup/mocks';
 
@@ -54,7 +54,8 @@ describe('HeroicDataSource', () => {
     const urlExpected = '/api/datasources/proxy/1/query/batch';
     const now = Date.now();
     const then = now - 21600000;
-    const range = { from: dateTime(then), to: dateTime(now), raw: { from: 'now-6h', to: 'now' } };
+    const range = { from: moment(then), to: moment(now), raw: { from: 'now-6h', to: 'now' } };
+
     const timeRange = new TimeRange();
     timeRange.type = 'relative';
     timeRange.unit = 'HOURS';
