@@ -1,22 +1,22 @@
 /*
-* -\-\-
-* Spotify Heroic Grafana Datasource
-* --
-* Copyright (C) 2018 Spotify AB
-* --
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-* -/-/-
-*/
+ * -\-\-
+ * Spotify Heroic Grafana Datasource
+ * --
+ * Copyright (C) 2018 Spotify AB
+ * --
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * -/-/-
+ */
 
 import _ from 'lodash';
 import $ from 'jquery';
@@ -88,7 +88,7 @@ export function queryPartEditorLabeledDirective($compile, templateSrv) {
         if (partDef.dynamicParameters) {
           partDefParamIndex = 0;
         }
-        if (newValue === "-- remove --") {
+        if (newValue === '-- remove --') {
           part.removeParam(paramIndex);
           currentParam = 0;
           relink();
@@ -128,20 +128,20 @@ export function queryPartEditorLabeledDirective($compile, templateSrv) {
           return;
         }
 
-        const typeaheadSource = function (query, callback) {
+        const typeaheadSource = function(query, callback) {
           if (param.options) {
             let options = param.options;
             if (param.type === 'int') {
-              options = _.map(options, function (val) {
+              options = _.map(options, function(val) {
                 return val.toString();
               });
             }
             return options;
           }
 
-          $scope.$apply(function () {
-            $scope.handleEvent({$event: {name: 'get-param-options'}}).then(function (result) {
-              const dynamicOptions = _.map(result, function (op) {
+          $scope.$apply(function() {
+            $scope.handleEvent({ $event: { name: 'get-param-options' } }).then(function(result) {
+              const dynamicOptions = _.map(result, function(op) {
                 return op.value;
               });
               callback(dynamicOptions);
@@ -198,7 +198,7 @@ export function queryPartEditorLabeledDirective($compile, templateSrv) {
         }
         let paramValue = templateSrv.highlightVariablesAsHtml(part.params[index]);
         if (!paramValue) {
-          paramValue = "&nbsp&nbsp";
+          paramValue = '&nbsp&nbsp';
         }
         const $paramLink = $('<a class="graphite-func-param-link pointer">' + paramValue + '</a>');
         const $input = $(paramTemplate);
@@ -217,11 +217,10 @@ export function queryPartEditorLabeledDirective($compile, templateSrv) {
 
       function addElementsAndCompile() {
         if (partDef.dynamicParameters) {
-          _.each(part.params, ((param, index) => {
-            addParams(partDef.params[0], index)
-          }));
+          _.each(part.params, (param, index) => {
+            addParams(partDef.params[0], index);
+          });
           addParams(partDef.params[0], currentParam);
-
         } else {
           _.each(partDef.params, addParams);
         }
@@ -236,6 +235,5 @@ export function queryPartEditorLabeledDirective($compile, templateSrv) {
     },
   };
 }
-
 
 angular.module('grafana.directives').directive('queryPartEditorLabeled', queryPartEditorLabeledDirective);

@@ -51,22 +51,24 @@ export interface Tag {
     value: string;
 }
 export declare type Datapoint = [number, number];
+export interface HeroicMetaData {
+    isHeroicSeries: boolean;
+    scoped: {
+        tags: {
+            text: string;
+        };
+        fullTags: {
+            text: string;
+        };
+    };
+    errors: any[];
+    limits: string[];
+}
 export interface DataSeries {
     refId: string;
     datapoints: Datapoint[];
     target: string;
-    meta: {
-        scoped: {
-            tags: {
-                text: string;
-            };
-            fullTags: {
-                text: string;
-            };
-        };
-        errors: any[];
-        limits: string[];
-    };
+    meta: HeroicMetaData;
 }
 export interface HeroicBatchResult {
     status: number;
@@ -91,4 +93,10 @@ export interface HeroicBatchData {
     range: any;
     result: any[];
     trace: any;
+}
+export declare enum TagOperators {
+    MATCHES = "=",
+    DOES_NOT_MATCH = "!=",
+    PREFIXIED_WITH = "^",
+    NOT_PREFIXED_WITH = "!^"
 }

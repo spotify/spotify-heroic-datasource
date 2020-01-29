@@ -1,14 +1,35 @@
-[![Build Status](https://travis-ci.org/spotify/heroic-grafana-datasource.svg?branch=master)](https://travis-ci.org/spotify/heroic-grafana-datasource)
+# spotify-heroic-datasource
 
-This is a "fork" of the [Grafana InfluxDB plugin](https://github.com/grafana/grafana/tree/master/public/app/plugins/datasource/influxdb) with changes applied to function with the Heroic time-series database.
+[![Build Status](https://travis-ci.org/spotify/spotify-heroic-datasource.svg?branch=master)](https://travis-ci.org/spotify/spotify-heroic-datasource)
 
-This is intended to be an improvement on the [existing Heroic datasource](https://github.com/udoprog/udoprog-heroic-datasource) that includes a query builder, table support, variable support, and annotation support.
+![heroic-datasource-screenshot](https://github.com/spotify/spotify-heroic-datasource/raw/master/heroic-datasource-screenshot.png "Heroic Datasource Plugin")
 
-# Development Status
+The Spotify Heroic datasource is the "offical" plugin for [Heroic](https://github.com/spotify/heroic)!
 
-Beta
+It includes:
+* Query builder with suggestions for metrics.
+* Table support.
+* Annotation support.
 
-# How to install
+
+This plugin is supersedes the previous [Heroic datasource](https://github.com/udoprog/udoprog-heroic-datasource).
+
+Inspiration was taken from the [Grafana InfluxDB plugin](https://github.com/grafana/grafana/tree/master/public/app/plugins/datasource/influxdb).
+
+
+# Installation
+
+The recommened way to install the plugin is via the official cli:
+
+`grafana-cli plugins install spotify-heroic-datasource`
+
+
+The plugin can also be installed by directly pointing at a release. Useful if you want to test a feature that hasn't been released yet.
+
+`grafana-cli --pluginUrl https://github.com/spotify/spotify-heroic-datasource/archive/master.zip plugins install spotify-heroic-datasource`
+
+
+# Local Development
 
 To develop locally:
 - `yarn install`
@@ -16,19 +37,30 @@ To develop locally:
 
 Add the following to your `grafana.ini` to deploy to your local Grafana instance:
 ```
-[plugin.heroic-grafana-datasource]
-path = /{path-to-heroic-grafana-datasource}
+[plugin.spotify-heroic-datasource]
+path = /{path-to-spotify-heroic-datasource}
 ```
 
 If using Docker, you can mount this repo into the Grafana plugin directory:
 
 ```
-docker run -it -p 3000:3000 --name=grafana -v `pwd`:/var/lib/grafana/plugins/heroic-grafana-datasource grafana/grafana
+docker run -it -p 3000:3000 --name=grafana -v `pwd`/dist:/var/lib/grafana/plugins/spotify-heroic-datasource grafana/grafana
 ```
 
-Can also be installed with grafana-cli
 
-`grafana-cli --pluginUrl https://github.com/spotify/heroic-grafana-datasource/archive/master.zip plugins install heroic-grafana-datasource`
+# Releasing
+
+
+1. In a terminal, navigate to the repo, ensure you are on the master branch and then run...
+1. git pull --rebase origin master
+1. git log (ensure you are on the latest version)
+1. git fetch --tags
+1. git tag -l (this lists the previous release tags. increment the tag for your release and use semantic versioning)
+1. git tag ${tag}
+1. git push origin ${tag}
+1. Take the commit hash made for the tag released and append it to [repo.json](https://github.com/grafana/grafana-plugin-repository/blob/master/repo.json).
+
+
 
 # Code of Conduct
 

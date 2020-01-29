@@ -1,31 +1,27 @@
 /*
-* -\-\-
-* Spotify Heroic Grafana Datasource
-* --
-* Copyright (C) 2018 Spotify AB
-* --
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-* -/-/-
-*/
+ * -\-\-
+ * Spotify Heroic Grafana Datasource
+ * --
+ * Copyright (C) 2018 Spotify AB
+ * --
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * -/-/-
+ */
 
-import _ from "lodash";
-import {
-  DataSeries,
-  Target,
-} from "./types";
+import _ from 'lodash';
+import { DataSeries, Target } from './types';
 
 export class HeroicValidator {
-
   public target: Target;
   public tagAggregationChecks: any;
   public tagCollapseChecks: any[];
@@ -37,30 +33,31 @@ export class HeroicValidator {
   }
 
   public findUnsafeCollapses(data: DataSeries[]) {
-    const collapsedKeys =_.uniq(
-      _.flatMap(this.tagCollapseChecks, (value) => {
-        return data.filter(({ meta }) => {
-          const valueCount = meta.scoped[`tag_${value}_count`];
-          return valueCount
-          && valueCount.text !== "<0>"
-          && valueCount.text !== "<1>";
-        }).map(item => value);
+    const collapsedKeys = _.uniq(
+      _.flatMap(this.tagCollapseChecks, value => {
+        return data
+          .filter(({ meta }) => {
+            const valueCount = meta.scoped[`tag_${value}_count`];
+            return valueCount && valueCount.text !== '<0>' && valueCount.text !== '<1>';
+          })
+          .map(item => value);
       })
     );
     return collapsedKeys;
   }
 
   public findUnsafeAggregations(data: DataSeries[]) {
-    const hasAggregations = this.target.select[0].filter(select => select.type !== "min" && select.type !== "max").length > 0;
+    const hasAggregations = this.target.select[0].filter(select => select.type !== 'min' && select.type !== 'max').length > 0;
     if (!hasAggregations) {
       return false;
     }
     const badTags = _.uniq(
-        _.flatMap(this.tagAggregationChecks, (value, key) => {
-        return data.filter(({ meta }) => {
-          return meta.scoped[`tag_${key}`] !== undefined
-            && _.includes(value, meta.scoped[`tag_${key}`].text);
-        }).map(({ meta }) => `${key}:${meta.scoped[`tag_${key}`].text}`);
+      _.flatMap(this.tagAggregationChecks, (value, key) => {
+        return data
+          .filter(({ meta }) => {
+            return meta.scoped[`tag_${key}`] !== undefined && _.includes(value, meta.scoped[`tag_${key}`].text);
+          })
+          .map(({ meta }) => `${key}:${meta.scoped[`tag_${key}`].text}`);
       })
     );
     return badTags;
@@ -72,9 +69,9 @@ export class HeroicValidator {
     if (badTags.length > 0) {
       let message;
       if (badTags.length === 1) {
-        message = `'${badTags[0]}'`
+        message = `'${badTags[0]}'`;
       } else {
-        message = `any of '${badTags.join('\',\'')}'`
+        message = `any of '${badTags.join("','")}'`;
       }
       warnings.push(`Aggregating <strong>${message}</strong> can cause misleading results.`);
     }
@@ -82,13 +79,15 @@ export class HeroicValidator {
     const collapsedKeys = this.findUnsafeCollapses(data);
     if (collapsedKeys.length > 0) {
       let message;
-      if (collapsedKeys.length == 1) {
+      if (collapsedKeys.length === 1) {
         message = `Aggregating several <strong>\'${collapsedKeys[0]}\'</strong> is probably not what you want. Filter on a single '${collapsedKeys[0]}' or group by '${collapsedKeys[0]}' in an aggregation.`;
       } else {
-        message = `Aggregating several of keys <strong>'${collapsedKeys.slice(0, collapsedKeys.length - 1).join('\', \'')}\' or \'${collapsedKeys[collapsedKeys.length - 1]}'</strong> ` +
-        'is probably not what you want. For each key, add a filter or group by aggregation.';
+        message =
+          `Aggregating several of keys <strong>'${collapsedKeys.slice(0, collapsedKeys.length - 1).join("', '")}\' or \'${
+            collapsedKeys[collapsedKeys.length - 1]
+          }'</strong> ` + 'is probably not what you want. For each key, add a filter or group by aggregation.';
       }
-     warnings.push(message);
+      warnings.push(message);
     }
 
     // Errors/limits are set per query, not per series, but are included
@@ -116,27 +115,20 @@ export class HeroicValidator {
             }
             break;
           case 'QUOTA':
-            warnings.push(
-              'Query would fetch too many metrics. Try to reduce the time range or add more filters to get fewer resulting metrics.'
-            );
+            warnings.push('Query would fetch too many metrics. Try to reduce the time range or add more filters to get fewer resulting metrics.');
             break;
           case 'AGGREGATION':
             if (this.target.select.length === 0) {
               // TODO: I think this is impossible, target.select is
               // supposed to be an array of size 1
-              warnings.push(
-                'Query would aggregate too many metrics. Try add a sampling aggregation, like Average, Min, Max, or Sum'
-              );
+              warnings.push('Query would aggregate too many metrics. Try add a sampling aggregation, like Average, Min, Max, or Sum');
             } else {
-              warnings.push(
-                'Query would aggregate too many metrics. Try decreasing the resolution, like changing 1 minute to 1 hour'
-              );
+              warnings.push('Query would aggregate too many metrics. Try decreasing the resolution, like changing 1 minute to 1 hour');
             }
             break;
         }
       });
     });
-    return warnings.join("<br>");
+    return warnings.join('<br>');
   }
-
 }
