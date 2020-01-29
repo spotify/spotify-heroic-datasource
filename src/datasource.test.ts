@@ -1,27 +1,9 @@
-import HeroicDatasource from '../datasource';
-import TimeRange from '../time_range';
+import HeroicDatasource from './datasource';
+import TimeRange from './time_range';
 import { dateTime } from '@grafana/data';
 import $q from 'q';
-import { HeroicBatchResult } from '../types';
+import { HeroicBatchResult, datasource } from './types';
 import { templateSrvMock, uiSegmentSrvMock, backendSrvMock } from '../test-setup/mocks';
-
-interface JSONSettings {
-  tagCollapseChecks?: any[];
-  tagAggregationChecks: string[];
-  suggestionRules: any[];
-}
-
-interface InstanceSettings {
-  url: string;
-  username: string;
-  password: string;
-  name: string;
-  jsonData: JSONSettings;
-
-  // unused
-  basicAuth: any;
-  database: any;
-}
 
 const createHeroicBatchResult = (opts = {}) =>
   Object.assign(
@@ -42,10 +24,10 @@ describe('HeroicDataSource', () => {
       username: '',
       password: '',
       name: '',
-      jsonData: {},
+      jsonData: {} as datasource.JSONSettings,
       basicAuth: {},
       database: {},
-    } as InstanceSettings,
+    } as datasource.InstanceSettings,
     $q,
     ds: {} as HeroicDatasource,
     backendSrv: backendSrvMock,
@@ -67,7 +49,7 @@ describe('HeroicDataSource', () => {
     ctx.ds = new HeroicDatasource(ctx.instanceSettings, ctx.$q, ctx.backendSrv, ctx.templateSrv, ctx.uiSegmentSrv);
   });
 
-  describe('When querying Heroic with one target using the query editor', () => {
+  describe('When querying Heroic with one target', () => {
     let results: any;
     const urlExpected = '/api/datasources/proxy/1/query/batch';
     const now = Date.now();
@@ -83,6 +65,7 @@ describe('HeroicDataSource', () => {
       targets: [
         {
           refId: 'A',
+          alias: 'test-alias',
           tags: [
             {
               key: '$key',
@@ -129,16 +112,38 @@ describe('HeroicDataSource', () => {
       range: timeRange,
     };
 
-    const batchResult = createHeroicBatchResult({
-      data: {
-        config: {
-          data: {
-            queries: {
-              A: query,
-            },
-          },
-        },
+    const queryResult = {
+      queryId: 'id',
+      range: {
+        type: "relative",
+        unit: "SECONDS",
+        value: 60
       },
+      filter: ['and', ['key', 'value'], ['=', 'otherKey', 'otherValue']],
+      aggregation: {
+        type: "group",
+        of: ["site"],
+        each: {
+          type: "sum"
+        }
+      },
+      result: [
+        {
+          type: 'points',
+          hash: 'hash555',
+          values: [
+            [20892.138488704415, 1577728800000],
+            [20841.156517634838, 1577732400000]
+          ]
+        }
+      ],
+      limits: [],
+      errors: []
+    }
+
+    const batchResult = createHeroicBatchResult({
+      data: { results: { A: queryResult } },
+      config: { data: { queries: { A: query, }, }, },
     });
 
     beforeEach(async () => {
@@ -146,18 +151,39 @@ describe('HeroicDataSource', () => {
       results = await ctx.ds.query(options);
     });
 
-    it('should call Heroic with the correct query', () => {
+    it('...should call Heroic with the correct query', () => {
       const res = ctx.backendSrv.datasourceRequest.mock.calls[0][0];
-      expect(res.method).toBe('POST');
-      expect(res.url).toBe(urlExpected);
-      expect(res.data.queries['A']).toEqual(query);
+
+      expect(res.data.queries['A']).toMatchObject(query);
     });
 
-    it('should return a series list', () => {
-      console.log(results);
-      expect(true).toBeTruthy();
-      // expect(results.data.length).toBe(1);
-      // expect(results.data[0].target).toBe(true)
+    it('...should call Heroic with the correct HTTP request', () => {
+      const res = ctx.backendSrv.datasourceRequest.mock.calls[0][0];
+
+      expect(res.inspect.type).toBe('heroic');
+      expect(res.method).toBe('POST');
+      expect(res.url).toBe(urlExpected);
+    })
+
+    it('...should return a correct time series', () => {
+      const query = results.data[0];
+      const datapoints = [
+        [1577728800000, 20892.138488704415],
+        [1577732400000, 20841.156517634838]
+      ];
+
+      expect(query.refId).toBe(options.targets[0].refId);
+      expect(query.target).toBe(options.targets[0].alias)
+      expect(query.datapoints.length).toBe(2);
+      expect(query.datapoints).toEqual(datapoints)
     });
+
+    it('...should return a time series with the correct meta properties present', () => {
+      expect(results.data[0]).toHaveProperty('meta')
+      expect(results.data[0].meta.scoped).toBeDefined()
+      expect(results.data[0].meta.errors).toBeDefined()
+      expect(results.data[0].meta.limits).toBeDefined()
+    });
+
   });
 });
