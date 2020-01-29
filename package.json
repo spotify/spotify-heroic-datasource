@@ -37,6 +37,7 @@
     "tslint": "^5.20.1",
     "tslint-config-prettier": "^1.18.0",
     "typescript": "^3.6.2",
-    "bumped": "^0.12.2"
+    "bumped": "^0.12.2",
+    "bumped-terminal": "^0.7.8"
   }
 }

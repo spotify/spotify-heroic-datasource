@@ -11,9 +11,9 @@ jobs:
 before_deploy:
 - git config --local user.name "TravisCI"
 - git config --local user.email "no-reply@travis-ci.com"
-- git add -A dist/
-- bumped release patch
+#- bumped release patch
 - zip heroic-grafana-datasource -r dist/
+- git tag "build-${TRAVIS_BUILD_NUMBER}"
 
 
 deploy:

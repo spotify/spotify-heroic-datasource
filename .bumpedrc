@@ -2,9 +2,6 @@ files:
   - package.json
 plugins:
   postrelease:
-    Committing new version:
+    Tag build for GitHub Release:
       plugin: bumped-terminal
-      command: 'git add package.json && git commit -m "Release $newVersion"'
-    Publishing tag to GitHub:
-      plugin: bumped-terminal
-      command: 'git tag $newVersion && git push && git push --tags'
+      command: 'git tag $newVersion."${TRAVIS_BUILD_NUMBER}"'

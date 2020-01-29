@@ -4,7 +4,7 @@
 
 ![heroic-datasource-screenshot](https://github.com/spotify/spotify-heroic-datasource/raw/master/heroic-datasource-screenshot.png "Heroic Datasource Plugin")
 
-The Spotify Heroic datasource is the "offical" plugin for [Heroic](https://github.com/spotify/heroic)!
+The Spotify Heroic datasource is the "official" plugin for [Heroic](https://github.com/spotify/heroic)!
 
 It includes:
 * Query builder with suggestions for metrics.
@@ -52,7 +52,7 @@ docker run -it -p 3000:3000 --name=grafana -v `pwd`/dist:/var/lib/grafana/plugin
 
 Travis will automatically bump the patch version of the plugin, tag the commit and make a GitHub Release.
 
-The commit hash then needs to be appened to [repo.json](https://github.com/grafana/grafana-plugin-repository/blob/master/repo.json) in for it to be installatbale
+The commit hash then needs to be appended to [repo.json](https://github.com/grafana/grafana-plugin-repository/blob/master/repo.json) in for it to be installable
 via the `grafana-cli`.
 
 
