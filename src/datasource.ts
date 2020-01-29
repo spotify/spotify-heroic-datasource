@@ -152,7 +152,6 @@ export default class HeroicDatasource {
     return this.doRequest("/query/batch", { method: "POST", data: batchQuery })
       .then((data: HeroicBatchResult) => {
         const results = data.data.results;
-
         const output = _.flatMap(results, (resultValue: HeroicBatchData, refId: string) => {
           const target: Target = targetsByRef[refId];
           let alias: string = target.alias;

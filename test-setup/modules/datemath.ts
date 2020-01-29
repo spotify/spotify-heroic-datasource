@@ -110,4 +110,8 @@ export function parseDateMath(mathString, time, roundUp) {
     }
   }
   return dateTime;
-} 
+<<<<<<< HEAD
+}
+=======
+}
+>>>>>>> 10090b37b2dcd08e9c01d4e65b05634520aa82b5
