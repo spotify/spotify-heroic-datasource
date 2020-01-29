@@ -25,7 +25,7 @@ import { LruCache } from './lru_cache';
 
 export class MetadataClient {
   public static templateUrl = 'partials/query.editor.html';
-  public static DEBOUNCE_MS = 1000; // milliseconds to wait between keystrokes before sending queries for metadata
+  public static DEBOUNCE_MS = 300; // milliseconds to wait between keystrokes before sending queries for metadata
 
   public queryModel: HeroicQuery;
   public lruTag: any;
