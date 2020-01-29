@@ -31,28 +31,8 @@ import {
   DataSeries,
   HeroicBatchResult,
   HeroicBatchData,
+  datasource
 } from "./types";
-
-
-declare namespace datasource {
-  interface InstanceSettings {
-    url: string;
-    username: string;
-    password: string;
-    name: string;
-    jsonData: JSONSettings;
-
-    // unused
-    basicAuth: any;
-    database: any;
-  }
-
-  interface JSONSettings {
-    tagCollapseChecks?: any[];
-    tagAggregationChecks: string[];
-    suggestionRules: any[];
-  }
-}
 
 export default class HeroicDatasource {
   public type: string;
