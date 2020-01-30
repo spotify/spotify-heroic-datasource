@@ -1,4 +1,3 @@
-
 //@ts-nocheck
 import _ from 'lodash';
 import moment from 'moment';
@@ -110,10 +109,4 @@ export function parseDateMath(mathString, time, roundUp) {
     }
   }
   return dateTime;
-}
-<<<<<<< HEAD
-=======
 } 
->>>>>>> mock datemath module
-=======
->>>>>>> resolve merge conflict

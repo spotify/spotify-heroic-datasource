@@ -135,16 +135,4 @@ export declare namespace datasource {
     tagAggregationChecks: string[];
     suggestionRules: any[];
   }
-<<<<<<< HEAD:src/types.ts
-<<<<<<< HEAD:src/types.ts
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> move type definitions to types file
-=======
-}
->>>>>>> compile:dist/types.ts
-=======
-}
->>>>>>> compile:dist/types.ts

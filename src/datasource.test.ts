@@ -1,7 +1,7 @@
 import HeroicDatasource from './datasource';
 import TimeRange from './time_range';
-import $q from 'q';
 import moment from 'moment';
+import $q from 'q';
 import { HeroicBatchResult, datasource } from './types';
 import { templateSrvMock, uiSegmentSrvMock, backendSrvMock } from '../test-setup/mocks';
 
@@ -55,7 +55,6 @@ describe('HeroicDataSource', () => {
     const now = Date.now();
     const then = now - 21600000;
     const range = { from: moment(then), to: moment(now), raw: { from: 'now-6h', to: 'now' } };
-
     const timeRange = new TimeRange();
     timeRange.type = 'relative';
     timeRange.unit = 'HOURS';
@@ -140,11 +139,7 @@ describe('HeroicDataSource', () => {
       ],
       limits: [],
       errors: []
-<<<<<<< HEAD
-    }
-=======
     };
->>>>>>> test datasource query
 
     const batchResult = createHeroicBatchResult({
       data: { results: { A: queryResult } },
@@ -168,11 +163,7 @@ describe('HeroicDataSource', () => {
       expect(res.inspect.type).toBe('heroic');
       expect(res.method).toBe('POST');
       expect(res.url).toBe(urlExpected);
-<<<<<<< HEAD
-    })
-=======
     });
->>>>>>> test datasource query
 
     it('...should return a correct time series', () => {
       const query = results.data[0];
@@ -182,18 +173,6 @@ describe('HeroicDataSource', () => {
       ];
 
       expect(query.refId).toBe(options.targets[0].refId);
-<<<<<<< HEAD
-      expect(query.target).toBe(options.targets[0].alias)
-      expect(query.datapoints.length).toBe(2);
-      expect(query.datapoints).toEqual(datapoints)
-    });
-
-    it('...should return a time series with the correct meta properties present', () => {
-      expect(results.data[0]).toHaveProperty('meta')
-      expect(results.data[0].meta.scoped).toBeDefined()
-      expect(results.data[0].meta.errors).toBeDefined()
-      expect(results.data[0].meta.limits).toBeDefined()
-=======
       expect(query.target).toBe(options.targets[0].alias);
       expect(query.datapoints.length).toBe(2);
       expect(query.datapoints).toEqual(datapoints);
@@ -204,7 +183,6 @@ describe('HeroicDataSource', () => {
       expect(results.data[0].meta.scoped).toBeDefined();
       expect(results.data[0].meta.errors).toBeDefined();
       expect(results.data[0].meta.limits).toBeDefined();
->>>>>>> test datasource query
     });
 
   });
