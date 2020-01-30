@@ -1,6 +1,6 @@
 {
   "name": "spotify-heroic-datasource",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Heroic Timeseries Database Data Source for Grafana.",
   "scripts": {
     "build": "./node_modules/grunt/bin/grunt",
