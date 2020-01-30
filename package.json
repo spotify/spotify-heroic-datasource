@@ -12,13 +12,15 @@
   "license": "Apache",
   "dependencies": {
     "lodash": "^4.17.15",
-    "moment": "^2.18.1",
+    "moment": "^2.24.0",
     "q": "^1.5.0",
     "systemjs": "^0.19.47"
   },
   "devDependencies": {
     "@types/jest": "^24.0.25",
     "@types/lodash": "^4.14.138",
+    "bumped": "^0.12.2",
+    "bumped-terminal": "^0.7.8",
     "grafana-sdk-mocks": "github:grafana/grafana-sdk-mocks",
     "grunt": "^1.0.4",
     "grunt-contrib-clean": "^1.1.0",
@@ -36,8 +38,6 @@
     "ts-jest": "^24.2.0",
     "tslint": "^5.20.1",
     "tslint-config-prettier": "^1.18.0",
-    "typescript": "^3.6.2",
-    "bumped": "^0.12.2",
-    "bumped-terminal": "^0.7.8"
+    "typescript": "^3.6.2"
   }
 }

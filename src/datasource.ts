@@ -31,28 +31,8 @@ import {
   DataSeries,
   HeroicBatchResult,
   HeroicBatchData,
+  datasource
 } from "./types";
-
-
-declare namespace datasource {
-  interface InstanceSettings {
-    url: string;
-    username: string;
-    password: string;
-    name: string;
-    jsonData: JSONSettings;
-
-    // unused
-    basicAuth: any;
-    database: any;
-  }
-
-  interface JSONSettings {
-    tagCollapseChecks?: any[];
-    tagAggregationChecks: string[];
-    suggestionRules: any[];
-  }
-}
 
 export default class HeroicDatasource {
   public type: string;
@@ -172,7 +152,6 @@ export default class HeroicDatasource {
     return this.doRequest("/query/batch", { method: "POST", data: batchQuery })
       .then((data: HeroicBatchResult) => {
         const results = data.data.results;
-
         const output = _.flatMap(results, (resultValue: HeroicBatchData, refId: string) => {
           const target: Target = targetsByRef[refId];
           let alias: string = target.alias;
