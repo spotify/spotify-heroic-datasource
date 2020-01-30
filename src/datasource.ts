@@ -227,14 +227,18 @@ export default class HeroicDatasource {
   }
 
   public targetContainsTemplate(target): boolean {
-    for (const group of target.groupBy) {
-      for (const param of group.params) {
-        if (this.templateSrv.variableExists(param)) {
-          return true;
+    // Check aggregations for variables.
+    for (const select of target.select) {
+      for (const aggregation of select) {
+        for (const param of aggregation.params) {
+          if (this.templateSrv.variableExists(param)) {
+            return true;
+          }
         }
       }
     }
 
+    // Check filters for variables.
     for (const i in target.tags) {
       if (this.templateSrv.variableExists(target.tags[i].value)) {
         return true;
