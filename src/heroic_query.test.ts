@@ -83,11 +83,11 @@ describe('HeroicQuery', () => {
 
       beforeEach(() => {
         ctx.target.tags = [{ key: "key", operator: "=", value: "value" }];
-        ctx.templateSrv.replace = jest.fn(query => query.startsWith('$') ? someGlobalVars[query] || null : query)
-      })
+        ctx.templateSrv.replace = jest.fn(query => query.startsWith('$') ? someGlobalVars[query] || null : query);
+      });
 
       it('...should set the correct default value', () => {
-        ctx.target.select = [[{ type: "abovek", params: ['5'], categoryName: "Filters" }]]
+        ctx.target.select = [[{ type: "abovek", params: ['5'], categoryName: "Filters" }]];
         const queryModel = new HeroicQuery(ctx.target, ctx.templateSrv, ctx.scopedVars);
         const query = queryModel.render();
 
@@ -98,7 +98,7 @@ describe('HeroicQuery', () => {
       });
 
       it('...should set the correct value', () => {
-        ctx.target.select = [[{ type: 'belowk', params: ['100'], categoryName: "Filters" }]]
+        ctx.target.select = [[{ type: 'belowk', params: ['100'], categoryName: "Filters" }]];
         const queryModel = new HeroicQuery(ctx.target, ctx.templateSrv, ctx.scopedVars);
         const query = queryModel.render();
 
@@ -109,11 +109,11 @@ describe('HeroicQuery', () => {
       });
 
       it('...should set the correct value when given a valid variable', () => {
-        ctx.target.select = [[{ type: 'topk', params: ['$var'], categoryName: "Filters" }]]
+        ctx.target.select = [[{ type: 'topk', params: ['$var'], categoryName: "Filters" }]];
         const queryModel = new HeroicQuery(ctx.target, ctx.templateSrv, ctx.scopedVars);
         const query = queryModel.render();
 
-        expect(ctx.templateSrv.replace).toHaveBeenCalledWith('$var')
+        expect(ctx.templateSrv.replace).toHaveBeenCalledWith('$var');
         expect(query.aggregators.length).toEqual(1);
         expect(query.aggregators[0].type).toEqual('topk');
         expect(query.aggregators[0].k).toEqual(100);
@@ -121,17 +121,17 @@ describe('HeroicQuery', () => {
       });
 
       it('...should set the return null when given an invalid variable', () => {
-        ctx.target.select = [[{ type: 'topk', params: ['badVarWithNoDollarSignPrefix'], categoryName: "Filters" }]]
+        ctx.target.select = [[{ type: 'topk', params: ['badVarWithNoDollarSignPrefix'], categoryName: "Filters" }]];
         const queryModel = new HeroicQuery(ctx.target, ctx.templateSrv, ctx.scopedVars);
         const query = queryModel.render();
 
-        expect(ctx.templateSrv.replace).toHaveBeenCalledWith('badVarWithNoDollarSignPrefix')
+        expect(ctx.templateSrv.replace).toHaveBeenCalledWith('badVarWithNoDollarSignPrefix');
         expect(query.aggregators.length).toEqual(1);
         expect(query.aggregators[0].type).toEqual('topk');
         expect(query.aggregators[0].k).toBeNull();
         expect(query.aggregators[0].of.type).toEqual('empty');
       });
 
-    })
+    });
   });
 });
