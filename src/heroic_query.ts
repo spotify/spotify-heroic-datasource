@@ -195,7 +195,11 @@ export default class HeroicQuery {
 
     const aggregatorsRendered = this.selectModels.map(modelParts => {
       return modelParts.map(modelPart => {
-        return modelPart.def.renderer(modelPart, undefined, currentIntervalValue);
+        return modelPart.def.categoryName === "Filters"
+          ? modelPart.def.renderer({
+            params: [this.templateSrv.replace(modelPart.params[0])]
+          }, undefined, currentIntervalValue)
+          : modelPart.def.renderer(modelPart, undefined, currentIntervalValue);
       });
     });
 

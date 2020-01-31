@@ -1,13 +1,12 @@
 import HeroicQuery from './heroic_query';
+import { templateSrvMock } from '../test-setup/mocks';
 
 describe('HeroicQuery', () => {
   let ctx = {} as any;
   beforeEach(() => {
     ctx = {
       target: { select: [[]], tags: [] },
-      templateSrv: {
-        replace: str => str
-      },
+      templateSrv: templateSrvMock,
       scopedVars: {
         __interval: { text: "30s", value: "30s" },
         __interval_ms: { text: "30000", value: 30000 },
@@ -77,5 +76,62 @@ describe('HeroicQuery', () => {
         expect(query.filter[3]).toEqual(['not', ['=', 'key3', 'value3']]);
       });
     });
+
+    describe('...when given a filter aggregation', () => {
+
+      const someGlobalVars = { '$var': 100 };
+
+      beforeEach(() => {
+        ctx.target.tags = [{ key: "key", operator: "=", value: "value" }];
+        ctx.templateSrv.replace = jest.fn(query => query.startsWith('$') ? someGlobalVars[query] || null : query)
+      })
+
+      it('...should set the correct default value', () => {
+        ctx.target.select = [[{ type: "abovek", params: ['5'], categoryName: "Filters" }]]
+        const queryModel = new HeroicQuery(ctx.target, ctx.templateSrv, ctx.scopedVars);
+        const query = queryModel.render();
+
+        expect(query.aggregators.length).toEqual(1);
+        expect(query.aggregators[0].type).toEqual('abovek');
+        expect(query.aggregators[0].k).toEqual(5);
+        expect(query.aggregators[0].of.type).toEqual('empty');
+      });
+
+      it('...should set the correct value', () => {
+        ctx.target.select = [[{ type: 'belowk', params: ['100'], categoryName: "Filters" }]]
+        const queryModel = new HeroicQuery(ctx.target, ctx.templateSrv, ctx.scopedVars);
+        const query = queryModel.render();
+
+        expect(query.aggregators.length).toEqual(1);
+        expect(query.aggregators[0].type).toEqual('belowk');
+        expect(query.aggregators[0].k).toEqual(100);
+        expect(query.aggregators[0].of.type).toEqual('empty');
+      });
+
+      it('...should set the correct value when given a valid variable', () => {
+        ctx.target.select = [[{ type: 'topk', params: ['$var'], categoryName: "Filters" }]]
+        const queryModel = new HeroicQuery(ctx.target, ctx.templateSrv, ctx.scopedVars);
+        const query = queryModel.render();
+
+        expect(ctx.templateSrv.replace).toHaveBeenCalledWith('$var')
+        expect(query.aggregators.length).toEqual(1);
+        expect(query.aggregators[0].type).toEqual('topk');
+        expect(query.aggregators[0].k).toEqual(100);
+        expect(query.aggregators[0].of.type).toEqual('empty');
+      });
+
+      it('...should set the return null when given an invalid variable', () => {
+        ctx.target.select = [[{ type: 'topk', params: ['badVarWithNoDollarSignPrefix'], categoryName: "Filters" }]]
+        const queryModel = new HeroicQuery(ctx.target, ctx.templateSrv, ctx.scopedVars);
+        const query = queryModel.render();
+
+        expect(ctx.templateSrv.replace).toHaveBeenCalledWith('badVarWithNoDollarSignPrefix')
+        expect(query.aggregators.length).toEqual(1);
+        expect(query.aggregators[0].type).toEqual('topk');
+        expect(query.aggregators[0].k).toBeNull();
+        expect(query.aggregators[0].of.type).toEqual('empty');
+      });
+
+    })
   });
 });
