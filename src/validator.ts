@@ -63,6 +63,15 @@ export class HeroicValidator {
     return badTags;
   }
 
+  public isMissingNamespace() {
+    const { tags } = this.target;
+    for (const tag of tags) {
+      const { key } = tag;
+      if (key === '$key') { return false; }
+    }
+    return true;
+  }
+
   public checkForWarnings(data: DataSeries[]): string {
     const warnings = [];
     const badTags = this.findUnsafeAggregations(data);
@@ -76,6 +85,10 @@ export class HeroicValidator {
       warnings.push(`Aggregating <strong>${message}</strong> can cause misleading results.`);
     }
 
+    if (this.isMissingNamespace()) {
+      warnings.push('Missing $key filter. It is good practice to always filter tags by namespace.');
+    }
+
     const collapsedKeys = this.findUnsafeCollapses(data);
     if (collapsedKeys.length > 0) {
       let message;
@@ -84,7 +97,7 @@ export class HeroicValidator {
       } else {
         message =
           `Aggregating several of keys <strong>'${collapsedKeys.slice(0, collapsedKeys.length - 1).join("', '")}\' or \'${
-            collapsedKeys[collapsedKeys.length - 1]
+          collapsedKeys[collapsedKeys.length - 1]
           }'</strong> ` + 'is probably not what you want. For each key, add a filter or group by aggregation.';
       }
       warnings.push(message);
