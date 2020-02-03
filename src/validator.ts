@@ -63,7 +63,7 @@ export class HeroicValidator {
     return badTags;
   }
 
-  public isMissingNamespace() {
+  public isMissingKey() {
     const { tags } = this.target;
     for (const tag of tags) {
       const { key } = tag;
@@ -85,8 +85,8 @@ export class HeroicValidator {
       warnings.push(`Aggregating <strong>${message}</strong> can cause misleading results.`);
     }
 
-    if (this.isMissingNamespace()) {
-      warnings.push('Missing $key filter. It is good practice to always filter tags by namespace.');
+    if (this.isMissingKey()) {
+      warnings.push('No $key filter specified. Omitting a $key filter may produce unintended results.');
     }
 
     const collapsedKeys = this.findUnsafeCollapses(data);
