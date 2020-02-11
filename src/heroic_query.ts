@@ -24,17 +24,17 @@ import queryPart from './query_part';
 import { RenderedQuery, Filter, Target, TagOperators, Tag, QueryPart, Part } from './types';
 
 export default class HeroicQuery {
-  public target: any;
   public selectModels: any[];
   public groupByParts: any;
-  public templateSrv: any;
-  public scopedVars: any;
+  public panelCtrl: any;
+  public clientContext: any;
 
   /** @ngInject */
-  constructor(target: any, templateSrv?, scopedVars?) {
+  constructor(public target: any, public templateSrv?, public scopedVars?, public context?) {
     this.target = target;
     this.templateSrv = templateSrv;
     this.scopedVars = scopedVars;
+    this.clientContext = context || {};
 
     target.resultFormat = target.resultFormat || 'time_series';
     target.orderByTime = target.orderByTime || 'ASC';
@@ -184,6 +184,7 @@ export default class HeroicQuery {
 
   public render(): RenderedQuery {
     let target: Target = this.target;
+    const clientContext = this.clientContext;
     const currentFilter = this.buildCurrentFilter(true, true);
     let currentIntervalUnit = null;
     let currentIntervalValue = null;
@@ -217,6 +218,7 @@ export default class HeroicQuery {
       aggregators: aggregators,
       features: features,
       range: '$timeFilter',
+      clientContext
     };
   }
 

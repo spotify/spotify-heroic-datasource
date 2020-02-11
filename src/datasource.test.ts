@@ -47,6 +47,7 @@ describe('HeroicDataSource', () => {
     };
 
     ctx.ds = new HeroicDatasource(ctx.instanceSettings, ctx.$q, ctx.backendSrv, ctx.templateSrv, ctx.uiSegmentSrv);
+    ctx.ds.meta = { id: 'spotify-heroic-datasource' };
   });
 
   describe('When querying Heroic with one target', () => {
@@ -96,6 +97,8 @@ describe('HeroicDataSource', () => {
           ],
         },
       ],
+      dashboardId: '222',
+      panelId: '333',
       interval: '1m',
       rangeRaw: { from: 'now-6h', to: 'now' },
       scopedVars: {
@@ -110,6 +113,10 @@ describe('HeroicDataSource', () => {
       aggregators: [{ type: 'group', of: ['site'], each: [{ type: 'sum', sampling: { unit: 'seconds', value: '1m' } }] }],
       features: ['com.spotify.heroic.distributed_aggregations'],
       range: timeRange,
+      clientContext: {
+        dashboardId: '222',
+        panelId: '333'
+      }
     };
 
     const queryResult = {
@@ -161,6 +168,10 @@ describe('HeroicDataSource', () => {
       const res = ctx.backendSrv.datasourceRequest.mock.calls[0][0];
 
       expect(res.inspect.type).toBe('heroic');
+      expect(res.headers).toEqual({
+        'Content-Type': 'application/json;charset=UTF-8',
+        'X-Client-Id': 'spotify-heroic-datasource'
+      });
       expect(res.method).toBe('POST');
       expect(res.url).toBe(urlExpected);
     });

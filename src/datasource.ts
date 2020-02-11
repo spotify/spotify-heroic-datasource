@@ -48,6 +48,7 @@ export default class HeroicDatasource {
   public tagAggregationChecks: any;
   public tagCollapseChecks: any[];
   public suggestionRules: any;
+  public meta: any;
 
   /** @ngInject */
   constructor(instanceSettings: datasource.InstanceSettings,
@@ -101,6 +102,10 @@ export default class HeroicDatasource {
     const scopedVars = options.scopedVars;
     const targets: Target[] = _.cloneDeep(options.targets);
     const targetsByRef: Record<string, Target> = {};
+    const clientContext = {
+      dashboardId: options.dashboardId,
+      panelId: options.panelId,
+    };
     targets.forEach(target => {
       targetsByRef[target.refId] = target;
     });
@@ -111,8 +116,7 @@ export default class HeroicDatasource {
       }
 
       scopedVars.interval = scopedVars.__interval;
-
-      queryModel = new HeroicQuery(target, this.templateSrv, scopedVars);
+      queryModel = new HeroicQuery(target, this.templateSrv, scopedVars, clientContext);
       const query = queryModel.render();
       if (query.aggregators.length) {
         const samplers: string[] = query.aggregators.filter(a => a.each !== undefined)
@@ -247,7 +251,10 @@ export default class HeroicDatasource {
     return this.backendSrv.datasourceRequest(options);
   }
   public doRequest(path, options) {
-    const headers = { "Content-Type": "application/json;charset=UTF-8" };
+    const headers = {
+      "Content-Type": "application/json;charset=UTF-8",
+      "X-Client-Id": this.meta.id
+    };
     return this.doRequestWithHeaders(path, options, headers);
   }
 
