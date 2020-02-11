@@ -3,6 +3,7 @@ export interface RenderedQuery {
   aggregators: any[];
   features: string[];
   range: string;
+  clientContext: ClientContext;
 }
 
 export type Filter = (string | string[])[];
@@ -35,6 +36,7 @@ export interface Part {
 export interface Target {
   alias: string;
   globalAggregation?: boolean;
+  clientContext: ClientContext;
 
   query: string;
   queryRaw: string;
@@ -135,4 +137,9 @@ export declare namespace datasource {
     tagAggregationChecks: string[];
     suggestionRules: any[];
   }
+}
+
+interface ClientContext {
+  dashboardId: string;
+  panelId: string;
 }
