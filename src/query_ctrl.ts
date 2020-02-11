@@ -26,6 +26,7 @@ import { HeroicValidator } from './validator';
 import { QueryParser } from './query_parser';
 import queryPart from './query_part';
 import { DataSeries, RenderedQuery, Target, Tag, Category, CategoryItem, QueryPart, Part } from './types';
+import HeroicSeries from './heroic_series';
 
 export class HeroicQueryCtrl extends QueryCtrl {
   static templateUrl = 'partials/query.editor.html';
@@ -84,7 +85,7 @@ export class HeroicQueryCtrl extends QueryCtrl {
     const categories = queryPart.getCategories();
     this.selectMenu = _.reduce(
       categories,
-      function(memo, cat, key) {
+      function (memo, cat, key) {
         const menu = {
           text: key,
           submenu: cat.map(item => {
@@ -220,6 +221,7 @@ export class HeroicQueryCtrl extends QueryCtrl {
   }
 
   public onDataReceived(dataList: DataSeries[]) {
+    dataList = dataList.filter(series => series.meta !== undefined && series.meta.isHeroicSeries);
     this.dataList = dataList;
 
     if (this.target.resultFormat === 'time_series') {

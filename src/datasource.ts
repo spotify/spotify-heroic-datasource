@@ -31,28 +31,8 @@ import {
   DataSeries,
   HeroicBatchResult,
   HeroicBatchData,
+  datasource
 } from "./types";
-
-
-declare namespace datasource {
-  interface InstanceSettings {
-    url: string;
-    username: string;
-    password: string;
-    name: string;
-    jsonData: JSONSettings;
-
-    // unused
-    basicAuth: any;
-    database: any;
-  }
-
-  interface JSONSettings {
-    tagCollapseChecks?: any[];
-    tagAggregationChecks: string[];
-    suggestionRules: any[];
-  }
-}
 
 export default class HeroicDatasource {
   public type: string;
@@ -71,10 +51,10 @@ export default class HeroicDatasource {
 
   /** @ngInject */
   constructor(instanceSettings: datasource.InstanceSettings,
-              private $q,
-              private backendSrv,
-              templateSrv,
-              private uiSegmentSrv) {
+    private $q,
+    private backendSrv,
+    templateSrv,
+    private uiSegmentSrv) {
     this.type = "heroic";
     this.settings = instanceSettings;
 
@@ -102,7 +82,7 @@ export default class HeroicDatasource {
     this.supportAnnotations = true;
     this.supportMetrics = true;
     this.annotationModels = [[{ type: "average", categoryName: "For Each", params: [] }]];
-    this.annotationModels = _.map(this.annotationModels, function(parts: any) {
+    this.annotationModels = _.map(this.annotationModels, function (parts: any) {
       return _.map(parts, queryPart.create);
     });
     this.fakeController = true;
@@ -147,12 +127,12 @@ export default class HeroicDatasource {
       } else {
         target.queryResolution = null;
       }
-      return {query: query, refId: target.refId};
+      return { query: query, refId: target.refId };
     }).filter((queryWrapper) => {
       return queryWrapper !== null && queryWrapper.query !== null && JSON.stringify(queryWrapper.query.filter) !== "[\"true\"]";
     });
 
-    if (!allQueries) {
+    if (!allQueries.length) {
       return this.$q.when({ data: [] });
     }
 
@@ -172,7 +152,6 @@ export default class HeroicDatasource {
     return this.doRequest("/query/batch", { method: "POST", data: batchQuery })
       .then((data: HeroicBatchResult) => {
         const results = data.data.results;
-
         const output = _.flatMap(results, (resultValue: HeroicBatchData, refId: string) => {
           const target: Target = targetsByRef[refId];
           let alias: string = target.alias;
@@ -203,7 +182,7 @@ export default class HeroicDatasource {
   }
 
   public annotationQuery(options) {
-    const queryModel = new HeroicQuery({tags: options.annotation.tags}, this.templateSrv, {});
+    const queryModel = new HeroicQuery({ tags: options.annotation.tags }, this.templateSrv, {});
     const currentFilter = queryModel.buildCurrentFilter(true, false);
 
     const query = {
@@ -227,14 +206,18 @@ export default class HeroicDatasource {
   }
 
   public targetContainsTemplate(target): boolean {
-    for (const group of target.groupBy) {
-      for (const param of group.params) {
-        if (this.templateSrv.variableExists(param)) {
-          return true;
+    // Check aggregations for variables.
+    for (const select of target.select) {
+      for (const aggregation of select) {
+        for (const param of aggregation.params) {
+          if (this.templateSrv.variableExists(param)) {
+            return true;
+          }
         }
       }
     }
 
+    // Check filters for variables.
     for (const i in target.tags) {
       if (this.templateSrv.variableExists(target.tags[i].value)) {
         return true;
@@ -245,7 +228,7 @@ export default class HeroicDatasource {
   }
 
   public testDatasource() {
-    return this.doRequest("/status", {}).then(function(data) {
+    return this.doRequest("/status", {}).then(function (data) {
       const service = data.data.service;
 
       return {
@@ -307,7 +290,7 @@ export default class HeroicDatasource {
     return timeObject;
   }
 
-  public convertRawTime(date: string|number, roundUp: boolean): string {
+  public convertRawTime(date: string | number, roundUp: boolean): string {
     if (typeof date === "string") {
       if (date === "now") {
         return "now()";
@@ -333,7 +316,7 @@ export default class HeroicDatasource {
     };
     return this.queryBuilder.queryTagsAndValues(data, "key", this.queryBuilder.lruTag).then(result => {
       return result.map(iresult => {
-        return {value: iresult.key, text: iresult.key};
+        return { value: iresult.key, text: iresult.key };
       });
     });
   }
@@ -346,7 +329,7 @@ export default class HeroicDatasource {
     };
     return this.queryBuilder.queryTagsAndValues(data, "value", this.queryBuilder.lruTagValue).then(result => {
       return result.map(iresult => {
-        return {value: iresult.value, text: iresult.value};
+        return { value: iresult.value, text: iresult.value };
       });
     });
   }
@@ -384,7 +367,7 @@ export default class HeroicDatasource {
     };
     return this.queryBuilder.queryTagsAndValues(data, toGet, this.queryBuilder[cacheKey]).then(result => {
       return result.map(iresult => {
-        return {value: iresult[toGet], text: iresult[toGet]};
+        return { value: iresult[toGet], text: iresult[toGet] };
       });
     });
   }

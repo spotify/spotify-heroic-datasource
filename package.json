@@ -1,6 +1,6 @@
 {
   "name": "spotify-heroic-datasource",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Heroic Timeseries Database Data Source for Grafana.",
   "scripts": {
     "build": "./node_modules/grunt/bin/grunt",
@@ -11,14 +11,16 @@
   "author": "Spotify",
   "license": "Apache",
   "dependencies": {
-    "lodash": "^4.17.13",
-    "moment": "^2.18.1",
+    "lodash": "^4.17.15",
+    "moment": "^2.24.0",
     "q": "^1.5.0",
     "systemjs": "^0.19.47"
   },
   "devDependencies": {
     "@types/jest": "^24.0.25",
     "@types/lodash": "^4.14.138",
+    "bumped": "^0.12.2",
+    "bumped-terminal": "^0.7.8",
     "grafana-sdk-mocks": "github:grafana/grafana-sdk-mocks",
     "grunt": "^1.0.4",
     "grunt-contrib-clean": "^1.1.0",
@@ -28,6 +30,7 @@
     "grunt-ts": "^6.0.0-beta.22",
     "grunt-tslint": "^5.0.2",
     "jest": "^24.9.0",
+    "jsdom": "^16.0.0",
     "load-grunt-tasks": "^3.5.2",
     "mocha": "^5.1.1",
     "plugin-typescript": "^7.1.0",

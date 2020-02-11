@@ -21,7 +21,7 @@
 import kbn from 'app/core/utils/kbn';
 import _ from 'lodash';
 import queryPart from './query_part';
-import { RenderedQuery, Filter, Target, Tag, QueryPart, Part } from './types';
+import { RenderedQuery, Filter, Target, TagOperators, Tag, QueryPart, Part } from './types';
 
 export default class HeroicQuery {
   public target: any;
@@ -46,15 +46,16 @@ export default class HeroicQuery {
   }
 
   public updateProjection() {
-    this.selectModels = _.map(this.target.select, function(parts: any) {
+
+    this.selectModels = _.map(this.target.select, function (parts: any) {
       return _.map(parts, queryPart.create);
     });
     this.groupByParts = _.map(this.target.groupBy, queryPart.create);
   }
 
   public updatePersistedParts() {
-    this.target.select = _.map(this.selectModels, function(selectParts) {
-      return _.map(selectParts, function(part: any) {
+    this.target.select = _.map(this.selectModels, function (selectParts) {
+      return _.map(selectParts, function (part: any) {
         return { type: part.def.type, params: part.params, categoryName: part.def.categoryName };
       });
     });
@@ -136,15 +137,26 @@ export default class HeroicQuery {
     return this.templateSrv.replace(measurement, this.scopedVars, 'regex');
   }
 
-  public renderSubFilter(tag) {
-    switch (tag.type) {
-      case 'custom':
-        return ['q', tag.key];
-      default:
-        if (tag.operator.startsWith('!')) {
-          return ['not', [tag.operator.split('!')[1], tag.key, tag.value]];
-        }
-        return [tag.operator, tag.key, tag.value];
+  public renderFilter(tag, options = { isKey: false }) {
+    if (tag.type) { return ['q', tag.key]; }
+    const { operator, key, value } = tag;
+
+    switch (operator) {
+      case TagOperators.MATCHES: {
+        return options.isKey ? ['key', value] : [TagOperators.MATCHES, key, value];
+      }
+      case TagOperators.DOES_NOT_MATCH: {
+        return options.isKey ? ["not", ['key', value]] : ["not", [TagOperators.MATCHES, key, value]];
+      }
+      case TagOperators.PREFIXIED_WITH: {
+        return options.isKey ? [TagOperators.PREFIXIED_WITH, 'key', value] : [TagOperators.PREFIXIED_WITH, key, value];
+      }
+      case TagOperators.NOT_PREFIXED_WITH: {
+        return options.isKey ? ["not", [TagOperators.PREFIXIED_WITH, 'key', value]] : ["not", [TagOperators.PREFIXIED_WITH, key, value]];
+      }
+      default: {
+        throw new TypeError(`Unrecognized operator. Received ${operator}`);
+      }
     }
   }
 
@@ -153,19 +165,19 @@ export default class HeroicQuery {
     const keyTag = _.find(filterChoices, tag => tag.key === '$key' && tag.value !== 'select tag value');
     const filteredTags = filterChoices.filter(tag => tag.value !== 'select tag value' && tag.key !== '$key');
     if (keyTag) {
-      base = ['and', ['key', keyTag.value]];
+      base = ['and', this.renderFilter(keyTag, { isKey: true })];
     } else if (filteredTags.length) {
       base = ['and'];
     } else {
       return ['true'];
     }
-    const filter = base.concat(filteredTags.map(this.renderSubFilter));
-
+    const filter = base.concat(filteredTags.map(tag => this.renderFilter(tag)));
     if (includeVariables) {
       return JSON.parse(this.templateSrv.replace(JSON.stringify(filter), this.scopedVars));
     }
     return filter;
   }
+
   public buildCurrentFilter(includeVariables, includeScopedFilter) {
     return this.buildFilter(this.target.tags, includeVariables, includeScopedFilter);
   }
@@ -183,7 +195,11 @@ export default class HeroicQuery {
 
     const aggregatorsRendered = this.selectModels.map(modelParts => {
       return modelParts.map(modelPart => {
-        return modelPart.def.renderer(modelPart, undefined, currentIntervalValue);
+        return modelPart.def.categoryName === "Filters"
+          ? modelPart.def.renderer({
+            params: [this.templateSrv.replace(modelPart.params[0])]
+          }, undefined, currentIntervalValue)
+          : modelPart.def.renderer(modelPart, undefined, currentIntervalValue);
       });
     });
 

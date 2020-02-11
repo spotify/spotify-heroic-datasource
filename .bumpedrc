@@ -1,0 +1,7 @@
+files:
+  - package.json
+plugins:
+  postrelease:
+    Tag build for GitHub Release:
+      plugin: bumped-terminal
+      command: 'git tag $newVersion."${TRAVIS_BUILD_NUMBER}"'

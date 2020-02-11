@@ -25,7 +25,7 @@ import { LruCache } from './lru_cache';
 
 export class MetadataClient {
   public static templateUrl = 'partials/query.editor.html';
-  public static DEBOUNCE_MS = 1000; // milliseconds to wait between keystrokes before sending queries for metadata
+  public static DEBOUNCE_MS = 300; // milliseconds to wait between keystrokes before sending queries for metadata
 
   public queryModel: HeroicQuery;
   public lruTag: any;
@@ -160,6 +160,17 @@ export class MetadataClient {
           );
         }
       }
+
+      const keyIsMissing = this.tagSegments.find(({ type, value }) => type === 'key' && value === '$key') === undefined;
+
+      if (segmentKey === 'key' && keyIsMissing) {
+        segments.unshift(
+          this.controller.uiSegmentSrv.newSegment({
+            value: '$key',
+            expandable: false,
+          })
+        );
+      }
       return segments;
     };
   }
@@ -171,19 +182,10 @@ export class MetadataClient {
     }
     return this.datasource
       .doRequest('/metadata/tag-suggest', { method: 'POST', data: data })
-      .then(result => {
-        const seen = new Set();
-        return result.data.suggestions.filter(suggestion => {
-          if (seen.has(suggestion[dedupe])) {
-            return false;
-          }
-          seen.add(suggestion[dedupe]);
-          return true;
-        });
-      })
-      .then(result => {
-        cache.put(cacheKey, result);
-        return result;
+      .then(({ data }) => {
+        const suggestions = _.uniqBy(data.suggestions, suggestion => suggestion[dedupe]);
+        cache.put(cacheKey, suggestions);
+        return suggestions;
       });
   }
 
