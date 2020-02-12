@@ -26,6 +26,8 @@ import HeroicSeries from "./heroic_series";
 import queryPart from "./query_part";
 import TimeRange from "./time_range";
 import { MetadataClient } from "./metadata_client";
+import WarningsCache from './warnings_cache';
+import { HeroicValidator } from './validator';
 import {
   Target,
   DataSeries,
@@ -44,6 +46,7 @@ export default class HeroicDatasource {
   public annotationModels: any;
   public queryBuilder: any;
   public fakeController: any;
+  public warningsCache: WarningsCache;
 
   public tagAggregationChecks: any;
   public tagCollapseChecks: any[];
@@ -95,6 +98,8 @@ export default class HeroicDatasource {
       true,
       true
     );
+
+    this.warningsCache = new WarningsCache();
   }
 
   public query(options) {
@@ -176,9 +181,24 @@ export default class HeroicDatasource {
               return tableData;
             }
             default: {
-              return heroicSeries.getTimeSeries(target.refId);
+              return heroicSeries.getTimeSeries({
+                refId: target.refId,
+                dashboardId: options.dashboardId,
+                panelId: options.panelId
+              });
             }
           }
+        });
+
+        _.forEach(output, target => {
+          if (!this.warningsCache.hasCache(target.meta.warningsKey)) {
+            this.warningsCache.createCache(target.meta.warningsKey);
+          } else {
+            this.warningsCache.removeAllWarnings(target.meta.warningsKey);
+          }
+          target.meta.errors.forEach(error => {
+            this.warningsCache.addWarning(target.meta.warningsKey, error.error);
+          });
         });
 
         return { data: output };

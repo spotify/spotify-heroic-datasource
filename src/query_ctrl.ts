@@ -26,9 +26,13 @@ import { HeroicValidator } from './validator';
 import { QueryParser } from './query_parser';
 import queryPart from './query_part';
 import { DataSeries, RenderedQuery, Target, Tag, Category, CategoryItem, QueryPart, Part } from './types';
+import HeroicDatasource from './datasource';
+import WarningsCache from './warnings_cache';
 
 //@ts-ignore
-import { PanelEvents } from '@grafana/data'; //@ts-ignore
+import { PanelEvents, AppEvents } from '@grafana/data';
+//@ts-ignore
+import appEvents from 'app/core/app_events';
 
 export class HeroicQueryCtrl extends QueryCtrl {
   static templateUrl = 'partials/query.editor.html';
@@ -41,12 +45,15 @@ export class HeroicQueryCtrl extends QueryCtrl {
   target: Target;
   metadataClient: MetadataClient;
   previousQuery: any;
-  warningMessage: string;
   validator: HeroicValidator;
   queryParser: QueryParser;
   currentSuggestions: any[];
   aliasCompleterCache: string[];
   dataList: DataSeries[];
+  warnings: string[];
+  warningsKey: string;
+  panel: any;
+  datasource: HeroicDatasource;
 
   /** @ngInject **/
   constructor($scope, $injector, private templateSrv, private $q, private uiSegmentSrv) {
@@ -58,7 +65,16 @@ export class HeroicQueryCtrl extends QueryCtrl {
       this.target.globalAggregation = true;
     }
 
-    this.panelCtrl.events.on(PanelEvents.dataReceived, this.onDataReceived.bind(this), $scope);
+    this.warningsKey = WarningsCache.createKey({
+      panelId: this.panel.id,
+      refId: this.target.refId,
+      dashboardId: this.panelCtrl.dashboard.id,
+    });
+    if (this.datasource.warningsCache.hasCache(this.warningsKey)) {
+      this.warnings = this.datasource.warningsCache.getWarnings(this.warningsKey);
+    } else {
+      this.warnings = [];
+    }
 
     this.queryModel = new HeroicQuery(this.target, templateSrv, this.panel.scopedVars || {});
     this.groupBySegment = this.uiSegmentSrv.newPlusButton();
@@ -68,14 +84,18 @@ export class HeroicQueryCtrl extends QueryCtrl {
     ];
     this.previousQuery = this.target.query;
     this.buildSelectMenu();
-
-    this.warningMessage = '';
     this.validator = new HeroicValidator(this.target, this.datasource.tagAggregationChecks, this.datasource.tagCollapseChecks);
     this.queryParser = new QueryParser();
     this.currentSuggestions = [];
     this.metadataClient = new MetadataClient(this, this.datasource, this.panel.scopedVars, this.target, true, false);
     this.aliasCompleterCache = [];
-    this.refresh = _.debounce(this.refresh, 500);
+    this.refresh = _.debounce(this.refresh.bind(this), 500);
+    this.panel.events.on(PanelEvents.dataReceived, this.onDataReceived.bind(this), $scope);
+    this.panel.events.on(PanelEvents.refresh, this.onRefresh.bind(this), $scope);
+  }
+
+  public onRefresh() {
+    this.datasource.warningsCache.removeCache(this.warningsKey);
   }
 
   public toggleEditorMode() {
@@ -84,6 +104,7 @@ export class HeroicQueryCtrl extends QueryCtrl {
       this.target.queryRaw = JSON.stringify(JSON.parse(this.target.query), null, 2);
     }
   }
+
   public buildSelectMenu() {
     const categories = queryPart.getCategories();
     this.selectMenu = _.reduce(
@@ -218,26 +239,47 @@ export class HeroicQueryCtrl extends QueryCtrl {
     this.currentSuggestions = suggestions;
   }
 
-  public checkGlobalAggregation(): void {
+  public setWarnings() {
+    this.warnings = this.datasource.warningsCache.getWarnings(this.warningsKey);
+  }
+
+  public resetWarnings() {
+    this.datasource.warningsCache.removeAllWarnings(this.warningsKey);
+    this.setWarnings();
+  }
+
+  public clearWarning(warning) {
+    this.datasource.warningsCache.removeWarning(this.warningsKey, warning);
+    this.setWarnings();
+  }
+
+  public addWarning(warning) {
+    this.datasource.warningsCache.addWarning(this.warningsKey, warning);
+    this.setWarnings();
+  }
+
+  public checkGlobalAggregation() {
     this.queryModel.selectModels.forEach((model: QueryPart[]) => {
-      model.forEach((queryPart: QueryPart) => {
+      for (const queryPart of model) {
         if (this.target.globalAggregation && queryPart.part.categoryName === 'Filters') {
-          this.warningMessage = 'Filters are not compatible with Global Aggregations.';
+          this.addWarning('Filters are not compatible with Global Aggregations.');
+          break;
         }
-      });
+      }
     });
   }
 
-  public clearWarnings() {
-    this.warningMessage = '';
+  public alert(msg) {
+    appEvents.emit(AppEvents.alertError, [`Heroic Query ${this.target.refId}:`, msg]);
   }
 
   public onDataReceived(dataList: DataSeries[]) {
-    dataList = dataList.filter(series => series.meta !== undefined && series.meta.isHeroicSeries);
+    dataList = dataList.filter(series => series.meta !== undefined && series.meta.isHeroicSeries && series.refId === this.target.refId);
     this.dataList = dataList;
 
-    if (this.target.resultFormat === 'time_series') {
-      this.warningMessage = this.validator.checkForWarnings(dataList);
+    if (this.target.resultFormat === 'time_series' && this.dataList.length) {
+      this.setWarnings();
+      this.validator.getSuggestions(dataList).forEach(this.alert.bind(this));
 
       const filtered: DataSeries[] = dataList.filter(data => data.refId === this.target.refId);
       const scoped = _.uniq(_.flatMap(filtered, data => Object.keys(data.meta.scoped)));

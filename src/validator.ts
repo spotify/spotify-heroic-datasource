@@ -72,8 +72,8 @@ export class HeroicValidator {
     return true;
   }
 
-  public checkForWarnings(data: DataSeries[]): string {
-    const warnings = [];
+  public getSuggestions(data: DataSeries[]): string[] {
+    const suggestions = [];
     const badTags = this.findUnsafeAggregations(data);
     if (badTags.length > 0) {
       let message;
@@ -82,11 +82,11 @@ export class HeroicValidator {
       } else {
         message = `any of '${badTags.join("','")}'`;
       }
-      warnings.push(`Aggregating <strong>${message}</strong> can cause misleading results.`);
+      suggestions.push(`Aggregating <strong>${message}</strong> can cause misleading results.`);
     }
 
     if (this.isMissingKey()) {
-      warnings.push('No $key filter specified. Omitting a $key filter may produce unintended results.');
+      suggestions.push('No $key filter specified. Omitting a $key filter may produce unintended results.');
     }
 
     const collapsedKeys = this.findUnsafeCollapses(data);
@@ -100,7 +100,7 @@ export class HeroicValidator {
           collapsedKeys[collapsedKeys.length - 1]
           }'</strong> ` + 'is probably not what you want. For each key, add a filter or group by aggregation.';
       }
-      warnings.push(message);
+      suggestions.push(message);
     }
 
     // Errors/limits are set per query, not per series, but are included
@@ -110,7 +110,7 @@ export class HeroicValidator {
       series.meta.limits.forEach(limit => {
         switch (limit) {
           case 'SERIES':
-            warnings.push('Query would fetch too many time series. Try to add more filters.');
+            suggestions.push('Query would fetch too many time series. Try to add more filters.');
             break;
           case 'GROUP':
             let containsGroupBys = false;
@@ -118,30 +118,32 @@ export class HeroicValidator {
               containsGroupBys = containsGroupBys || select.params.length > 0;
             });
             if (containsGroupBys) {
-              warnings.push(
+              suggestions.push(
                 'Query would fetch too many time series. Try adding more filters or group by fewer tags to get fewer resulting time series'
               );
             } else {
-              warnings.push(
+              suggestions.push(
                 'Query would fetch too many time series. Try adding more filters or adding a Group aggregation to get fewer resulting time series'
               );
             }
             break;
           case 'QUOTA':
-            warnings.push('Query would fetch too many metrics. Try to reduce the time range or add more filters to get fewer resulting metrics.');
+            suggestions.push('Query would fetch too many metrics. Try to reduce the time range or add more filters to get fewer resulting metrics.');
             break;
           case 'AGGREGATION':
             if (this.target.select.length === 0) {
               // TODO: I think this is impossible, target.select is
               // supposed to be an array of size 1
-              warnings.push('Query would aggregate too many metrics. Try add a sampling aggregation, like Average, Min, Max, or Sum');
+              suggestions.push('Query would aggregate too many metrics. Try add a sampling aggregation, like Average, Min, Max, or Sum');
             } else {
-              warnings.push('Query would aggregate too many metrics. Try decreasing the resolution, like changing 1 minute to 1 hour');
+              if (series.meta.errors) {
+                suggestions.push('Query would aggregate too many metrics. Try decreasing the resolution, like changing 1 minute to 1 hour');
+              }
             }
             break;
         }
       });
     });
-    return warnings.join('<br>');
+    return suggestions;
   }
 }

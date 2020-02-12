@@ -1,10 +1,10 @@
 <query-editor-row query-ctrl="ctrl" can-collapse="true" has-text-edit-mode="true">
-	<div class="gf-form" ng-if="ctrl.warningMessage != ''">
-		<label class="gf-form-label text-error">
-			<a ng-click="ctrl.clearWarnings()">
+	<div class="gf-form gf-form--grow" ng-repeat="warning in ctrl.warnings">
+		<label class="gf-form-label gf-form-label--grow text-error">
+			<a ng-click="ctrl.clearWarning(warning)">
 				<i class="fa fa-close"></i>
 			</a>
-			<ng-bind-html ng-bind-html="ctrl.warningMessage">
+			<ng-bind-html ng-bind-html="warning">
 			</ng-bind-html>
 		</label>
 	</div>
