@@ -27,6 +27,7 @@ import { QueryParser } from './query_parser';
 import queryPart from './query_part';
 import { DataSeries, RenderedQuery, Target, Tag, Category, CategoryItem, QueryPart, Part } from './types';
 import HeroicSeries from './heroic_series';
+import { PanelEvents } from '@grafana/data';
 
 export class HeroicQueryCtrl extends QueryCtrl {
   static templateUrl = 'partials/query.editor.html';
@@ -56,7 +57,7 @@ export class HeroicQueryCtrl extends QueryCtrl {
       this.target.globalAggregation = true;
     }
 
-    this.panelCtrl.events.on('data-received', this.onDataReceived.bind(this), $scope);
+    this.panelCtrl.events.on(PanelEvents.dataReceived, this.onDataReceived.bind(this), $scope);
 
     this.queryModel = new HeroicQuery(this.target, templateSrv, this.panel.scopedVars || {});
     this.groupBySegment = this.uiSegmentSrv.newPlusButton();
@@ -249,7 +250,7 @@ export class HeroicQueryCtrl extends QueryCtrl {
       }
     });
     // Shortcut to re-render the existing data
-    this.panelCtrl.events.emit('data-received', this.dataList);
+    this.panelCtrl.events.emit(PanelEvents.dataReceived, this.dataList);
   }
 
   public handleGroupByPartEvent(part, index, evt) {
