@@ -27,7 +27,9 @@ import { QueryParser } from './query_parser';
 import queryPart from './query_part';
 import { DataSeries, RenderedQuery, Target, Tag, Category, CategoryItem, QueryPart, Part } from './types';
 import HeroicSeries from './heroic_series';
-import { PanelEvents } from '@grafana/data';
+
+//@ts-ignore
+import { PanelEvents } from '@grafana/data'; //@ts-ignore
 
 export class HeroicQueryCtrl extends QueryCtrl {
   static templateUrl = 'partials/query.editor.html';
