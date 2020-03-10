@@ -23,17 +23,16 @@ import $ from 'jquery';
 import angular from 'angular';
 
 const template = `
-<div class="dropdown cascade-open">
-<a ng-click="showActionsMenu()" class="query-part-name pointer dropdown-toggle" data-toggle="dropdown">{{part.def.type}}</a>
-
-<span>(</span><span class="query-part-parameters"></span><span>)</span>
-<sub>{{part.def.categoryName}}</sub>
-<ul class="dropdown-menu">
-  <li ng-repeat="action in partActions">
-    <a ng-click="triggerPartAction(action)">{{action.text}}</a>
-  </li>
-</ul>
-`;
+  <div class="dropdown cascade-open">
+  <a ng-click="showActionsMenu()" class="query-part-name pointer dropdown-toggle" data-toggle="dropdown">{{part.def.type}}</a>
+  <span>(</span><span class="query-part-parameters"></span><span>)</span>
+  <sub>{{part.def.categoryName}}</sub>
+  <ul class="dropdown-menu">
+    <li ng-repeat="action in partActions">
+      <a ng-click="triggerPartAction(action)">{{action.text}}</a>
+    </li>
+  </ul>
+</div>`;
 
 /** @ngInject */
 export function queryPartEditorLabeledDirective($compile, templateSrv) {
@@ -45,13 +44,15 @@ export function queryPartEditorLabeledDirective($compile, templateSrv) {
     scope: {
       part: '=',
       handleEvent: '&',
-      debounce: '@',
+      debounce: '<',
     },
     link: function postLink($scope, elem) {
       const part = $scope.part;
       const partDef = part.def;
       const $paramsContainer = elem.find('.query-part-parameters');
+      const $nameContainer = elem.find('.query-part-name');
       const debounceLookup = $scope.debounce;
+      const isDraggable = $scope.draggable;
       let currentParam = 0;
       let linkMode = true;
 
@@ -128,20 +129,20 @@ export function queryPartEditorLabeledDirective($compile, templateSrv) {
           return;
         }
 
-        const typeaheadSource = function(query, callback) {
+        const typeaheadSource = function (query, callback) {
           if (param.options) {
             let options = param.options;
             if (param.type === 'int') {
-              options = _.map(options, function(val) {
+              options = _.map(options, function (val) {
                 return val.toString();
               });
             }
             return options;
           }
 
-          $scope.$apply(function() {
-            $scope.handleEvent({ $event: { name: 'get-param-options' } }).then(function(result) {
-              const dynamicOptions = _.map(result, function(op) {
+          $scope.$apply(function () {
+            $scope.handleEvent({ $event: { name: 'get-param-options' } }).then(function (result) {
+              const dynamicOptions = _.map(result, function (op) {
                 return op.value;
               });
               callback(dynamicOptions);
@@ -155,8 +156,8 @@ export function queryPartEditorLabeledDirective($compile, templateSrv) {
           source: typeaheadSource,
           minLength: 0,
           items: 1000,
-          updater: function(value) {
-            setTimeout(function() {
+          updater: function (value) {
+            setTimeout(function () {
               inputBlur.call($input[0], paramIndex);
             }, 0);
             return value;
@@ -164,7 +165,7 @@ export function queryPartEditorLabeledDirective($compile, templateSrv) {
         });
 
         const typeahead = $input.data('typeahead');
-        typeahead.lookup = function() {
+        typeahead.lookup = function () {
           if (linkMode) {
             return [];
           }
@@ -178,13 +179,13 @@ export function queryPartEditorLabeledDirective($compile, templateSrv) {
         }
       }
 
-      $scope.showActionsMenu = function() {
+      $scope.showActionsMenu = function () {
         $scope.handleEvent({ $event: { name: 'get-part-actions' } }).then(res => {
           $scope.partActions = res;
         });
       };
 
-      $scope.triggerPartAction = function(action) {
+      $scope.triggerPartAction = function (action) {
         $scope.handleEvent({ $event: { name: 'action', action: action } });
       };
 
@@ -200,7 +201,7 @@ export function queryPartEditorLabeledDirective($compile, templateSrv) {
         if (!paramValue) {
           paramValue = '&nbsp&nbsp';
         }
-        const $paramLink = $('<a class="graphite-func-param-link pointer">' + paramValue + '</a>');
+        const $paramLink = $(`<a class="graphite-func-param-link pointer ${param.dynamicLookup && 'dynamic-lookup'}">${paramValue}</a>`);
         const $input = $(paramTemplate);
 
         $paramLink.appendTo($paramsContainer);
@@ -213,6 +214,51 @@ export function queryPartEditorLabeledDirective($compile, templateSrv) {
 
         addTypeahead($input, param, index);
         currentParam += 1;
+      }
+
+      function onDragStart(e) {
+        const { dataTransfer } = e.originalEvent;
+        dataTransfer.effectAllowed = 'move';
+        dataTransfer.setData('text/plain', $scope.part.$$hashKey);
+        this.addClass('drag-over');
+      }
+
+      function onDragOver(e) {
+        const { dataTransfer } = e.originalEvent;
+        e.preventDefault();
+        dataTransfer.dropEffect = 'move';
+        this.addClass('drag-over');
+      }
+
+      function onDragEnd(e) {
+        this.removeClass('drag-over');
+      }
+
+      function onDragEnter(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        this.addClass('drag-over');
+      }
+
+      function onDragLeave(e) {
+        this.removeClass('drag-over');
+      }
+
+      function onDrop(e) {
+        e.stopPropagation();
+        const { dataTransfer } = e.originalEvent;
+        $scope.$apply(() => {
+          this.removeClass('drag-over');
+          $scope.handleEvent({
+            $event: {
+              name: 'part-order-changed',
+              parts: {
+                from: $scope.part.$$hashKey,
+                to: dataTransfer.getData('text/plain')
+              }
+            }
+          });
+        });
       }
 
       function addElementsAndCompile() {
@@ -229,6 +275,17 @@ export function queryPartEditorLabeledDirective($compile, templateSrv) {
       function relink() {
         $paramsContainer.empty();
         addElementsAndCompile();
+      }
+
+      if (elem.prop('draggable')) {
+        $('<span class="drag-handle"></span').insertBefore($nameContainer);
+        elem.bind('dragstart', onDragStart.bind(elem));
+        elem.bind('dragover', onDragOver.bind(elem));
+        elem.bind('dragend', onDragEnd.bind(elem));
+        elem.bind('dragover', onDragOver.bind(elem));
+        elem.bind('dragenter', onDragEnter.bind(elem));
+        elem.bind('dragleave', onDragLeave.bind(elem));
+        elem.bind('drop', onDrop.bind(elem));
       }
 
       relink();
