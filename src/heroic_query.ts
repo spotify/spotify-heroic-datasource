@@ -126,6 +126,15 @@ export default class HeroicQuery {
     this.updatePersistedParts();
   }
 
+  public reorderSelectParts(selectParts, from, to) {
+    const i = _.findIndex(selectParts, part => part.$$hashKey === from);
+    const j = _.findIndex(selectParts, part => part.$$hashKey === to);
+    const temp = selectParts[i];
+    selectParts[i] = selectParts[j];
+    selectParts[j] = temp;
+    this.updatePersistedParts();
+  }
+
   public addSelectPart(selectParts, categoryName, type, position) {
     let partModel = queryPart.create({ type, categoryName });
     partModel.def.addStrategy(selectParts, partModel, position);

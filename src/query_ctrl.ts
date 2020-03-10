@@ -26,7 +26,6 @@ import { HeroicValidator } from './validator';
 import { QueryParser } from './query_parser';
 import queryPart from './query_part';
 import { DataSeries, RenderedQuery, Target, Tag, Category, CategoryItem, QueryPart, Part } from './types';
-import HeroicSeries from './heroic_series';
 
 //@ts-ignore
 import { PanelEvents } from '@grafana/data'; //@ts-ignore
@@ -76,6 +75,7 @@ export class HeroicQueryCtrl extends QueryCtrl {
     this.currentSuggestions = [];
     this.metadataClient = new MetadataClient(this, this.datasource, this.panel.scopedVars, this.target, true, false);
     this.aliasCompleterCache = [];
+    this.refresh = _.debounce(this.refresh, 500);
   }
 
   public toggleEditorMode() {
@@ -107,7 +107,7 @@ export class HeroicQueryCtrl extends QueryCtrl {
     if (cat.text === 'Filters') {
       this.target.globalAggregation = false;
     }
-    this.refresh();
+    this.ctrlRefresh({ shouldQueryChange: false });
   }
 
   public getAliasCompleter() {
@@ -124,20 +124,20 @@ export class HeroicQueryCtrl extends QueryCtrl {
         return this.metadataClient.tagKeyCount({ type: 'key' }, 0, null, true);
       }
       case 'part-param-changed': {
-        this.refresh();
+        this.ctrlRefresh({ shouldQueryChange: false });
         break;
       }
       case 'action': {
         if (evt.action.value === 'remove-part') {
           this.queryModel.removeSelectPart(selectParts, part);
-          this.refresh();
+          this.ctrlRefresh({ shouldQueryChange: true });
         } else {
           const category = _.find(this.selectMenu, menu => menu.text === evt.action.value);
           const newPart = _.find(category.submenu, item => item.value === part.part.type);
           const position = selectParts.indexOf(part);
           this.queryModel.removeSelectPart(selectParts, part);
           this.addSelectPart(selectParts, category, newPart, position);
-          this.refresh();
+          this.ctrlRefresh({ shouldQueryChange: false });
         }
         break;
       }
@@ -153,10 +153,19 @@ export class HeroicQueryCtrl extends QueryCtrl {
           ]);
         }
       }
+      case 'part-order-changed': {
+        const { from, to } = evt.parts;
+        this.queryModel.reorderSelectParts(selectParts, from, to);
+        this.ctrlRefresh({ shouldQueryChange: true });
+        break;
+      }
+      default: {
+        throw new Error(`Expected valid event name. Received: ${evt.name}`);
+      }
     }
   }
 
-  public refresh() {
+  public ctrlRefresh(options: { shouldQueryChange: boolean }) {
     this.queryModel.scopedVars['interval'] = { value: this.panelCtrl.interval };
     this.queryModel.scopedVars['__interval'] = { value: this.panelCtrl.interval };
     this.checkSuggestions();
@@ -164,8 +173,8 @@ export class HeroicQueryCtrl extends QueryCtrl {
     const query: RenderedQuery = this.queryModel.render();
     this.target.query = JSON.stringify(query);
     this.previousQuery = this.target.query;
-    if (this.panelCtrl.onQueryChange) {
-      this.panelCtrl.onQueryChange();
+    if (options.shouldQueryChange) {
+      this.refresh();
     }
   }
 
@@ -173,7 +182,7 @@ export class HeroicQueryCtrl extends QueryCtrl {
     this.queryParser.parseInto(this.target.queryRaw, this.target);
     this.queryModel.updateProjection();
     this.metadataClient.createTagSegments();
-    this.refresh();
+    this.ctrlRefresh({ shouldQueryChange: false });
   }
 
   public appendSuggestion(suggestion) {
@@ -261,12 +270,12 @@ export class HeroicQueryCtrl extends QueryCtrl {
         return this.metadataClient.getTagsOrValues({ type: 'key' }, 0, null, false);
       }
       case 'part-param-changed': {
-        this.refresh();
+        this.ctrlRefresh({ shouldQueryChange: false });
         break;
       }
       case 'action': {
         this.queryModel.removeGroupByPart(part, index);
-        this.refresh();
+        this.ctrlRefresh({ shouldQueryChange: false });
         break;
       }
       case 'get-part-actions': {
@@ -289,4 +298,5 @@ export class HeroicQueryCtrl extends QueryCtrl {
   public setTags(tags: Tag[]) {
     this.target.tags = tags;
   }
+
 }

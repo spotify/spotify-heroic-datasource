@@ -24,12 +24,18 @@ import { HeroicQueryCtrl } from './query_ctrl';
 import { queryPartEditorLabeledDirective } from './query_part_base/query_part_editor';
 import { metricSegmentWrapper } from './metric_segment_wrapper';
 import { HeroicConfigCtrl } from './config_ctrl';
+import { loadPluginCss } from 'app/plugins/sdk';
+
+loadPluginCss({
+  dark: 'plugins/spotify-heroic-datasource/css/query_editor.base.css',
+  light: 'plugins/spotify-heroic-datasource/css/query_editor.base.css'
+});
 
 export {
   HeroicDatasource as Datasource,
   HeroicQueryCtrl as QueryCtrl,
   HeroicConfigCtrl as ConfigCtrl,
   HeroicAnnotationsQueryCtrl as AnnotationsQueryCtrl,
-  queryPartEditorLabeledDirective as NewDirective,
-  metricSegmentWrapper as NewDirective2,
+  queryPartEditorLabeledDirective as queryPartEditorLabeledDirective,
+  metricSegmentWrapper as metricSegmentWrapper,
 };
