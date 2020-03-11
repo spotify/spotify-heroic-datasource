@@ -20,6 +20,7 @@
 
 import TableModel from 'app/core/table_model';
 import _ from 'lodash';
+import WarningsCache from './warnings_cache';
 import { HeroicBatchData, DataSeries, Datapoint } from './types';
 
 export default class HeroicSeries {
@@ -102,10 +103,11 @@ export default class HeroicSeries {
     series.values = withAfter;
   }
 
-  public getTimeSeries(refId: string): DataSeries[] {
+  public getTimeSeries({ refId, dashboardId, panelId }): DataSeries[] {
     const min = this.getMinFromResults(this.resultData.result);
     const max = this.getMaxFromResults(this.resultData.result);
     const { limits, errors } = this.resultData;
+    const warningsKey = WarningsCache.createKey({ refId, dashboardId, panelId });
 
     if (this.resultData.result.length === 0) {
       return [
@@ -115,6 +117,7 @@ export default class HeroicSeries {
           datapoints: [],
           meta: {
             isHeroicSeries: true,
+            warningsKey,
             scoped: {
               tags: { text: '' },
               fullTags: { text: '' },
@@ -148,7 +151,7 @@ export default class HeroicSeries {
       const scoped = this.buildScoped(series, commonCounts, this.resultData.result.length);
       const target: string = this.templateSrv.replaceWithText(this.alias || defaultAlias, scoped);
       const datapoints: Datapoint[] = series.values.map(this._convertData);
-      const meta = { scoped, errors, limits, isHeroicSeries: true };
+      const meta = { scoped, errors, limits, warningsKey, isHeroicSeries: true };
       return { refId, target, datapoints, meta };
     });
   }

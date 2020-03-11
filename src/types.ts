@@ -37,7 +37,7 @@ export interface Target {
   alias: string;
   globalAggregation?: boolean;
   clientContext: ClientContext;
-
+  warningsKey: string;
   query: string;
   queryRaw: string;
   rawQuery: boolean;
@@ -67,6 +67,7 @@ export type Datapoint = [number, number];
 
 export interface HeroicMetaData {
   isHeroicSeries: boolean;
+  warningsKey: string;
   scoped: {
     tags: {
       text: string;

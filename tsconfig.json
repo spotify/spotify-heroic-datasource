@@ -9,7 +9,11 @@
     "experimentalDecorators": true,
     "noImplicitAny": false,
     "skipLibCheck": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "lib": [
+      "dom",
+      "es7"
+    ]
   },
   "include": [
     "dist/**/*.ts"
