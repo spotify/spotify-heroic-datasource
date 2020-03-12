@@ -36,6 +36,7 @@ import appEvents from 'app/core/app_events';
 
 export class HeroicQueryCtrl extends QueryCtrl {
   static templateUrl = 'partials/query.editor.html';
+  public static DEBOUNCE_MS = 500
 
   queryModel: HeroicQuery;
   groupBySegment: any;
@@ -52,6 +53,7 @@ export class HeroicQueryCtrl extends QueryCtrl {
   dataList: DataSeries[];
   warnings: string[];
   warningsKey: string;
+  disableAlerts: boolean;
   panel: any;
   datasource: HeroicDatasource;
 
@@ -75,7 +77,7 @@ export class HeroicQueryCtrl extends QueryCtrl {
     } else {
       this.warnings = [];
     }
-
+    this.disableAlerts = true;
     this.queryModel = new HeroicQuery(this.target, templateSrv, this.panel.scopedVars || {});
     this.groupBySegment = this.uiSegmentSrv.newPlusButton();
     this.resultFormats = [
@@ -89,7 +91,7 @@ export class HeroicQueryCtrl extends QueryCtrl {
     this.currentSuggestions = [];
     this.metadataClient = new MetadataClient(this, this.datasource, this.panel.scopedVars, this.target, true, false);
     this.aliasCompleterCache = [];
-    this.refresh = _.debounce(this.refresh.bind(this), 500);
+
     this.panel.events.on(PanelEvents.dataReceived, this.onDataReceived.bind(this), $scope);
     this.panel.events.on(PanelEvents.refresh, this.onRefresh.bind(this), $scope);
   }
@@ -177,7 +179,7 @@ export class HeroicQueryCtrl extends QueryCtrl {
       case 'part-order-changed': {
         const { from, to } = evt.parts;
         this.queryModel.reorderSelectParts(selectParts, from, to);
-        this.ctrlRefresh({ shouldQueryChange: true });
+        this.ctrlRefresh({ shouldQueryChange: true, debounce: true });
         break;
       }
       default: {
@@ -186,7 +188,7 @@ export class HeroicQueryCtrl extends QueryCtrl {
     }
   }
 
-  public ctrlRefresh(options: { shouldQueryChange: boolean }) {
+  public ctrlRefresh(options: { shouldQueryChange: boolean, debounce?: boolean }) {
     this.queryModel.scopedVars['interval'] = { value: this.panelCtrl.interval };
     this.queryModel.scopedVars['__interval'] = { value: this.panelCtrl.interval };
     this.checkSuggestions();
@@ -195,7 +197,12 @@ export class HeroicQueryCtrl extends QueryCtrl {
     this.target.query = JSON.stringify(query);
     this.previousQuery = this.target.query;
     if (options.shouldQueryChange) {
-      this.refresh();
+      if (options.debounce) {
+        const debounce = _.debounce(this.refresh.bind(this), HeroicQueryCtrl.DEBOUNCE_MS, { leading: false });
+        debounce();
+      } else {
+        this.refresh();
+      }
     }
   }
 
@@ -279,7 +286,9 @@ export class HeroicQueryCtrl extends QueryCtrl {
 
     if (this.target.resultFormat === 'time_series' && this.dataList.length) {
       this.setWarnings();
-      this.validator.getSuggestions(dataList).forEach(this.alert.bind(this));
+      if (!this.disableAlerts) {
+        this.validator.getSuggestions(dataList).forEach(this.alert.bind(this));
+      }
 
       const filtered: DataSeries[] = dataList.filter(data => data.refId === this.target.refId);
       const scoped = _.uniq(_.flatMap(filtered, data => Object.keys(data.meta.scoped)));

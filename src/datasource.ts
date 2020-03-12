@@ -27,7 +27,6 @@ import queryPart from "./query_part";
 import TimeRange from "./time_range";
 import { MetadataClient } from "./metadata_client";
 import WarningsCache from './warnings_cache';
-import { HeroicValidator } from './validator';
 import {
   Target,
   DataSeries,
@@ -35,6 +34,8 @@ import {
   HeroicBatchData,
   datasource
 } from "./types";
+//@ts-ignore
+import { PanelEvents } from '@grafana/data';
 
 export default class HeroicDatasource {
   public type: string;
@@ -191,13 +192,15 @@ export default class HeroicDatasource {
         });
 
         _.forEach(output, target => {
-          if (!this.warningsCache.hasCache(target.meta.warningsKey)) {
-            this.warningsCache.createCache(target.meta.warningsKey);
+          const { warningsKey } = target.meta;
+          if (!this.warningsCache.hasCache(warningsKey)) {
+            this.warningsCache.createCache(warningsKey);
           } else {
-            this.warningsCache.removeAllWarnings(target.meta.warningsKey);
+            this.warningsCache.removeAllWarnings(warningsKey);
           }
           target.meta.errors.forEach(error => {
-            this.warningsCache.addWarning(target.meta.warningsKey, error.error);
+            const msg = WarningsCache.formatWarning(error);
+            this.warningsCache.addWarning(warningsKey, msg);
           });
         });
 
