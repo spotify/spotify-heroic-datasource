@@ -21,6 +21,15 @@ export default class WarningsCache {
     return `${dashboardId}::${panelId}::${refId}`;
   }
 
+  static formatWarning(warning) {
+    let { error: msg, type } = warning;
+    if (msg.length > 100) {
+      msg = msg.slice(0, 100).concat('...[See Query Inspector to view full error details]');
+    }
+    type = type[0].toUpperCase().concat(type.slice(1));
+    return `[${type} Error]: ${msg}`;
+  }
+
   public hasCache(key: WarningsCache.key) {
     return this.cache.has(key);
   }
