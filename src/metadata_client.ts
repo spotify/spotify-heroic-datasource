@@ -381,7 +381,7 @@ export class MetadataClient {
       }
     });
     this.controller.setTags(tags);
-    this.controller.refresh();
+    this.controller.ctrlRefresh({ shouldQueryChange: false });
   }
 
   public validateCustomQuery = _.debounce(

@@ -25,13 +25,14 @@
 				<label class="gf-form-label query-keyword">FORMAT AS</label>
 				<div class="gf-form-select-wrapper">
 					<select class="gf-form-input gf-size-auto" ng-model="ctrl.target.resultFormat"
-						ng-options="f.value as f.text for f in ctrl.resultFormats" ng-change="ctrl.refresh()"></select>
+						ng-options="f.value as f.text for f in ctrl.resultFormats"
+						ng-change="ctrl.ctrlRefresh({ shouldQueryChange: true })"></select>
 				</div>
 			</div>
 			<div class="gf-form max-width-25" ng-hide="ctrl.target.resultFormat === 'table'">
 				<label class="gf-form-label query-keyword">ALIAS BY</label>
 				<input type="text" class="gf-form-input" ng-model="ctrl.target.alias" spellcheck='false'
-					placeholder="Naming pattern" ng-blur="ctrl.refresh()">
+					placeholder="Naming pattern" ng-blur="ctrl.ctrlRefresh({ shouldQueryChange: true })">
 			</div>
 			<div class="gf-form gf-form--grow">
 				<div class="gf-form-label gf-form-label--grow"></div>
@@ -157,7 +158,8 @@
 				<label class="gf-form-label query-keyword width-7">FORMAT AS</label>
 				<div class="gf-form-select-wrapper">
 					<select class="gf-form-input gf-size-auto" ng-model="ctrl.target.resultFormat"
-						ng-options="f.value as f.text for f in ctrl.resultFormats" ng-change="ctrl.panelCtrl.refresh()"></select>
+						ng-options="f.value as f.text for f in ctrl.resultFormats"
+						ng-change="ctrl.panelCtrl.ctrlRefresh({ shouldQueryChange: true })"></select>
 				</div>
 			</div>
 			<div class="gf-form gf-form--grow">
@@ -179,7 +181,8 @@
 		</div>
 		<gf-form-switch class="gf-form" label="Global Aggregations"
 			tooltip="Enables aggregation across shards. Having this option unset is deprecated as global aggregation lets you group on 'site' specifically."
-			checked="ctrl.target.globalAggregation" label-class="width-13" on-change="ctrl.refresh()">
+			checked="ctrl.target.globalAggregation" label-class="width-13"
+			on-change="ctrl.ctrlRefresh({ shouldQueryChange: true })">
 		</gf-form-switch>
 	</div>
 
