@@ -36,7 +36,7 @@ import appEvents from 'app/core/app_events';
 
 export class HeroicQueryCtrl extends QueryCtrl {
   static templateUrl = 'partials/query.editor.html';
-  public static DEBOUNCE_MS = 500
+  public static DEBOUNCE_MS = 500;
 
   queryModel: HeroicQuery;
   groupBySegment: any;
