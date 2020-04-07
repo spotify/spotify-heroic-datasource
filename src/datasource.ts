@@ -271,8 +271,12 @@ export default class HeroicDatasource {
     options.headers = headers;
     options.url = this.settings.url + path;
     options.inspect = { type: "heroic" };
+    if (options.method === 'POST' && options.data) {
+      options.data = JSON.stringify(options.data);
+    }
     return this.backendSrv.datasourceRequest(options);
   }
+
   public doRequest(path, options) {
     const headers = {
       "Content-Type": "application/json;charset=UTF-8",

@@ -169,9 +169,9 @@ describe('HeroicDataSource', () => {
 
     it('...should call Heroic with the correct query', async () => {
       results = await ctx.ds.query(options);
-      const res = ctx.backendSrv.datasourceRequest.mock.calls[0][0];
-
-      expect(res.data.queries['A']).toMatchObject(query);
+      const { data } = ctx.backendSrv.datasourceRequest.mock.calls[0][0];
+      const json = JSON.parse(data);
+      expect(json.queries['A']).toMatchObject(query);
     });
 
     it('...should call Heroic with the correct HTTP request', async () => {
