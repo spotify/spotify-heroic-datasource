@@ -165,7 +165,6 @@ export default class HeroicDatasource {
         const output = _.flatMap(results, (resultValue: HeroicBatchData, refId: string) => {
           const target: Target = targetsByRef[refId];
           let alias: string = target.alias;
-          const query = data.config.data.queries[refId];
           if (alias) {
             alias = this.templateSrv.replaceWithText(alias, options.scopedVars);
           }
