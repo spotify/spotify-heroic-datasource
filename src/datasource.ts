@@ -32,7 +32,7 @@ import {
   DataSeries,
   HeroicBatchResult,
   HeroicBatchData,
-  datasource
+  datasource,
 } from "./types";
 //@ts-ignore
 import { PanelEvents } from '@grafana/data';
@@ -53,6 +53,8 @@ export default class HeroicDatasource {
   public tagCollapseChecks: any[];
   public suggestionRules: any;
   public meta: any;
+
+  static HTTP_DEFAULT_JSON_HEADERS = 'application/json;charset=UTF-8';
 
   /** @ngInject */
   constructor(instanceSettings: datasource.InstanceSettings,
@@ -270,7 +272,7 @@ export default class HeroicDatasource {
     options.headers = headers;
     options.url = this.settings.url + path;
     options.inspect = { type: "heroic" };
-    if (options.method === 'POST' && options.headers['Content-Type'] === 'application/json;charset=UTF-8') {
+    if (options.method === 'POST' && options.headers['Content-Type'] === HeroicDatasource.HTTP_DEFAULT_JSON_HEADERS) {
       options.data = JSON.stringify(options.data);
     }
     return this.backendSrv.datasourceRequest(options);
@@ -278,7 +280,7 @@ export default class HeroicDatasource {
 
   public doRequest(path, options) {
     const headers = {
-      "Content-Type": "application/json;charset=UTF-8",
+      "Content-Type": HeroicDatasource.HTTP_DEFAULT_JSON_HEADERS,
       "X-Client-Id": this.meta.id
     };
     return this.doRequestWithHeaders(path, options, headers);
