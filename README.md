@@ -11,6 +11,7 @@ It includes:
 * Table support.
 * Annotation support.
 
+**Compatible with Grafana versions 6.0 -> 6.5.2**
 
 This plugin is supersedes the previous [Heroic datasource](https://github.com/udoprog/udoprog-heroic-datasource).
 
