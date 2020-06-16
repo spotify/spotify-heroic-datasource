@@ -20,6 +20,7 @@
 
 import { functionRenderer, QueryPart, QueryPartDef } from './query_part_base/query_part';
 
+const pointsAggregations = ['pointsabove', 'pointsbelow'];
 const filterAggregations = ['abovek', 'belowk', 'topk', 'bottomk'];
 const rootAggregations = ['average', 'count', 'delta', 'deltaPerSecond', 'ratePerSecond', 'max', 'min', 'notNegative', 'stddev', 'sum', 'sum2'];
 
@@ -29,6 +30,7 @@ let categories = {
   Collapse: [],
   'Group By': [],
   Filters: [],
+  Points: [],
 };
 
 function createPart(part): any {
@@ -95,6 +97,15 @@ function buildFilterRenderer(ctype) {
   }
   return filterRenderer;
 }
+function buildPointsRenderer(ctype) {
+  function pointsRenderer(part, innerExpr, secondsInterval) {
+    return {
+      type: ctype,
+      threshold: parseInt(part.params[0]),
+    };
+  }
+  return pointsRenderer;
+}
 
 function registerForEach(options: any) {
   options.renderer = buildAggregateRenderer(options.type, null);
@@ -157,6 +168,23 @@ filterAggregations.forEach(aggregation => {
       },
     ],
     defaultParams: ['5'],
+  });
+});
+
+pointsAggregations.forEach(aggregation => {
+  register({
+    type: aggregation,
+    addStrategy: replaceAggregationAddStrategy,
+    renderer: buildPointsRenderer(aggregation),
+    categoryName: 'Points',
+    params: [
+      {
+        name: 'threshold',
+        type: 'int',
+        options: [],
+      },
+    ],
+    defaultParams: ['1'],
   });
 });
 

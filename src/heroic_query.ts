@@ -205,7 +205,7 @@ export default class HeroicQuery {
 
     const aggregatorsRendered = this.selectModels.map(modelParts => {
       return modelParts.map(modelPart => {
-        return modelPart.def.categoryName === "Filters"
+        return (modelPart.def.categoryName === "Filters" || modelPart.def.categoryName === "Points")
           ? modelPart.def.renderer({
             params: [this.templateSrv.replace(modelPart.params[0])]
           }, undefined, currentIntervalValue)

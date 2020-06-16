@@ -165,7 +165,7 @@ export class HeroicQueryCtrl extends QueryCtrl {
         break;
       }
       case 'get-part-actions': {
-        if (part.part.categoryName === 'Filters') {
+        if (part.part.categoryName === 'Filters' || part.part.categoryName === 'Points') {
           return this.$q.when([{ text: 'Remove', value: 'remove-part' }]);
         } else {
           return this.$q.when([
