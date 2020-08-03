@@ -11,7 +11,7 @@
   "author": "Spotify",
   "license": "Apache",
   "dependencies": {
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.19",
     "moment": "^2.24.0",
     "q": "^1.5.0",
     "systemjs": "^0.19.47"
