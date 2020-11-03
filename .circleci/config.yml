@@ -1,0 +1,50 @@
+version: 2.1
+
+orbs:
+  node: circleci/node@3.0.0
+
+jobs:
+  build:
+    working_directory: ~/spotify-heroic-datasource
+    executor: node/default
+    steps:
+     - checkout
+     - node/install-packages:
+         pkg-manager: yarn
+     - run:
+         name: "Build with Yarn"
+         command: |
+           yarn lint
+           yarn build
+           yarn test
+     - run:
+         name: "Before Deploy"
+         command: |
+           git config --local user.name "CircleCI"
+           git config --local user.email "no-reply@circle-ci.com"
+           zip spotify-heroic-datasource -r dist/
+           git tag "build-${TRAVIS_BUILD_NUMBER}"
+  publish-github-release:
+    docker:
+      - image: cibuilds/github:0.10
+    steps:
+      - attach_workspace:
+          at: ./artifacts
+      - run:
+          name: "Publish Release on GitHub"
+          command: |
+            VERSION=$(my-binary --version)
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} ./artifacts/
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build
+      - publish-github-release:
+          requires:
+            - build
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^\d+\.\d+\.\d+$/
