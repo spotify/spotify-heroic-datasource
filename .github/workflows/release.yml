@@ -4,16 +4,21 @@ on:
     types: [closed]
 jobs:
   on_merge:
-    if: github.event.pull_request.merged == 'true'
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    # Setup .npmrc file to publish to npm
-    - uses: actions/setup-node@v1
-      with:
-        node-version: '12.x'
-        registry-url: 'https://npm.pkg.github.com'
-    - run: yarn
-    - run: yarn publish
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: "Prepare on merge"
+        if: github.event.pull_request.merged == 'true'
+        uses: actions/checkout@v2
+      - name: "Setup node on merge"
+        if: github.event.pull_request.merged == 'true'
+        uses: actions/setup-node@v1
+        with:
+          node-version: '12.x'
+          registry-url: 'https://npm.pkg.github.com'
+      - name: "Publish on merge"
+        if: github.event.pull_request.merged == 'true'
+        run: | 
+          yarn
+          yarn publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
