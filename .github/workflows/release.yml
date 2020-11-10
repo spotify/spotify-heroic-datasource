@@ -1,5 +1,5 @@
 name: Node.js Package
-on: [push, pull_request]
+on: [push]
 
 jobs:
   on_merge:
