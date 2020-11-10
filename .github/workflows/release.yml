@@ -1,7 +1,11 @@
 name: Node.js Package
 on:
   pull_request:
-    types: [closed]
+    branches:
+      - main
+  push:
+    branches:
+      - main
 jobs:
   on_merge:
     runs-on: ubuntu-latest
