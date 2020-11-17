@@ -1,6 +1,6 @@
 # spotify-heroic-datasource
 
-[![Build Status](https://travis-ci.org/spotify/spotify-heroic-datasource.svg?branch=master)](https://travis-ci.org/spotify/spotify-heroic-datasource)
+[![Build Status](https://github.com/spotify/spotify-heroic-datasource/workflows/Build/badge.svg)](https://github.com/spotify/spotify-heroic-datasource/actions?query=workflow%3ABuild)
 
 ![heroic-datasource-screenshot](https://github.com/spotify/spotify-heroic-datasource/raw/master/heroic-datasource-screenshot.png "Heroic Datasource Plugin")
 
