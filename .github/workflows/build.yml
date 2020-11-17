@@ -10,14 +10,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Run ESLint
-        run: eslint . --ext .js,.jsx,.ts,.tsx
-      - uses: borales/actions-yarn@v2.0.0
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v1
         with:
-          cmd: install # will run `yarn install` command
-      - uses: borales/actions-yarn@v2.0.0
-        with:
-          cmd: build # will run `yarn build` command
-      - uses: borales/actions-yarn@v2.0.0
-        with:
-          cmd: test # will run `yarn test` command
+          node-version: 12
+
+      - name: Install Node.js dependencies
+        run: npm install
+
+      - run: |
+          yarn lint
+          yarn build
+          yarn test
