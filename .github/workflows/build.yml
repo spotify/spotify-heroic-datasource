@@ -18,8 +18,10 @@ jobs:
 
       - name: Install Node.js dependencies
         run: npm install
+      - name: yarn lint
+        run: yarn lint
+      - name: yarn build
+        run: yarn build
+      - name: yarn test
+        run: yarn test
 
-      - run: |
-          yarn lint
-          yarn build
-          yarn test
