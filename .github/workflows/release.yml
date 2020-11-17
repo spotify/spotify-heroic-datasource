@@ -3,10 +3,10 @@ on:
     branches:
       - "master"
 
-name: Upload Release Asset
+name: Github Release
 jobs:
   deploy:
-    name: Upload Release Asset
+    name: Github Release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -22,5 +22,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ steps.tag_version.outputs.new_tag }}
-          release_name: Release ${{ steps.tag_version.outputs.new_tag }}
+          release_name: ${{ steps.tag_version.outputs.new_tag }}
           body: ${{ steps.tag_version.outputs.changelog }}
