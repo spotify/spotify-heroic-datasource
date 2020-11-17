@@ -20,7 +20,7 @@ Inspiration was taken from the [Grafana InfluxDB plugin](https://github.com/graf
 
 # Installation
 
-The recommened way to install the plugin is via the official cli:
+The recommened way to install the plugin is via the official cli: 
 
 `grafana-cli plugins install spotify-heroic-datasource`
 
