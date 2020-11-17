@@ -16,8 +16,8 @@ jobs:
         node-version: '12.x'
     - name: Yarn
       run: |
-          yarn lint
-          yarn build
-          yarn test
+        yarn lint
+        yarn build
+        yarn test
       env:
         CI: true
