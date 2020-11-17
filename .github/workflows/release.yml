@@ -5,6 +5,14 @@ on:
 
 name: Upload Release Asset
 jobs:
+  build:
+    name: Build
+    steps:
+      - name: Yarn
+        run: |
+          yarn lint
+          yarn build
+          yarn test
   deploy:
     name: Upload Release Asset
     runs-on: ubuntu-latest
@@ -13,9 +21,6 @@ jobs:
         uses: actions/checkout@v2
       - name: Build project # This would actually build your project, using zip for an example artifact
         run: |
-          yarn lint
-          yarn build
-          yarn test
           zip spotify-heroic-datasource -r dist/
       - name: Create Release
         id: create_release
