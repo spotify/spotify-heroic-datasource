@@ -5,15 +5,6 @@ on:
 
 name: Upload Release Asset
 jobs:
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Yarn
-        run: |
-          yarn lint
-          yarn build
-          yarn test
   deploy:
     name: Upload Release Asset
     runs-on: ubuntu-latest
