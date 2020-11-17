@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Run ESLint
+        run: eslint . --ext .js,.jsx,.ts,.tsx
       - uses: borales/actions-yarn@v2.0.0
         with:
           cmd: install # will run `yarn install` command
