@@ -22,7 +22,8 @@ import { functionRenderer, QueryPart, QueryPartDef } from './query_part_base/que
 
 const pointsAggregations = ['pointsabove', 'pointsbelow'];
 const filterAggregations = ['abovek', 'belowk', 'topk', 'bottomk'];
-const rootAggregations = ['average', 'count', 'delta', 'deltaPerSecond', 'ratePerSecond', 'max', 'min', 'notNegative', 'stddev', 'sum', 'sum2'];
+const rootAggregations = ['average', 'count', 'delta', 'deltaPerSecond', 'ratePerSecond', 'max',
+'min', 'notNegative', 'stddev', 'sum', 'sum2', 'tdigest'];
 
 let index = {};
 let categories = {
