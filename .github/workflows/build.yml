@@ -27,6 +27,3 @@ jobs:
         run: yarn build
       - name: yarn test
         run: yarn test
-
-      - name: Create Zip
-        run: zip spotify-heroic-datasource -r dist/
