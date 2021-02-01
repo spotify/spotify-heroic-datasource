@@ -17,8 +17,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Create Zip
-        run: zip spotify-heroic-datasource -r dist/
-        working-directory: src
+        run: zip spotify-heroic-datasource -r src/
       - name: Upload Release
         uses: ncipollo/release-action@v1
         with:
