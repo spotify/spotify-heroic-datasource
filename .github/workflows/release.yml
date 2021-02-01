@@ -20,7 +20,8 @@ jobs:
         uses: thedoctor0/zip-release@master
         with:
           filename: 'spotify-heroic-datasource.zip'
-          exclusions: '*.git*'
+          directory: src
+          path: dist
       - name: Upload Release
         uses: ncipollo/release-action@v1
         with:
