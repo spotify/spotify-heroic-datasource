@@ -151,7 +151,7 @@ export class MetadataClient {
       });
 
       if (addTemplateVars) {
-        for (const variable of this.controller.templateSrv.variables) {
+        for (const variable of this.controller.templateSrv.getVariables) {
           segments.unshift(
             this.controller.uiSegmentSrv.newSegment({
               value: '$' + variable.name,

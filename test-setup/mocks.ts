@@ -1,6 +1,6 @@
 export let templateSrvMock = {
   replace: jest.fn().mockImplementation(query => query),
-  replaceWithText: jest.fn(n => n),
+  replace: jest.fn(n => n),
   getAdhocFilters: jest.fn().mockReturnValue([])
 };
 

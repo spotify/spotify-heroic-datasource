@@ -149,7 +149,7 @@ export default class HeroicSeries {
         }
       }
       const scoped = this.buildScoped(series, commonCounts, this.resultData.result.length);
-      const target: string = this.templateSrv.replaceWithText(this.alias || defaultAlias, scoped);
+      const target: string = this.templateSrv.replace(this.alias || defaultAlias, scoped);
       const datapoints: Datapoint[] = series.values.map(this._convertData);
       const meta = { scoped, errors, limits, warningsKey, isHeroicSeries: true };
       return { refId, target, datapoints, meta };

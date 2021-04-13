@@ -307,8 +307,8 @@ export class HeroicQueryCtrl extends QueryCtrl {
     }
     this.dataList.forEach(data => {
       if (data.refId === this.target.refId) {
-        const alias = this.templateSrv.replaceWithText(this.target.alias || '$tags', {});
-        data.target = this.templateSrv.replaceWithText(alias, data.meta.scoped);
+        const alias = this.templateSrv.replace(this.target.alias || '$tags', {});
+        data.target = this.templateSrv.replace(alias, data.meta.scoped);
       }
     });
     // Shortcut to re-render the existing data

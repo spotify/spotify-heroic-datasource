@@ -18,7 +18,10 @@
  * -/-/-
  */
 
-import kbn from 'app/core/utils/kbn';
+// import kbn from 'app/core/utils/kbn';
+//@ts-ignore
+import { rangeUtil } from '@grafana/data';
+// import rangeutil from 'packages/grafana-data/src/datetime/rangeutil';
 import _ from 'lodash';
 import queryPart from './query_part';
 import { RenderedQuery, Filter, Target, TagOperators, Tag, QueryPart, Part } from './types';
@@ -200,7 +203,7 @@ export default class HeroicQuery {
     if (target.groupBy.length) {
       currentIntervalUnit = 'seconds';
       const newGroupBy = JSON.parse(this.templateSrv.replace(JSON.stringify(target.groupBy), this.scopedVars));
-      currentIntervalValue = kbn.interval_to_seconds(newGroupBy[0].params[0]);
+      currentIntervalValue = rangeUtil.intervalToSeconds(newGroupBy[0].params[0]);
     }
 
     const aggregatorsRendered = this.selectModels.map(modelParts => {

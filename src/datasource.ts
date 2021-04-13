@@ -168,7 +168,7 @@ export default class HeroicDatasource {
           const target: Target = targetsByRef[refId];
           let alias: string = target.alias;
           if (alias) {
-            alias = this.templateSrv.replaceWithText(alias, options.scopedVars);
+            alias = this.templateSrv.replace(alias, options.scopedVars);
           }
           const heroicSeries = new HeroicSeries({
             series: resultValue,
